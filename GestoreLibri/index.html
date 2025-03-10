@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mercante librario</title>
+        <link rel="icon" type="image/png" href="img\favicon.png">
+        <link rel="stylesheet" href="style.css"/>
+    </head>
+
+    <body>
+        <h1>Mercante librario</h1>
+
+        <input id="casellaRicerca" type="text" onkeypress="ricercaLibri()" placeholder="Cercare il libro per titolo, ISBN, autore o materia">
+        
+        <!-- tabella con elenco dei libri generata da script -->
+        <table id="elencoLibri">
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>ISBN</th>
+                    <th>Autore</th>
+                    <th>Titolo</th>
+                    <th>Volume</th>
+                    <th>Editore</th>
+                    <th>Prezzo</th>
+                    <th>Classe</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->
+            <tbody id="corpoTabella"></tbody>
+        </table>
+        
+        <script src="out/scriptUnico.js"></script>
+    </body>
+</html>

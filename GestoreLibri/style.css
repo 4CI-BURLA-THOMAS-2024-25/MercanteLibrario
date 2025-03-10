@@ -1,0 +1,24 @@
+h1 {
+    color:darkorange;
+    font-family: fantasy;
+    text-align: center;
+    font-size: 100px;
+}
+
+table {
+    border: 1px solid black;
+}
+
+th, td {
+    border: 1px solid black
+}
+
+#casellaRicerca {
+    width: 99%;
+    height: 40px;
+    margin: 10px;
+    border-radius: 6px;
+    gap: 5px;
+    text-size-adjust: 100%;
+    font-size: 2em;
+}

@@ -1,0 +1,58 @@
+Fase iniziale di approccio al problema. Si incoraggiano soluzioni creative *previa opinione del docente* .
+
+A gruppetti.
+
+Produrre un'interfaccia web in grado di effettuare ricerche libere (per autore, titolo, o parte di esso, isbn...) nell'elenco dei libri noti, che allego.
+
+L'effetto della ricerca sarà il sottoinsieme dell'elenco che rispetta il criterio della ricerca. È data libertà sul modo di rappresentare internamente la lista, nonché sul modo di visualizzarla.
+
+LA SITUA A TENDERE:
+
+mercatino - libri - vendita - acquisto - soldi - persone
+abbiamo un elenco di libri *scolastici*.
+a cui le persone fanno riferimento per gli acquisti.
+chi ha libri vecchi li vuole vendere.
+egli deve andare al mercatino e darli in custodia
+il mercatino *deve conoscere* i libri. [o sia: lista libri nota a priori]
+un venditore porta un libro per la vendita: azioni necessarie:
+  - SE controllo presenza del libro nella lista positivo :
+    - SE venditore nuovo:
+      censimento del venditore 
+    - registrazione *della copia del libro* in una lista sul gestionale [con il prezzo desiderato dal venditore: possibilmente ristretto a un range discreto di percentuali del prezzo di copertina, in base alle condizioni materiali del libro]
+    - etichettato [per: 1 futuro riconoscimento, 2 vendita, 3 associabilità certa al venditore]
+ora è disponibile per la vendita.
+arriva un acquirente: il mercatino deve sapergli dire se ha il libro che cerca.
+SE ne ha almeno una copia
+  - gliele mostra
+  - gli dice quanto costano.
+Se all'acquirente ne piace una: 
+  la compra
+  o vero: la paga
+quindi:
+  - nel gestionale viene registrata la vendita del libro
+  - la cassa riceve denaro
+
+A FINE CAMPAGNA:
+  si tirano le somme. [il gestionale deve saperle tirare. e bene.]
+  - restano libri invenduti
+    vanno restituiti allo sfortunato venditore
+  - restano soldi in cassa
+    vanno dati al fortunato venditore
+
+
+
+
+
+
+
+
+COME PROCEDO:
+-con TypeScript, creo la classe Libro (come farei in Java);
+-leggo dall’elenco dei libri i parametri ed istanzio gli oggetti;
+-aggiungo, man mano, gli oggetti istanziati riga per riga ad una matrice (ogni libro ha la sua riga);
+-visualizzo matrice
+
+
+PROBLEMI:
+1. import/export di JS non graditi dal browser; pevitare gli errori di import/export senza cambiare il codice TypeScript, usare Webpack per generare un unico file JS compatibile con i browser.
+1. CORS con i browser: per accedere a file js e csv, devo avere un server locale; risolvo con http-server di Node.js;

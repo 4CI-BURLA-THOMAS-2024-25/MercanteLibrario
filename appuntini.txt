@@ -1,0 +1,24 @@
+COMANDI DI COMPILAZIONE(cmd in directory “src”):
+1. tsc Libro.ts
+2. tsc script.ts
+3. npm run build
+
+FASE 1:
+COME PROCEDO:
+-con TypeScript, creo la classe Libro (come farei in Java);
+-leggo dall’elenco dei libri i parametri ed istanzio gli oggetti;
+-aggiungo, man mano, gli oggetti istanziati riga per riga ad una matrice (ogni libro ha la sua riga);
+-visualizzo matrice
+
+
+PROBLEMI:
+1. import/export di JS non graditi dal browser; per evitare gli errori di import/export senza cambiare il codice TypeScript, usare Webpack per generare un unico file JS compatibile con i browser.
+2. CORS con i browser: per accedere a file js e csv, devo avere un server locale; risolvo con http-server di Node.js;
+
+
+
+FASE 2
+1. come soluzione al primo problema elencato al punto precedente, mantengo l’utilizzo di Webpack; questo influisce solo sulla compilazione, all’utente poco cambia;
+2. chiedere all’utente di adottare un server locale non è possibile, bisogna semplificare la vita agli utenti meno esperti; come soluzione, seppur “spartana”, creo oggetti Libro e gli inserisco nell’array ad essi dedicato “a mano”, direttamente nello script principale, senza richiamare funzioni strane e quindi evitando il problema CORS dei browser a priori.
+
+
