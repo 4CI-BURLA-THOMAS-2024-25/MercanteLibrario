@@ -21,4 +21,5 @@ FASE 2
 1. come soluzione al primo problema elencato al punto precedente, mantengo l’utilizzo di Webpack; questo influisce solo sulla compilazione, all’utente poco cambia;
 2. chiedere all’utente di adottare un server locale non è possibile, bisogna semplificare la vita agli utenti meno esperti; come soluzione, seppur “spartana”, creo oggetti Libro e gli inserisco nell’array ad essi dedicato “a mano”, direttamente nello script principale, senza richiamare funzioni strane e quindi evitando il problema CORS dei browser a priori.
 
-
+FASE 3
+implemento casella di ricerca, il cui criterio di ricerca è apllicato al metodo toString degli oggetti libro.

@@ -64,6 +64,13 @@ var Libro = /** @class */ (function () {
             this.classe = 0;
         }
     }
+    // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa
+    Libro.prototype.toString = function () {
+        //preparo array degli attributi
+        var valoriAttributi = [this.materia, this.isbn, this.autore, this.titolo, this.volume, this.editore, this.prezzo, this.classe];
+        //"converto" gli elementi dell'array in stringhe
+        return valoriAttributi.join(" ");
+    };
     return Libro;
 }());
 exports.Libro = Libro;

@@ -2,12 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 //importo classe Libro nel "main"
 var Libro_1 = require("./Libro");
-//funzione per mostrare in tabella html i libri
-function mostraLibri() {
-    //leggo libri e creo array
-    //const elencoLibri: Libro[] = await leggiLibriCSV(); //attendo array promesso dalla funzione asincrona di lettura
-    //creo array di oggetti libro
-    var elencoLibri = [];
+//associo listener alla casella di ricerca,se non è null ed è definita
+var casellaRicerca = document.getElementById("casellaRicerca");
+casellaRicerca === null || casellaRicerca === void 0 ? void 0 : casellaRicerca.addEventListener("keydown", ricercaLibri);
+//creo array di oggetti libro
+var elencoLibri = [];
+//funzione per creare array con elenco completo libri
+function mostraElencoCompletoLibri() {
     //contatore
     var i = 0;
     //riempio array di Libro
@@ -103,15 +104,47 @@ function mostraLibri() {
     elencoLibri[i++] = new Libro_1.Libro("TELECOMUNICAZIONI", "9788808228628", "BERTAZIOLI ONELIO", "CORSO DI TELECOMUNICAZIONI 2 (LIBRO MISTO SCARICABILE) MEZZI TRASMISSIVI. ELETTRONICA PER TELECOMUNICAZIONI. RETE TELEFONICA", "2", "ZANICHELLI EDITORE", "42,7", "4");
     elencoLibri[i++] = new Libro_1.Libro("TELECOMUNICAZIONI", "9788808834997", "BERTAZIOLI ONELIO", "CORSO DI TELECOMUNICAZIONI - VOL 3 + RISORSE SCUOLABOOK PER TELECOM. RETI, SIST. E APP. TELECOMUNICAZIONI DIGITALI DI N. GENERAZIONE", "3", "ZANICHELLI EDITORE", "44,6", "5");
     elencoLibri[i++] = new Libro_1.Libro("TELECOMUNICAZIONI", "9788823357037", "AMBROSINI ENRICO, PERLASCA IPPOLITO, MAINI PIERPAOLO", "TELECOMUNICAZIONI - LIBRO MISTO CON HUB LIBRO YOUNG  VOL. + HUB YOUNG + HUB KIT", "U", "TRAMONTANA", "36,5", "4");
+    // chiamo funzione per mostrare l'array di libri
+    mostraLibri(elencoLibri);
+}
+//funziona per mostrare a tabella un elenco di libri, passato come array di oggetti Libro
+function mostraLibri(elencoLibri) {
     //prelevo reference della tabella html
     var corpoTabella = document.getElementById("corpoTabella"); //indico a TS di trattare l'HTMLElement prelevato come un tbody
+    //svuoto tabella
+    corpoTabella.innerHTML = "";
     //stampo riga per riga
-    for (var i_1 = 0; i_1 < elencoLibri.length; i_1++) {
-        var libro = elencoLibri[i_1];
+    for (var i = 0; i < elencoLibri.length; i++) {
+        var libro = elencoLibri[i];
         var riga = document.createElement("tr");
         riga.innerHTML = "<td>".concat(libro.materia, "</td><td>").concat(libro.isbn, "</td><td>").concat(libro.autore, "</td><td>").concat(libro.titolo, "</td><td>").concat(libro.volume, "</td><td>").concat(libro.editore, "</td><td>").concat(libro.prezzo, "</td><td>").concat(libro.classe, "</td>");
         corpoTabella.appendChild(riga);
     }
 }
+//funzione che ricerca tra i libri e mostra quelli che soddisafno il criterio di ricerca
+function ricercaLibri() {
+    var criterioRicerca;
+    //libro con gli oggetti corrispondenti al criterio di ricerca
+    var risultatiRicerca = [];
+    //leggo dalla casella di ricerca, se non è null ed è definita e la assegno se non è vuota
+    if (casellaRicerca && (casellaRicerca.value.trim() != undefined)) {
+        //ricerca case unsensitive, tutto minuscolo
+        criterioRicerca = casellaRicerca.value.toLowerCase();
+        //array che contiene i libri corrispondenti al campo di ricerca
+        for (var i = 0; i < elencoLibri.length; i++) {
+            //se tra gli attributi del libro compare il criterio di ricerca...
+            if ((elencoLibri[i].toString().toLowerCase()).includes(criterioRicerca)) {
+                //salvo il libro nell'array che contiene i libri corrispondenti alla ricerca
+                risultatiRicerca.push(elencoLibri[i]);
+            }
+        }
+        //passo nuova lista libri e la visualizzo
+        mostraLibri(risultatiRicerca);
+        //con campo di ricerca vuoto, mostra lista completa
+    }
+    else {
+        mostraLibri(elencoLibri);
+    }
+}
 //chiamata funzione a inizio pagina
-mostraLibri();
+mostraElencoCompletoLibri();

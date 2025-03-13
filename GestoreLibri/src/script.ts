@@ -1,10 +1,15 @@
 //importo classe Libro nel "main"
 import { Libro } from "./Libro";
 
+//associo listener alla casella di ricerca,se non è null ed è definita
+const casellaRicerca = document.getElementById("casellaRicerca") as HTMLInputElement;
+casellaRicerca?.addEventListener("keydown", ricercaLibri);
+
+//creo array di oggetti libro
+const elencoLibri: Libro[] = [];
+
 //funzione per creare array con elenco completo libri
 function mostraElencoCompletoLibri(): void{
-    //creo array di oggetti libro
-    const elencoLibri: Libro[] = [];
     //contatore
     let i = 0;
     //riempio array di Libro
@@ -105,10 +110,13 @@ function mostraElencoCompletoLibri(): void{
     mostraLibri(elencoLibri);
 }
 
+//funziona per mostrare a tabella un elenco di libri, passato come array di oggetti Libro
 function mostraLibri(elencoLibri: Libro[]): void{
     //prelevo reference della tabella html
     const corpoTabella = document.getElementById("corpoTabella") as HTMLTableSectionElement; //indico a TS di trattare l'HTMLElement prelevato come un tbody
 
+    //svuoto tabella
+    corpoTabella.innerHTML = "";
     //stampo riga per riga
     for(let i = 0; i < elencoLibri.length; i++){
         const libro: Libro = elencoLibri[i];
@@ -118,8 +126,36 @@ function mostraLibri(elencoLibri: Libro[]): void{
     }
 }
 
+//funzione che ricerca tra i libri e mostra quelli che soddisafno il criterio di ricerca
 function ricercaLibri(): void{
+    let criterioRicerca: string;
+    //libro con gli oggetti corrispondenti al criterio di ricerca
+    let risultatiRicerca: Libro[] = [];
+
+    //leggo dalla casella di ricerca, se non è null ed è definita e la assegno se non è vuota
+    if(casellaRicerca && (casellaRicerca.value.trim() != undefined)){
+        //ricerca case unsensitive, tutto minuscolo
+        criterioRicerca = casellaRicerca.value.toLowerCase();
+
+        //array che contiene i libri corrispondenti al campo di ricerca
+        for(let i = 0; i < elencoLibri.length; i++){
+
+            //se tra gli attributi del libro compare il criterio di ricerca...
+            if((elencoLibri[i].toString().toLowerCase()).includes(criterioRicerca)){
+                //salvo il libro nell'array che contiene i libri corrispondenti alla ricerca
+                risultatiRicerca.push(elencoLibri[i]);
+            }
+        }
+        
+        //passo nuova lista libri e la visualizzo
+        mostraLibri(risultatiRicerca);
     
+    //con campo di ricerca vuoto, mostra lista completa
+    }else{
+        mostraLibri(elencoLibri);
+    }
+    
+
 }
 
 //chiamata funzione a inizio pagina
