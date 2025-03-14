@@ -88,7 +88,7 @@ function mostraLibri(elencoLibri) {
     for (var i = 0; i < elencoLibri.length; i++) {
         var libro = elencoLibri[i];
         var riga = document.createElement("tr");
-        riga.innerHTML = "<td>".concat(libro.materia, "</td><td>").concat(libro.isbn, "</td><td>").concat(libro.autore, "</td><td>").concat(libro.titolo, "</td><td>").concat(libro.volume, "</td><td>").concat(libro.editore, "</td><td>").concat(libro.prezzo, "</td><td>").concat(libro.classe, "</td>");
+        riga.innerHTML = "<td>".concat(libro.materia, "</td><td>").concat(libro.isbn, "</td><td>").concat(libro.autore, "</td><td>").concat(libro.titolo, "</td><td>").concat(libro.volume, "</td><td>").concat(libro.editore, "</td><td>").concat(libro.prezzo, "</td><td>").concat(libro.classe, "</td><td>").concat(libro.getNCopie(), "</td>");
         corpoTabella.appendChild(riga);
     }
 }

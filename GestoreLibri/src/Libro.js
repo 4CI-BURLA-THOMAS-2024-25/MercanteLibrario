@@ -63,6 +63,8 @@ var Libro = /** @class */ (function () {
         else {
             this.classe = "-";
         }
+        //imposto copie del libro a zero
+        this.nCopie = 0;
     }
     // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa
     Libro.prototype.toString = function () {
@@ -70,6 +72,14 @@ var Libro = /** @class */ (function () {
         var valoriAttributi = [this.materia, this.isbn, this.autore, this.titolo, this.volume, this.editore, this.prezzo, this.classe];
         //"converto" gli elementi dell'array in stringhe
         return valoriAttributi.join(" ");
+    };
+    //ottieni numero copie del libro
+    Libro.prototype.getNCopie = function () {
+        return this.nCopie;
+    };
+    //metodo per aggiungere una nuova copia del libro
+    Libro.prototype.aggiungiCopia = function () {
+        this.nCopie++;
     };
     return Libro;
 }());

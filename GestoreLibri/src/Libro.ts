@@ -11,6 +11,8 @@ export class Libro{
     readonly editore: string;
     readonly prezzo: number;
     readonly classe: string;
+    //tengo traccia delle copie che ho del libro
+    private nCopie: number;
 
     //costruttore
     constructor(materia: string, isbn: string, autore: string, titolo: string, volume: string, editore: string, prezzoString: string, classe: string){
@@ -72,6 +74,9 @@ export class Libro{
         }else{
             this.classe = "-";
         }
+
+        //imposto copie del libro a zero
+        this.nCopie = 0;
     }
 
     // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa
@@ -81,5 +86,15 @@ export class Libro{
         
         //"converto" gli elementi dell'array in stringhe
         return valoriAttributi.join(" "); 
+    }
+
+    //ottieni numero copie del libro
+    getNCopie(): number{
+        return this.nCopie;
+    }
+
+    //metodo per aggiungere una nuova copia del libro
+    aggiungiCopia(): void{
+        this.nCopie++;
     }
 }

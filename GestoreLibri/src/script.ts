@@ -92,7 +92,7 @@ function mostraLibri(elencoLibri: Libro[]): void{
     for(let i = 0; i < elencoLibri.length; i++){
         const libro: Libro = elencoLibri[i];
         const riga: HTMLTableRowElement = document.createElement("tr");
-        riga.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzo}</td><td>${libro.classe}</td>`
+        riga.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzo}</td><td>${libro.classe}</td><td>${libro.getNCopie()}</td>`
         corpoTabella.appendChild(riga);
     }
 }
