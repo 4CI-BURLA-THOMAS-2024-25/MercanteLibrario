@@ -18,7 +18,7 @@ export class Libro{
         let prezzo: number = Number(prezzoString.replace(",", "."));
         
         //controllo materia
-        if(materia != null){
+        if(materia != undefined){
             this.materia = materia;
         }else{
             this.materia = "-";
@@ -32,28 +32,28 @@ export class Libro{
         }
 
         //controllo autore
-        if(autore != null){
+        if(autore != undefined){
             this.autore = autore;
         }else{
             this.autore = "-";
         }
 
         //controllo titolo
-        if(titolo != null){
+        if(titolo != undefined){
             this.titolo = titolo;
         }else{
             this.titolo = "-";
         }
 
         //controllo volume
-        if((volume != null) && (volume.length == 1)){
+        if((volume != undefined) && (volume.length == 1)){
             this.volume = volume;
         }else{
             this.volume = "-";
         }
 
         //controllo editore
-        if(editore != null){
+        if(editore != undefined){
             this.editore = editore;
         }else{
             this.editore = "-";
@@ -67,7 +67,7 @@ export class Libro{
         }
 
         //controllo classe
-        if(classe != null){
+        if(classe != undefined){
             this.classe = classe;
         }else{
             this.classe = "-";
