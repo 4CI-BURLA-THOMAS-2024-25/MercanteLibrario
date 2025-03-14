@@ -57,11 +57,11 @@ var Libro = /** @class */ (function () {
             this.prezzo = 0.0;
         }
         //controllo classe
-        if ((Number(classe) >= 1) && (Number(classe) <= 5)) {
-            this.classe = Number(classe);
+        if (classe != null) {
+            this.classe = classe;
         }
         else {
-            this.classe = 0;
+            this.classe = "-";
         }
     }
     // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa

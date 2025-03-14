@@ -7,6 +7,8 @@ h1 {
 
 table {
     border: 1px solid black;
+    width: 100%;
+    border-collapse: collapse
 }
 
 th, td {
@@ -22,3 +24,7 @@ th, td {
     text-size-adjust: 100%;
     font-size: 2em;
 }
+
+/* html {
+    background-color:greenyellow;
+} */

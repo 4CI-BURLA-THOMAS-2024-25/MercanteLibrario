@@ -10,7 +10,7 @@ export class Libro{
     readonly volume: string;
     readonly editore: string;
     readonly prezzo: number;
-    readonly classe: number;
+    readonly classe: string;
 
     //costruttore
     constructor(materia: string, isbn: string, autore: string, titolo: string, volume: string, editore: string, prezzoString: string, classe: string){
@@ -67,10 +67,10 @@ export class Libro{
         }
 
         //controllo classe
-        if((Number(classe) >= 1) && (Number(classe) <= 5)){
-            this.classe = Number(classe);
+        if(classe != null){
+            this.classe = classe;
         }else{
-            this.classe = 0;
+            this.classe = "-";
         }
     }
 
