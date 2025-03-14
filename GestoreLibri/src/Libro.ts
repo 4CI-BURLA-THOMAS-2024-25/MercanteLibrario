@@ -1,5 +1,3 @@
-import { NOMEM } from "dns";
-
 //creo classe esportabile, così da essere importata e usata dalla classe "main"
 export class Libro{
     //creo attributi costanti
