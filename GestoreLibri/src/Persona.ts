@@ -7,14 +7,17 @@ export class Persona{
     readonly nome: string;
     readonly cognome: string;
     readonly email: string;
-    readonly nTelefono: string;
+    readonly nTelefono: number;
     readonly matricolaStudente: string;
     readonly classe: string;
     private soldiDaDare: number;
     private libriDati: Libro[];
 
     //costruttore
-    constructor(nome: string, cognome: string, email: string, nTelefono: string, matricolaStudente: string, classe: string){
+    constructor(nome: string, cognome: string, email: string, nTelefonoString: string, matricolaStudente: string, classe: string){
+        //provo a convertire numero di telefono da stringa a numero effettivo
+        let nTelefono = Number(nTelefonoString);
+
         // controllo nome
         if(nome != undefined){
             this.nome = nome;
@@ -30,6 +33,24 @@ export class Persona{
         }
 
         // controllo email
-        
+        if(email != undefined){
+            this.email = email;
+        }else{
+            this.email = "-";
+        }
+
+        // controllo numero di telefono, verificando che sia convertibile
+        if(nTelefono > 0){
+            this.nTelefono = nTelefono;
+        }else{
+            this.nTelefono = 0;
+        }
+
+        // controllo matricola dello studente
+        if(matricolaStudente != undefined){
+            this.matricolaStudente = matricolaStudente;
+        }else{
+            this.matricolaStudente = "-";
+        }
     }
 }
