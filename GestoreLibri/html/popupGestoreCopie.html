@@ -3,17 +3,14 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mercante librario</title>
-        <link rel="icon" type="image/png" href="img\favicon.png">
-        <link rel="stylesheet" href="style.css"/>
+        <link rel="icon" type="image/png" href="..\img\favicon.png">
+        <link rel="stylesheet" href="../style.css"/>
     </head>
 
     <body>
-        <h1>Mercante librario</h1>
+        <h2>Aggiungi o rimuovi copia</h2>
 
-        <input id="casellaRicerca" type="text" placeholder="Cercare il libro per titolo, ISBN, autore o materia">
-        
-        <!-- tabella con elenco dei libri generata da script -->
+        <!-- tabella che mostra tutte le copie di questo libro -->
         <table id="elencoLibri">
             <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
             <colgroup>
@@ -45,7 +42,5 @@
             <!-- corpo tabella -->
             <tbody id="corpoTabella"></tbody>
         </table>
-        
-        <script src="out/scriptUnico.js"></script>
     </body>
 </html>

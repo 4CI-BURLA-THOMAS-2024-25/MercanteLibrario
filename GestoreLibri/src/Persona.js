@@ -1,71 +1,59 @@
-//importo classe Libro
-import { Libro } from "./Libro";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Persona = void 0;
 //creo classe esportabile, così da essere importata e usata dalla classe "main"
-export class Persona{
-    //creo attributi costanti
-    readonly nome: string;
-    readonly cognome: string;
-    readonly email: string;
-    readonly nTelefono: number;
-    readonly matricolaStudente: string;
-    readonly classe: string;
-    private soldiDaDare: number;
-    private libriDati: Libro[];
-
+var Persona = /** @class */ (function () {
     //costruttore
-    constructor(nome: string, cognome: string, email: string, nTelefonoString: string, matricolaStudente: string, classe: string){
+    function Persona(nome, cognome, email, nTelefonoString, matricolaStudente, classe) {
         //provo a convertire numero di telefono da stringa a numero effettivo
-        let nTelefono = Number(nTelefonoString);
-
+        var nTelefono = Number(nTelefonoString);
         // controllo nome
-        if(nome != undefined){
+        if (nome != undefined) {
             this.nome = nome;
-        }else{
+        }
+        else {
             this.nome = "-";
         }
-
         // controllo cognome
-        if(cognome != undefined){
+        if (cognome != undefined) {
             this.cognome = cognome;
-        }else{
+        }
+        else {
             this.cognome = "-";
         }
-
         // controllo email
-        if(email != undefined){
+        if (email != undefined) {
             this.email = email;
-        }else{
+        }
+        else {
             this.email = "-";
         }
-
         // controllo numero di telefono, verificando che sia convertibile
-        if(nTelefono > 0){
+        if (nTelefono > 0) {
             this.nTelefono = nTelefono;
-        }else{
+        }
+        else {
             this.nTelefono = 0;
         }
-
         // controllo matricola dello studente
-        if(matricolaStudente != undefined){
+        if (matricolaStudente != undefined) {
             this.matricolaStudente = matricolaStudente;
-        }else{
+        }
+        else {
             this.matricolaStudente = "-";
         }
-
         // controllo classe a cui appartiene lo studente
-        if(classe != undefined){
+        if (classe != undefined) {
             this.classe = classe;
-        }else{
+        }
+        else {
             this.classe = "-";
         }
-
         // soldi da dare alla persona in relazione al numero dei suoi libri che ho venduto
         this.soldiDaDare = 0;
-
         //elenco dei libri che la persona mi ha dato per la vendita
         this.libriDati = [];
     }
-
-    
-}
+    return Persona;
+}());
+exports.Persona = Persona;

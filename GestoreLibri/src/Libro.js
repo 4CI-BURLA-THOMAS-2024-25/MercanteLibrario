@@ -8,7 +8,7 @@ var Libro = /** @class */ (function () {
         //salvo prezzo separato da . anzichè da , e lo converto in numero
         var prezzo = Number(prezzoString.replace(",", "."));
         //controllo materia
-        if (materia != null) {
+        if (materia != undefined) {
             this.materia = materia;
         }
         else {
@@ -22,28 +22,28 @@ var Libro = /** @class */ (function () {
             this.isbn = 0;
         }
         //controllo autore
-        if (autore != null) {
+        if (autore != undefined) {
             this.autore = autore;
         }
         else {
             this.autore = "-";
         }
         //controllo titolo
-        if (titolo != null) {
+        if (titolo != undefined) {
             this.titolo = titolo;
         }
         else {
             this.titolo = "-";
         }
         //controllo volume
-        if ((volume != null) && (volume.length == 1)) {
+        if ((volume != undefined) && (volume.length == 1)) {
             this.volume = volume;
         }
         else {
             this.volume = "-";
         }
         //controllo editore
-        if (editore != null) {
+        if (editore != undefined) {
             this.editore = editore;
         }
         else {
@@ -57,7 +57,7 @@ var Libro = /** @class */ (function () {
             this.prezzo = 0.0;
         }
         //controllo classe
-        if (classe != null) {
+        if (classe != undefined) {
             this.classe = classe;
         }
         else {

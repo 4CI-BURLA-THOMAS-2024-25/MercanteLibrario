@@ -5,6 +5,10 @@ import { Libro } from "./Libro";
 const casellaRicerca = document.getElementById("casellaRicerca") as HTMLInputElement;
 casellaRicerca?.addEventListener("keydown", ricercaLibri);
 
+//associo listener alla tabella del menù principale (index), se non è null ed è definita
+// const tabellaElencoCompleto = document.getElementById("elencoLibri");
+// tabellaElencoCompleto?.addEventListener("click", mostraCopieLibro);
+
 //creo array di oggetti libro
 const elencoLibri: Libro[] = [];
 
@@ -88,11 +92,26 @@ function mostraLibri(elencoLibri: Libro[]): void{
 
     //svuoto tabella
     corpoTabella.innerHTML = "";
+
     //stampo riga per riga
     for(let i = 0; i < elencoLibri.length; i++){
         const libro: Libro = elencoLibri[i];
         const riga: HTMLTableRowElement = document.createElement("tr");
-        riga.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzo}</td><td>${libro.classe}</td><td>${libro.getNCopie()}</td>`
+        riga.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzo}</td><td>${libro.classe}</td><td>${libro.getNCopie()}</td>`;
+        
+        // creo bottone per gestire le copie di ciascun libro (di ciascuna riga della tabella)
+        const bottone = document.createElement("button");
+        // aggiungo testo al bottone
+        bottone.textContent = "Gestisci copie";
+        // associo ascoltatore e passo riga
+        bottone.addEventListener("click", () => mostraCopieLibro(riga));
+
+        // aggiungo cella alla riga
+        const cella = riga.insertCell();
+        // inserisco bottone nella cella
+        cella.appendChild(bottone);
+        
+        // inserisco riga nel corpo della tabella
         corpoTabella.appendChild(riga);
     }
 }
@@ -127,6 +146,14 @@ function ricercaLibri(): void{
     }
     
 
+}
+
+// funzione per mostrare la pagina, in popup, con le copie del libro che ho cliccato nella tabella
+function mostraCopieLibro(riga: HTMLTableRowElement): void{
+    const indiceRiga = riga.rowIndex - 1;
+    console.log(indiceRiga);
+    const titoloLibro = elencoLibri[indiceRiga].titolo;
+    window.open("html/popupGestoreCopie.html", `${titoloLibro}`, "menubar=no");
 }
 
 //chiamata funzione a inizio pagina

@@ -5,6 +5,9 @@ var Libro_1 = require("./Libro");
 //associo listener alla casella di ricerca,se non è null ed è definita
 var casellaRicerca = document.getElementById("casellaRicerca");
 casellaRicerca === null || casellaRicerca === void 0 ? void 0 : casellaRicerca.addEventListener("keydown", ricercaLibri);
+//associo listener alla tabella del menù principale (index), se non è null ed è definita
+// const tabellaElencoCompleto = document.getElementById("elencoLibri");
+// tabellaElencoCompleto?.addEventListener("click", mostraCopieLibro);
 //creo array di oggetti libro
 var elencoLibri = [];
 //funzione per creare array con elenco completo libri
@@ -84,12 +87,26 @@ function mostraLibri(elencoLibri) {
     var corpoTabella = document.getElementById("corpoTabella"); //indico a TS di trattare l'HTMLElement prelevato come un tbody
     //svuoto tabella
     corpoTabella.innerHTML = "";
-    //stampo riga per riga
-    for (var i = 0; i < elencoLibri.length; i++) {
+    var _loop_1 = function (i) {
         var libro = elencoLibri[i];
         var riga = document.createElement("tr");
         riga.innerHTML = "<td>".concat(libro.materia, "</td><td>").concat(libro.isbn, "</td><td>").concat(libro.autore, "</td><td>").concat(libro.titolo, "</td><td>").concat(libro.volume, "</td><td>").concat(libro.editore, "</td><td>").concat(libro.prezzo, "</td><td>").concat(libro.classe, "</td><td>").concat(libro.getNCopie(), "</td>");
+        // creo bottone per gestire le copie di ciascun libro (di ciascuna riga della tabella)
+        var bottone = document.createElement("button");
+        // aggiungo testo al bottone
+        bottone.textContent = "Gestisci copie";
+        // associo ascoltatore e passo riga
+        bottone.addEventListener("click", function () { return mostraCopieLibro(riga); });
+        // aggiungo cella alla riga
+        var cella = riga.insertCell();
+        // inserisco bottone nella cella
+        cella.appendChild(bottone);
+        // inserisco riga nel corpo della tabella
         corpoTabella.appendChild(riga);
+    };
+    //stampo riga per riga
+    for (var i = 0; i < elencoLibri.length; i++) {
+        _loop_1(i);
     }
 }
 //funzione che ricerca tra i libri e mostra quelli che soddisafno il criterio di ricerca
@@ -116,6 +133,13 @@ function ricercaLibri() {
     else {
         mostraLibri(elencoLibri);
     }
+}
+// funzione per mostrare la pagina, in popup, con le copie del libro che ho cliccato nella tabella
+function mostraCopieLibro(riga) {
+    var indiceRiga = riga.rowIndex - 1;
+    console.log(indiceRiga);
+    var titoloLibro = elencoLibri[indiceRiga].titolo;
+    window.open("html/popupGestoreCopie.html", "".concat(titoloLibro), "menubar=no");
 }
 //chiamata funzione a inizio pagina
 mostraElencoCompletoLibri();
