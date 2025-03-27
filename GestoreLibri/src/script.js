@@ -84,13 +84,13 @@ function mostraElencoCompletoLibri() {
 //funziona per mostrare a tabella un elenco di libri, passato come array di oggetti Libro
 function mostraLibri(elencoLibri) {
     //prelevo reference della tabella html
-    var corpoTabella = document.getElementById("corpoTabella"); //indico a TS di trattare l'HTMLElement prelevato come un tbody
+    var corpoTabella = document.getElementById("corpoTabellaLibri"); //indico a TS di trattare l'HTMLElement prelevato come un tbody
     //svuoto tabella
     corpoTabella.innerHTML = "";
     var _loop_1 = function (i) {
         var libro = elencoLibri[i];
         var riga = document.createElement("tr");
-        riga.innerHTML = "<td>".concat(libro.materia, "</td><td>").concat(libro.isbn, "</td><td>").concat(libro.autore, "</td><td>").concat(libro.titolo, "</td><td>").concat(libro.volume, "</td><td>").concat(libro.editore, "</td><td>").concat(libro.prezzo, "</td><td>").concat(libro.classe, "</td><td>").concat(libro.getNCopie(), "</td>");
+        riga.innerHTML = "<td>".concat(libro.materia, "</td><td>").concat(libro.isbn, "</td><td>").concat(libro.autore, "</td><td>").concat(libro.titolo, "</td><td>").concat(libro.volume, "</td><td>").concat(libro.editore, "</td><td>").concat(libro.prezzoListino, "</td><td>").concat(libro.classe, "</td><td>").concat(libro.getNCopie(), "</td>");
         // creo bottone per gestire le copie di ciascun libro (di ciascuna riga della tabella)
         var bottone = document.createElement("button");
         // aggiungo testo al bottone
@@ -136,10 +136,13 @@ function ricercaLibri() {
 }
 // funzione per mostrare la pagina, in popup, con le copie del libro che ho cliccato nella tabella
 function mostraCopieLibro(riga) {
+    // prelevo indice della riga del libro di cui voglio visualizzare le copie
     var indiceRiga = riga.rowIndex - 1;
-    console.log(indiceRiga);
-    var titoloLibro = elencoLibri[indiceRiga].titolo;
-    window.open("html/popupGestoreCopie.html", "".concat(titoloLibro), "menubar=no");
+    // apro finestra per visualizzare le copie
+    window.open("html/popupGestoreCopie.html", "_blank", "menubar=no");
+    var corpoTabellaCopie = document.getElementById("corpoTabellaCopie");
+    //svuoto tabella
+    corpoTabellaCopie.innerHTML = "";
 }
 //chiamata funzione a inizio pagina
 mostraElencoCompletoLibri();

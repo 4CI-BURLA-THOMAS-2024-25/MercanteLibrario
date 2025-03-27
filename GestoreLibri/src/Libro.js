@@ -51,10 +51,10 @@ var Libro = /** @class */ (function () {
         }
         //controllo prezzo 
         if (prezzo > 0.0) {
-            this.prezzo = prezzo;
+            this.prezzoListino = prezzo;
         }
         else {
-            this.prezzo = 0.0;
+            this.prezzoListino = 0.0;
         }
         //controllo classe
         if (classe != undefined) {
@@ -63,23 +63,19 @@ var Libro = /** @class */ (function () {
         else {
             this.classe = "-";
         }
-        //imposto copie del libro a zero
-        this.nCopie = 0;
+        // numero di copie associate al libro
+        this.nCopie = [];
     }
     // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa
     Libro.prototype.toString = function () {
         //preparo array degli attributi
-        var valoriAttributi = [this.materia, this.isbn, this.autore, this.titolo, this.volume, this.editore, this.prezzo, this.classe];
+        var valoriAttributi = [this.materia, this.isbn, this.autore, this.titolo, this.volume, this.editore, this.prezzoListino, this.classe];
         //"converto" gli elementi dell'array in stringhe
         return valoriAttributi.join(" ");
     };
-    //ottieni numero copie del libro
+    // numero di copie del libro
     Libro.prototype.getNCopie = function () {
-        return this.nCopie;
-    };
-    //metodo per aggiungere una nuova copia del libro
-    Libro.prototype.aggiungiCopia = function () {
-        this.nCopie++;
+        return this.nCopie.length;
     };
     return Libro;
 }());

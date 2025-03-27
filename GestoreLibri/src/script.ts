@@ -88,7 +88,7 @@ function mostraElencoCompletoLibri(): void{
 //funziona per mostrare a tabella un elenco di libri, passato come array di oggetti Libro
 function mostraLibri(elencoLibri: Libro[]): void{
     //prelevo reference della tabella html
-    const corpoTabella = document.getElementById("corpoTabella") as HTMLTableSectionElement; //indico a TS di trattare l'HTMLElement prelevato come un tbody
+    const corpoTabella = document.getElementById("corpoTabellaLibri") as HTMLTableSectionElement; //indico a TS di trattare l'HTMLElement prelevato come un tbody
 
     //svuoto tabella
     corpoTabella.innerHTML = "";
@@ -97,7 +97,7 @@ function mostraLibri(elencoLibri: Libro[]): void{
     for(let i = 0; i < elencoLibri.length; i++){
         const libro: Libro = elencoLibri[i];
         const riga: HTMLTableRowElement = document.createElement("tr");
-        riga.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzo}</td><td>${libro.classe}</td><td>${libro.getNCopie()}</td>`;
+        riga.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzoListino}</td><td>${libro.classe}</td><td>${libro.getNCopie()}</td>`;
         
         // creo bottone per gestire le copie di ciascun libro (di ciascuna riga della tabella)
         const bottone = document.createElement("button");
@@ -150,10 +150,15 @@ function ricercaLibri(): void{
 
 // funzione per mostrare la pagina, in popup, con le copie del libro che ho cliccato nella tabella
 function mostraCopieLibro(riga: HTMLTableRowElement): void{
+    // prelevo indice della riga del libro di cui voglio visualizzare le copie
     const indiceRiga = riga.rowIndex - 1;
-    console.log(indiceRiga);
-    const titoloLibro = elencoLibri[indiceRiga].titolo;
-    window.open("html/popupGestoreCopie.html", `${titoloLibro}`, "menubar=no");
+    // apro finestra per visualizzare le copie
+    window.open("html/popupGestoreCopie.html", "_blank", "menubar=no");
+
+    // prelevo reference del corpo dellaa tabella per visualizzare le singole copie del libro
+    const corpoTabellaCopie = document.getElementById("corpoTabellaCopie") as HTMLTableSectionElement;
+    //svuoto tabella
+    corpoTabellaCopie.innerHTML = "";
 }
 
 //chiamata funzione a inizio pagina
