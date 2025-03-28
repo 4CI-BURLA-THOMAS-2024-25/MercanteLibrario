@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Persona = void 0;
 //creo classe esportabile, così da essere importata e usata dalla classe "main"
 var Persona = /** @class */ (function () {
+    //private libriDati: Libro[];
     //costruttore
     function Persona(nome, cognome, email, nTelefonoString, matricolaStudente, classe) {
         //provo a convertire numero di telefono da stringa a numero effettivo
@@ -35,13 +36,6 @@ var Persona = /** @class */ (function () {
         else {
             this.nTelefono = 0;
         }
-        // controllo matricola dello studente
-        if (matricolaStudente != undefined) {
-            this.matricolaStudente = matricolaStudente;
-        }
-        else {
-            this.matricolaStudente = "-";
-        }
         // controllo classe a cui appartiene lo studente
         if (classe != undefined) {
             this.classe = classe;
@@ -52,7 +46,7 @@ var Persona = /** @class */ (function () {
         // soldi da dare alla persona in relazione al numero dei suoi libri che ho venduto
         this.soldiDaDare = 0;
         //elenco dei libri che la persona mi ha dato per la vendita
-        this.libriDati = [];
+        //this.libriDati = [];
     }
     return Persona;
 }());

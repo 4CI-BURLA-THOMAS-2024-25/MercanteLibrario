@@ -77,6 +77,10 @@ var Libro = /** @class */ (function () {
     Libro.prototype.getNCopie = function () {
         return this.nCopie.length;
     };
+    // array con le copie del libro
+    Libro.prototype.getCopieAsArray = function () {
+        return this.nCopie;
+    };
     return Libro;
 }());
 exports.Libro = Libro;

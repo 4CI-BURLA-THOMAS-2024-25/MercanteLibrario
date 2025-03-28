@@ -9,23 +9,14 @@
     </head>
 
     <body>
-        <h2>Aggiungi o rimuovi copia</h2>
+        <header id="intestazionePaginaCopie">
+            <h2>Aggiungi o rimuovi copia</h2>
 
-        <!-- tabella che mostra tutte le copie di questo libro -->
-        <table id="elencoLibri">
-            <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
-            <colgroup>
-                <col style="width: 15%;">
-                <col style="width: 8%;">
-                <col style="width: 15%;">
-                <col style="width: 44%;">
-                <col style="width: 1%;">
-                <col style="width: 10%;">
-                <col style="width: 1%;">
-                <col style="width: 5%;">
-            </colgroup>
-            
-            <!-- intestazione tabella -->
+            <button id="aggiungiCopia">Registra nuova copia di questo libro</button>
+        </header>
+
+        <!-- tabella ad una riga per mostrare le info del libro su cui si stanno gestendo le copie -->
+        <table id="infoLibro">
             <thead>
                 <tr>
                     <th>Materia</th>
@@ -36,7 +27,29 @@
                     <th>Editore</th>
                     <th>Prezzo</th>
                     <th>Classe</th>
-                    <th>Copie</th>
+                </tr>
+            </thead>
+
+            <tbody id="corpoInfoLibro"></tbody>
+        </table>
+
+        <br>
+
+        <!-- tabella che mostra tutte le copie di questo libro -->
+        <table id="elencoLibri">
+            <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 50%;">
+                <col style="width: 40%;">
+                <col style="width: 10%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>Codice univoco</th>
+                    <th>Venditore</th>
+                    <th>Prezzo scontato</th>
                 </tr>
             </thead>
 
@@ -44,6 +57,6 @@
             <tbody id="corpoTabellaCopie"></tbody>
         </table>
 
-        <script src="out/scriptUnico.js"></script>
+        <script src="../out/scriptUnico.js"></script>
     </body>
 </html>

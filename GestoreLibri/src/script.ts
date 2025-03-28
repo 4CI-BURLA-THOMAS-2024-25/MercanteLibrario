@@ -1,13 +1,15 @@
 //importo classe Libro nel "main"
+import { Copia } from "./Copia";
+// importo classe Copia nel "main"
 import { Libro } from "./Libro";
 
 //associo listener alla casella di ricerca,se non è null ed è definita
 const casellaRicerca = document.getElementById("casellaRicerca") as HTMLInputElement;
 casellaRicerca?.addEventListener("keydown", ricercaLibri);
 
-//associo listener alla tabella del menù principale (index), se non è null ed è definita
-// const tabellaElencoCompleto = document.getElementById("elencoLibri");
-// tabellaElencoCompleto?.addEventListener("click", mostraCopieLibro);
+//associo funzione al bottone per registrare una nuova copia del libro
+const bottoneAggiungiCopie = document.getElementById("aggiungiCopia") as HTMLButtonElement;
+//bottoneAggiungiCopie.addEventListener("click", registraNuovaCopia());
 
 //creo array di oggetti libro
 const elencoLibri: Libro[] = [];
@@ -154,12 +156,45 @@ function mostraCopieLibro(riga: HTMLTableRowElement): void{
     const indiceRiga = riga.rowIndex - 1;
     // apro finestra per visualizzare le copie
     window.open("html/popupGestoreCopie.html", "_blank", "menubar=no");
+    
+    //prelevo reference del libro con cui sto operando
+    const libro: Libro = elencoLibri[indiceRiga];
 
-    // prelevo reference del corpo dellaa tabella per visualizzare le singole copie del libro
+    //prelevo reference del corpo della tabella (ad una riga) che utilizzo per mostrare le info del libro di cui sto gestendo le copie
+    const corpoInfoLibro = document.getElementById("corpoInfoLibro") as HTMLTableSectionElement;
+    //svuoto tabella
+    corpoInfoLibro.innerHTML = "";
+    //creo riga con le info del libro
+    const rigaInfoLibro: HTMLTableRowElement = document.createElement("tr");
+    //inserisco info del libro in analisi nella riga creata
+    rigaInfoLibro.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzoListino}</td><td>${libro.classe}</td>`;
+    //inserisco riga con le info del libro nella tabella a singola riga
+    corpoInfoLibro.appendChild(rigaInfoLibro);
+
+    // prelevo reference del corpo della tabella per visualizzare le singole copie del libro
     const corpoTabellaCopie = document.getElementById("corpoTabellaCopie") as HTMLTableSectionElement;
     //svuoto tabella
     corpoTabellaCopie.innerHTML = "";
+
+    //prelevo elenco di copie del libro
+    const copieLibro: Copia[] = libro.getCopieAsArray();
+
+    //itero e visualizzo ogni copia del libro
+    for(let i = 0; i < libro.getNCopie(); i++){
+        let copiaDelLibro: Copia = copieLibro[i];
+
+        //creo riga nella tabella
+        const riga: HTMLTableRowElement = document.createElement("tr");
+        riga.innerHTML = `<td>${copiaDelLibro.codiceUnivoco}</td><td>${copiaDelLibro.venditore}</td><td>${copiaDelLibro.scontoPrezzoListino}</td>`;
+        // inserisco riga nel corpo della tabella
+        corpoTabellaCopie.appendChild(riga);
+    }
 }
+
+// funzione per registrare una nuova copia di un determinato libro
+// function registraNuovaCopia(): void{
+
+// }
 
 //chiamata funzione a inizio pagina
 mostraElencoCompletoLibri();

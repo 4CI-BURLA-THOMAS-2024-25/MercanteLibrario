@@ -8,10 +8,9 @@ export class Persona{
     readonly cognome: string;
     readonly email: string;
     readonly nTelefono: number;
-    readonly matricolaStudente: string;
     readonly classe: string;
     private soldiDaDare: number;
-    private libriDati: Libro[];
+    //private libriDati: Libro[];
 
     //costruttore
     constructor(nome: string, cognome: string, email: string, nTelefonoString: string, matricolaStudente: string, classe: string){
@@ -46,13 +45,6 @@ export class Persona{
             this.nTelefono = 0;
         }
 
-        // controllo matricola dello studente
-        if(matricolaStudente != undefined){
-            this.matricolaStudente = matricolaStudente;
-        }else{
-            this.matricolaStudente = "-";
-        }
-
         // controllo classe a cui appartiene lo studente
         if(classe != undefined){
             this.classe = classe;
@@ -64,7 +56,7 @@ export class Persona{
         this.soldiDaDare = 0;
 
         //elenco dei libri che la persona mi ha dato per la vendita
-        this.libriDati = [];
+        //this.libriDati = [];
     }
 
     

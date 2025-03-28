@@ -28,3 +28,10 @@ th, td {
 /* html {
     background-color:greenyellow;
 } */
+
+.intestazionePaginaCopie {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /*spinge gli elementi ai lati */
+    align-items: center; /*allinea verticalmente */
+}

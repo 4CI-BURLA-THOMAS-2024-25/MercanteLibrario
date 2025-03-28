@@ -92,4 +92,9 @@ export class Libro{
     getNCopie(): number{
         return this.nCopie.length;
     }
+
+    // array con le copie del libro
+    getCopieAsArray(): Copia[]{
+        return this.nCopie;
+    }
 }
