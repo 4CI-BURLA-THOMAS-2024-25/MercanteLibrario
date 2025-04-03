@@ -1,8 +1,21 @@
+/* importo font di h1 da Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=New+Rocker&display=swap');
+
+/* importo font di h2 da Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Macondo&display=swap');
+
+
 h1 {
     color:darkorange;
-    font-family: fantasy;
+    font-family: 'New Rocker';
     text-align: center;
     font-size: 100px;
+}
+
+h2 {
+    color:fuchsia;
+    font-family: 'Macondo';
+    font-size: 50px;
 }
 
 table {
@@ -29,9 +42,40 @@ th, td {
     background-color:greenyellow;
 } */
 
-.intestazionePaginaCopie {
+#intestazionePaginaCopie {
     width: 100%;
     display: flex;
     justify-content: space-between; /*spinge gli elementi ai lati */
     align-items: center; /*allinea verticalmente */
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.contenutoPopup {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    width: 300px;
+    text-align: center;
+}
+
+/*bottone di chiusura del popup */
+#chiudi {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 25px;
+    cursor: pointer;
 }

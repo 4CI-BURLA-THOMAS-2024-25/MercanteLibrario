@@ -15,6 +15,23 @@
             <button id="aggiungiCopia">Registra nuova copia di questo libro</button>
         </header>
 
+        <!-- popup per inserire copie del libro -->
+        <div id="popupRegistraCopia" class="popup">
+            <div class="contenutoPopup">
+                <h2>Inserisci i tuoi dati</h2>
+                <form>
+                    <label for="name">Nome:</label>
+                    <input type="text" id="name" name="name" required><br>
+                    
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required><br>
+                    
+                    <button type="submit">Invia</button>
+                    <button type="button" id="chiudiPopup">Annulla</button>
+                </form>
+            </div>
+        </div>
+
         <!-- tabella ad una riga per mostrare le info del libro su cui si stanno gestendo le copie -->
         <table id="infoLibro">
             <thead>
@@ -53,10 +70,10 @@
                 </tr>
             </thead>
 
-            <!-- corpo tabella -->
+            <!-- corpo tabella -->  
             <tbody id="corpoTabellaCopie"></tbody>
         </table>
 
-        <script src="../out/scriptUnico.js"></script>
+        <script src="../out/scriptGestoreUnico.js"></script>
     </body>
 </html>
