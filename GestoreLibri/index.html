@@ -6,6 +6,27 @@
         <title>Mercante librario</title>
         <link rel="icon" type="image/png" href="img\favicon.png">
         <link rel="stylesheet" href="style.css"/>
+        <script defer>
+            const ws = new WebSocket('ws://localhost:8080'); // URL del server WebSocket
+    
+            ws.onmessage = (event) => {
+                console.log('Messaggio ricevuto dal server:', event.data);
+                document.getElementById('log').innerText += `\n${event.data}`;
+            };
+    
+            ws.onerror = (error) => {
+                console.error('Errore WebSocket:', error);
+            };
+    
+            function sendMessage(message) {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(message);
+                    console.log(`Messaggio inviato: ${message}`);
+                } else {
+                    console.log('Connessione non aperta.');
+                }
+            }
+        </script>
     </head>
 
     <body>
@@ -47,5 +68,6 @@
         </table>
         
         <script src="out/scriptUnico.js"></script>
+        <script src="out/serverBooter.js"></script>
     </body>
 </html>
