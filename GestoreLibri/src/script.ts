@@ -152,7 +152,6 @@ function mostraCopieLibro(riga: HTMLTableRowElement): void{
     
     //prelevo reference del libro con cui sto operando
     const libro: Libro = elencoLibri[indiceRiga];
-console.log(libro);
 
     // attendo che la nuova finestra si carichi e poi passo oggetto libro
     if(paginaGestoreCopie){  

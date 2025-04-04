@@ -139,7 +139,6 @@ function mostraCopieLibro(riga) {
     var paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", "menubar=no");
     //prelevo reference del libro con cui sto operando
     var libro = elencoLibri[indiceRiga];
-    console.log(libro);
     // attendo che la nuova finestra si carichi e poi passo oggetto libro
     if (paginaGestoreCopie) {
         window.setTimeout(function () {

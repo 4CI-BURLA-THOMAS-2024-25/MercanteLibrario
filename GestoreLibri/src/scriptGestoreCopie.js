@@ -13,6 +13,7 @@ function isLibro(obj) {
 }
 function caricaCopieLibro(evento) {
     var libro = evento.data;
+    console.log(libro);
     // controllo se l'evento contiene dati ed è di tipo libro
     if (isLibro(libro)) {
         //prelevo reference del corpo della tabella (ad una riga) che utilizzo per mostrare le info del libro di cui sto gestendo le copie
@@ -30,7 +31,7 @@ function caricaCopieLibro(evento) {
         //svuoto tabella
         corpoTabellaCopie.innerHTML = "";
         //prelevo elenco di copie del libro
-        var copieLibro = libro.getCopieAsArray();
+        var copieLibro = []; //libro.getCopieAsArray();
         //itero e visualizzo ogni copia del libro
         for (var i = 0; i < libro.getNCopie(); i++) {
             var copiaDelLibro = copieLibro[i];

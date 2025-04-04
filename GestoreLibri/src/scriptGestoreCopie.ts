@@ -20,6 +20,8 @@ function isLibro(obj: any): obj is Libro {
 function caricaCopieLibro(evento: MessageEvent): void{
     const libro = evento.data;
 
+    
+console.log(libro);
     // controllo se l'evento contiene dati ed è di tipo libro
     if(isLibro(libro)){
         //prelevo reference del corpo della tabella (ad una riga) che utilizzo per mostrare le info del libro di cui sto gestendo le copie
