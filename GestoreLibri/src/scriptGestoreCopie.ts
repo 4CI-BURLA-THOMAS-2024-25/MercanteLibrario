@@ -17,7 +17,7 @@ const popupAggiungiCopie = document.getElementById("popupRegistraCopia");
 const bottoneChiudiPopup = document.getElementById("chiudiPopup");
 bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneCopia);
 
-function caricaCopieLibro(evento: MessageEvent){
+function caricaCopieLibro(evento: MessageEvent): void{
     // controllo se l'evento contiene dati ed è di tipo libro
     if((typeof evento.data === "object") && ("materia" in evento.data) && ("isbn" in evento.data) && ("autore" in evento.data) && ("titolo" in evento.data) && (("volume" in evento.data)) && ("editore" in evento.data) && ("prezzoListino" in evento.data) && ("classe" in evento.data) && ("nCopie" in evento.data)){
         const libro: Libro = evento.data;

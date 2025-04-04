@@ -14,6 +14,7 @@ function caricaCopieLibro(evento) {
     // controllo se l'evento contiene dati ed è di tipo libro
     if ((typeof evento.data === "object") && ("materia" in evento.data) && ("isbn" in evento.data) && ("autore" in evento.data) && ("titolo" in evento.data) && (("volume" in evento.data)) && ("editore" in evento.data) && ("prezzoListino" in evento.data) && ("classe" in evento.data) && ("nCopie" in evento.data)) {
         var libro = evento.data;
+        console.log(libro);
         //prelevo reference del corpo della tabella (ad una riga) che utilizzo per mostrare le info del libro di cui sto gestendo le copie
         var corpoInfoLibro = document.getElementById("corpoInfoLibro");
         //svuoto tabella

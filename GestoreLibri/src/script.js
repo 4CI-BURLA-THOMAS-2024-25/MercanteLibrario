@@ -142,10 +142,12 @@ function mostraCopieLibro(riga) {
     //prelevo reference del libro con cui sto operando
     var libro = elencoLibri[indiceRiga];
     // attendo che la nuova finestra si carichi e poi passo oggetto libro
-    window.setTimeout(function () {
-        // passo oggetto alla nuovba finestra
-        paginaGestoreCopie === null || paginaGestoreCopie === void 0 ? void 0 : paginaGestoreCopie.postMessage(libro, "*");
-    }, 1000);
+    if (paginaGestoreCopie != null) {
+        window.setTimeout(function () {
+            // passo oggetto alla nuovba finestra
+            paginaGestoreCopie.postMessage(libro, "*");
+        }, 1000);
+    }
 }
 document.addEventListener("DOMContentLoaded", function () {
     //chiamata funzione a inizio pagina
