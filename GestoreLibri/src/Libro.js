@@ -64,7 +64,7 @@ var Libro = /** @class */ (function () {
             this.classe = "-";
         }
         // numero di copie associate al libro
-        this.nCopie = [];
+        this.copie = [];
     }
     // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa
     Libro.prototype.toString = function () {
@@ -75,11 +75,11 @@ var Libro = /** @class */ (function () {
     };
     // numero di copie del libro
     Libro.prototype.getNCopie = function () {
-        return this.nCopie.length;
+        return this.copie.length;
     };
     // array con le copie del libro
     Libro.prototype.getCopieAsArray = function () {
-        return this.nCopie;
+        return this.copie;
     };
     return Libro;
 }());

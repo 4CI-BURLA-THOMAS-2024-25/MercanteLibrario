@@ -3,13 +3,9 @@ import { Copia } from "./Copia";
 // importo classe Copia nel "main"
 import { Libro } from "./Libro";
 
-//ascolto messaggi inviati alla finestra
-window.addEventListener("message", (evento) => caricaCopieLibro);
-
 //associo funzione al bottone per registrare una nuova copia del libro
 const bottoneAggiungiCopie = document.getElementById("aggiungiCopia") as HTMLButtonElement;
 bottoneAggiungiCopie?.addEventListener("click", registraNuovaCopia);
-
 
 //prelevo reference del popup per aggiungere nuove copie
 const popupAggiungiCopie = document.getElementById("popupRegistraCopia");
@@ -17,13 +13,15 @@ const popupAggiungiCopie = document.getElementById("popupRegistraCopia");
 const bottoneChiudiPopup = document.getElementById("chiudiPopup");
 bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneCopia);
 
+function isLibro(obj: any): obj is Libro {
+    return obj && typeof obj.materia === 'string' && typeof obj.isbn === 'number' && typeof obj.autore === 'string' && typeof obj.titolo === 'string' && typeof obj.volume === 'string' && typeof obj.editore === 'string' && typeof obj.prezzoListino === 'number' && typeof obj.classe === 'string';
+}
+
 function caricaCopieLibro(evento: MessageEvent): void{
+    const libro = evento.data;
+
     // controllo se l'evento contiene dati ed è di tipo libro
-    if((typeof evento.data === "object") && ("materia" in evento.data) && ("isbn" in evento.data) && ("autore" in evento.data) && ("titolo" in evento.data) && (("volume" in evento.data)) && ("editore" in evento.data) && ("prezzoListino" in evento.data) && ("classe" in evento.data) && ("nCopie" in evento.data)){
-        const libro: Libro = evento.data;
-
-        console.log(libro);
-
+    if(isLibro(libro)){
         //prelevo reference del corpo della tabella (ad una riga) che utilizzo per mostrare le info del libro di cui sto gestendo le copie
         const corpoInfoLibro = document.getElementById("corpoInfoLibro") as HTMLTableSectionElement;
         //svuoto tabella
@@ -40,7 +38,6 @@ function caricaCopieLibro(evento: MessageEvent): void{
         const corpoTabellaCopie = document.getElementById("corpoTabellaCopie") as HTMLTableSectionElement;
         //svuoto tabella
         corpoTabellaCopie.innerHTML = "";
-        console.log(corpoTabellaCopie);
 
         //prelevo elenco di copie del libro
         const copieLibro: Copia[] = libro.getCopieAsArray();
@@ -63,6 +60,8 @@ function registraNuovaCopia(): void{
     if(popupAggiungiCopie != null){
         //quando clicco il bottone per registrare una nuova copia, apro il form
         popupAggiungiCopie.style.display = "flex";
+
+
     }
 }
 
@@ -72,3 +71,9 @@ function chiudiRegistrazioneCopia(): void{
         popupAggiungiCopie.style.display = "none";
     }
 }
+
+// registro ascoltatore quando la pagina è pronta
+window.addEventListener("DOMContentLoaded", () => {
+    //ascolto messaggi inviati alla finestra
+    window.addEventListener("message", (evento) => caricaCopieLibro(evento));
+});

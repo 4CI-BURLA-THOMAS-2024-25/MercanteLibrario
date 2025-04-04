@@ -147,16 +147,15 @@ function mostraCopieLibro(riga: HTMLTableRowElement): void{
     // prelevo indice della riga del libro di cui voglio visualizzare le copie
     const indiceRiga = riga.rowIndex - 1;
 
-    //salvo oggetto libro da passare alla pagine popup
-    sessionStorage.setItem("libro", elencoLibri[indiceRiga].toString());
     // apro finestra per visualizzare le copie
-    let paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", "menubar=no"); 
+    const paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", "menubar=no"); 
     
     //prelevo reference del libro con cui sto operando
     const libro: Libro = elencoLibri[indiceRiga];
+console.log(libro);
 
     // attendo che la nuova finestra si carichi e poi passo oggetto libro
-    if(paginaGestoreCopie != null){  
+    if(paginaGestoreCopie){  
         window.setTimeout(() => {
             // passo oggetto alla nuovba finestra
             paginaGestoreCopie.postMessage(libro, "*");

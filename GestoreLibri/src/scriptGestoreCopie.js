@@ -1,7 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-//ascolto messaggi inviati alla finestra
-window.addEventListener("message", function (evento) { return caricaCopieLibro; });
 //associo funzione al bottone per registrare una nuova copia del libro
 var bottoneAggiungiCopie = document.getElementById("aggiungiCopia");
 bottoneAggiungiCopie === null || bottoneAggiungiCopie === void 0 ? void 0 : bottoneAggiungiCopie.addEventListener("click", registraNuovaCopia);
@@ -10,11 +8,13 @@ var popupAggiungiCopie = document.getElementById("popupRegistraCopia");
 //prelevo reference del bottone per chiudere il popup e vi associo funzione per chiuderlo
 var bottoneChiudiPopup = document.getElementById("chiudiPopup");
 bottoneChiudiPopup === null || bottoneChiudiPopup === void 0 ? void 0 : bottoneChiudiPopup.addEventListener("click", chiudiRegistrazioneCopia);
+function isLibro(obj) {
+    return obj && typeof obj.materia === 'string' && typeof obj.isbn === 'number' && typeof obj.autore === 'string' && typeof obj.titolo === 'string' && typeof obj.volume === 'string' && typeof obj.editore === 'string' && typeof obj.prezzoListino === 'number' && typeof obj.classe === 'string';
+}
 function caricaCopieLibro(evento) {
+    var libro = evento.data;
     // controllo se l'evento contiene dati ed è di tipo libro
-    if ((typeof evento.data === "object") && ("materia" in evento.data) && ("isbn" in evento.data) && ("autore" in evento.data) && ("titolo" in evento.data) && (("volume" in evento.data)) && ("editore" in evento.data) && ("prezzoListino" in evento.data) && ("classe" in evento.data) && ("nCopie" in evento.data)) {
-        var libro = evento.data;
-        console.log(libro);
+    if (isLibro(libro)) {
         //prelevo reference del corpo della tabella (ad una riga) che utilizzo per mostrare le info del libro di cui sto gestendo le copie
         var corpoInfoLibro = document.getElementById("corpoInfoLibro");
         //svuoto tabella
@@ -29,7 +29,6 @@ function caricaCopieLibro(evento) {
         var corpoTabellaCopie = document.getElementById("corpoTabellaCopie");
         //svuoto tabella
         corpoTabellaCopie.innerHTML = "";
-        console.log(corpoTabellaCopie);
         //prelevo elenco di copie del libro
         var copieLibro = libro.getCopieAsArray();
         //itero e visualizzo ogni copia del libro
@@ -56,3 +55,8 @@ function chiudiRegistrazioneCopia() {
         popupAggiungiCopie.style.display = "none";
     }
 }
+// registro ascoltatore quando la pagina è pronta
+window.addEventListener("DOMContentLoaded", function () {
+    //ascolto messaggi inviati alla finestra
+    window.addEventListener("message", function (evento) { return caricaCopieLibro(evento); });
+});
