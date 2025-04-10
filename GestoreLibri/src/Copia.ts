@@ -1,13 +1,13 @@
 import { Libro } from "./Libro";
-import { Persona } from "./Persona";
+import { Venditore } from "./Venditore";
 
 export class Copia{
     readonly libroDellaCopia: Libro;
     readonly scontoPrezzoListino: number;
     readonly codiceUnivoco: number;
-    readonly venditore: Persona;
+    readonly venditore: Venditore;
 
-    constructor(libroDellaCopia: Libro,scontoPrezzoListino: number, codiceUnivoco: number, venditore: Persona){
+    constructor(libroDellaCopia: Libro,scontoPrezzoListino: number, codiceUnivoco: number, venditore: Venditore){
         //libro a cui è associata la copia
         this.libroDellaCopia = libroDellaCopia;
 

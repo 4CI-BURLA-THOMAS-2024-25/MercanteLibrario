@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gestisci venditori</title>
+        <link rel="icon" type="image/png" href="..\img\favicon.png">
+        <link rel="stylesheet" href="../style.css"/>
+    </head>
+
+    <body>
+        <header id="intestazionePaginaVenditori">
+            <h2>Venditori</h2>
+
+            <button id="aggiungiVenditore">Registra nuovo venditore</button>
+        </header>
+
+        <!-- tabella che mostra tutte le copie di questo libro -->
+        <table id="elencoVenditori">
+            <!-- dimensioni delle colonne della tabella; proporzionate alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 14%;">
+                <col style="width: 14%;">
+                <col style="width: 14%;">
+                <col style="width: 14%;">
+                <col style="width: 14%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Email</th>
+                    <th>Telefono</th>
+                    <th>Classe</th>
+                    <th>€ dovuti</th>
+                    <th>Copie fornite</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->  
+            <tbody id="corpoTabellaCopie"></tbody>
+        </table>
+
+        <script src="../out/scriptGestoreVenditoriUnico.js" defer></script>
+    </body>
+</html>

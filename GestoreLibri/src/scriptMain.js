@@ -135,8 +135,11 @@ function ricercaLibri() {
 function mostraCopieLibro(riga) {
     // prelevo indice della riga del libro di cui voglio visualizzare le copie
     var indiceRiga = riga.rowIndex - 1;
+    //prelevo dimensioni schermo
+    var altezza = screen.height;
+    var larghezza = screen.width;
     // apro finestra per visualizzare le copie
-    var paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", "menubar=no");
+    var paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", "menubar=no\", height=".concat(altezza, ", width=").concat(larghezza, ", top=0, left=0"));
     //prelevo reference del libro con cui sto operando
     var libro = elencoLibri[indiceRiga];
     // attendo che la nuova finestra si carichi e poi passo oggetto libro

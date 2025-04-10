@@ -147,8 +147,11 @@ function mostraCopieLibro(riga: HTMLTableRowElement): void{
     // prelevo indice della riga del libro di cui voglio visualizzare le copie
     const indiceRiga = riga.rowIndex - 1;
 
+    //prelevo dimensioni schermo
+    const altezza = screen.height;
+    const larghezza = screen.width;
     // apro finestra per visualizzare le copie
-    const paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", "menubar=no"); 
+    const paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`); 
     
     //prelevo reference del libro con cui sto operando
     const libro: Libro = elencoLibri[indiceRiga];

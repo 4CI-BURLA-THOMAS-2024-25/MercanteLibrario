@@ -17,17 +17,31 @@
 
         <!-- popup per inserire copie del libro -->
         <div id="popupRegistraCopia" class="popup">
+
+            <!-- contenuto del popup -->
             <div class="contenutoPopup">
-                <h2>Inserisci i tuoi dati</h2>
+                <h2>Registra nuova copia</h2>
+
                 <form>
-                    <label for="name">Nome:</label>
-                    <input type="text" id="name" name="name" required><br>
+                    <!-- prezzo copia -->
+                    <label for="selezionaSconto" class="testoLabelPopup">% del prezzo di vendita (in euro) rispetto al prezzo di listino:</label><br>
+                    <select name="sconto" id="selezionaSconto" class="testoInputPopup" required>
+                        <option value="default">--Scegli % del prezzo--</option>
+                        <option value="80%">80%</option>
+                        <option value="70%">70%</option>
+                        <option value="60%">60%</option>
+                    </select><br><br><br>
+
+                    <!-- venditore da scegliere dalla rubrica -->
+                    <label for="venditore" class="testoLabelPopup">Venditore:</label><br>
+                    <input type="text" class="testoInputPopup" disabled required><br><br>
+                    <button type="button" id="scegliVenditore" class="bottoniPopup">Scegli venditore dalla rubrica o aggiungilo</button>
+
                     
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required><br>
+                    <br><br>
                     
-                    <button type="submit">Invia</button>
-                    <button type="button" id="chiudiPopup">Annulla</button>
+                    <button type="submit" id="registraCopiaVenditore" class="bottoniPopup">Invia</button>
+                    <button type="button" id="chiudiPopup" class="bottoniPopup">Annulla</button>
                 </form>
             </div>
         </div>
@@ -53,7 +67,7 @@
         <br>
 
         <!-- tabella che mostra tutte le copie di questo libro -->
-        <table id="elencoLibri">
+        <table id="elencoCopie">
             <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
             <colgroup>
                 <col style="width: 50%;">
@@ -74,6 +88,6 @@
             <tbody id="corpoTabellaCopie"></tbody>
         </table>
 
-        <script src="../out/scriptGestoreUnico.js" defer></script>
+        <script src="../out/scriptGestoreCopieUnico.js" defer></script>
     </body>
 </html>

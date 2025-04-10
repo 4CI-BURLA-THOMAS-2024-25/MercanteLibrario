@@ -3,9 +3,9 @@ const path = require('path');
 module.exports = {
     mode: "production",
   entry: {
-    scriptMain: './src/script.ts',  // script principale
-    scriptGestoreUnico: './src/scriptGestoreCopie.ts' //script pagina popup del gestore copie
-    
+    scriptMainUnico: './src/scriptMain.ts',  // script principale
+    scriptGestoreCopieUnico: './src/scriptGestoreCopie.ts', //script pagina popup del gestore copie
+    scriptGestoreVenditoriUnico: './src/scriptGestoreVenditori.ts'
   },
   output: {
     filename: '[name].js', // nome basato sul file di output
