@@ -58,4 +58,8 @@ export class Venditore{
         //elenco dei libri che la persona mi ha dato per la vendita
         this.copieDate = [];
     }
+
+    addCopia(copia: Copia): void{
+        
+    }
 }
