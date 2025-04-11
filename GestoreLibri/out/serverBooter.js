@@ -47,4 +47,3 @@ wss.on('connection', (ws) => {
     });
 });
 console.log('Server WebSocket avviato su ws://localhost:8080');
-
