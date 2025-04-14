@@ -6,7 +6,7 @@ const filePath = './prova.txt'; // Assicurati di avere un file chiamato 'prova.t
 
 // Crea un server WebSocket sulla porta 8080
 const wss = new WebSocket.Server({ port: 8080 });
-
+let istruzioneprecedente;
 let condizione = false;
 let istruzione = "";
 wss.on('connection', (ws) => {
