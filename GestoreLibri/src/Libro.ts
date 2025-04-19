@@ -3,8 +3,8 @@ import { Copia } from "./Copia";
 //creo classe esportabile, così da essere importata e usata dalla classe "main"
 export class Libro{
     //creo attributi costanti
-    readonly materia: string;
     readonly isbn: number;
+    readonly materia: string;
     readonly autore: string;
     readonly titolo: string;
     readonly volume: string;

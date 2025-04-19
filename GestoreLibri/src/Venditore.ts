@@ -67,7 +67,23 @@ export class Venditore{
         this.copieDate = [];
     }
 
+    addSoldiDaDare(soldi: number): void{
+        if(soldi > 0){
+            this.soldiDaDare += soldi;
+        }
+    }
+
+    getSoldiDaDare(): number{
+        return this.soldiDaDare;
+    }
+
     addCopia(copia: Copia): void{
-        
+        if(copia != undefined){
+            this.copieDate.push(copia);
+        }
+    }
+
+    getCopie(): Copia[]{
+        return this.copieDate;
     }
 }

@@ -8,6 +8,9 @@ casellaRicerca?.addEventListener("keydown", ricercaLibri);
 //creo array di oggetti libro
 const elencoLibri: Libro[] = [];
 
+//reference del database
+let database: IDBDatabase;
+
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -28,6 +31,23 @@ function apriDatabase(): Promise<IDBDatabase>{
         //database aggiornato o creato per la prima volta
         richiestaDB.onupgradeneeded = () => {
             const database = richiestaDB.result;
+
+            //controllo che non esista già una tabella con questo nome
+            if(!database.objectStoreNames.contains("Libri")){
+                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                const tabellaLibri = database.createObjectStore("Libri", {
+                    keyPath: "isbn",
+                });
+
+                tabellaLibri.createIndex("materia", "materia", {unique: false});
+                tabellaLibri.createIndex("autore", "autore", {unique: false});
+                tabellaLibri.createIndex("titolo", "titolo", {unique: false});
+                tabellaLibri.createIndex("volume", "volume", {unique: false});
+                tabellaLibri.createIndex("editore", "editore", {unique: false});
+                tabellaLibri.createIndex("prezzoListino", "prezzoListino", {unique: false});
+                tabellaLibri.createIndex("classe", "classe", {unique: false});
+                tabellaLibri.createIndex("copie", "copie", {unique: false});
+            }
 
             //controllo che non esista già una tabella con questo nome
             if(!database.objectStoreNames.contains("Copie")){
@@ -130,6 +150,26 @@ function mostraElencoCompletoLibri(): void{
     elencoLibri[i++] = new Libro("TELECOMUNICAZIONI", "9788808834997", "BERTAZIOLI ONELIO", "CORSO DI TELECOMUNICAZIONI - VOL 3 + RISORSE SCUOLABOOK PER TELECOM. RETI, SIST. E APP. TELECOMUNICAZIONI DIGITALI DI N. GENERAZIONE", "3", "ZANICHELLI EDITORE", "44,6", "5");
     elencoLibri[i++] = new Libro("TELECOMUNICAZIONI", "9788823357037", "AMBROSINI ENRICO, PERLASCA IPPOLITO, MAINI PIERPAOLO", "TELECOMUNICAZIONI - LIBRO MISTO CON HUB LIBRO YOUNG  VOL. + HUB YOUNG + HUB KIT", "U", "TRAMONTANA", "36,5", "4");
 
+    //apro transazione di lettura/scrittura
+    const transazione = database.transaction('Libri', 'readwrite');
+    //prelevo reference tabella
+    const tabellaLibri = transazione.objectStore('Libri');
+
+    //aggiungo ogni libro dell'array al database
+    elencoLibri.forEach(libro => {
+        tabellaLibri.add(libro);
+    });
+
+    // transazione completata
+    transazione.oncomplete = function () {
+        console.log('Tutti i libri sono stati aggiunti');
+    };
+
+    // errore  nella transazione
+    transazione.onerror = function (event) {
+        console.error('Errore nella transazione');
+    };
+
     // chiamo funzione per mostrare l'array di libri
     mostraLibri(elencoLibri);
 }
@@ -153,7 +193,7 @@ function mostraLibri(elencoLibri: Libro[]): void{
         // aggiungo testo al bottone
         bottone.textContent = "Gestisci copie";
         // associo ascoltatore e passo riga
-        bottone.addEventListener("click", () => mostraCopieLibro(riga));
+        bottone.addEventListener("click", () => mostraCopieLibro(libro.isbn));
 
         // aggiungo cella alla riga
         const cella = riga.insertCell();
@@ -196,31 +236,37 @@ function ricercaLibri(): void{
 }
 
 // funzione per mostrare la pagina, in popup, con le copie del libro che ho cliccato nella tabella
-function mostraCopieLibro(riga: HTMLTableRowElement): void{
-    // prelevo indice della riga del libro di cui voglio visualizzare le copie
-    const indiceRiga = riga.rowIndex - 1;
-
+function mostraCopieLibro(isbnLibro: number): void{
     //prelevo dimensioni schermo
     const altezza = screen.height;
     const larghezza = screen.width;
-    // apro finestra per visualizzare le copie
-    const paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`); 
-    
-    //prelevo reference del libro con cui sto operando
-    const libro: Libro = elencoLibri[indiceRiga];
 
-    // attendo che la nuova finestra si carichi e poi passo oggetto libro
-    if(paginaGestoreCopie){  
-        window.setTimeout(() => {
-            // passo oggetto alla nuovba finestra
-            paginaGestoreCopie.postMessage(libro, "*");
-        }, 1000);
+    //preparo transazione per leggere dal database
+    const transazione = database.transaction("Libri", "readonly");
+    //prelevo reference tabella libri del database
+    const tabellaLibri = transazione.objectStore("Libri");
+
+    //prelevo libro in base alla sua chiave primaria
+    const richiestaPrelieloLibro = tabellaLibri.get(isbnLibro);
+
+    //se la richiesta va a buon fine, apro pagina delle copie del libro
+    richiestaPrelieloLibro.onsuccess = () => {
+        // apro finestra per visualizzare le copie
+        const paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`); 
+
+        // attendo che la nuova finestra si carichi e poi passo oggetto libro
+        if(paginaGestoreCopie){  
+            window.setTimeout(() => {
+                // passo oggetto alla nuovba finestra
+                paginaGestoreCopie.postMessage(richiestaPrelieloLibro, "*");
+            }, 1000);
+        }
     }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
     try {
-        const database = await apriDatabase();
+        database = await apriDatabase();
         console.log("Database aperto:", database.name);
         
         //carica elenco libri
