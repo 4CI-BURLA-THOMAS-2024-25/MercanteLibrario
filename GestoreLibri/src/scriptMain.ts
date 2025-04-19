@@ -8,6 +8,59 @@ casellaRicerca?.addEventListener("keydown", ricercaLibri);
 //creo array di oggetti libro
 const elencoLibri: Libro[] = [];
 
+// funzione per aprire il database
+function apriDatabase(): Promise<IDBDatabase>{
+    let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
+        const richiestaDB = indexedDB.open("Database", 1);
+
+        //cosa fare in caso di errore
+        richiestaDB.onerror = () => {
+            // restituisco motivo errore
+            reject(richiestaDB.onerror);
+        }
+
+        // richiesta accolta
+        richiestaDB.onsuccess = () => {
+            const database = richiestaDB.result;
+            resolve(database);
+        }
+
+        //database aggiornato o creato per la prima volta
+        richiestaDB.onupgradeneeded = () => {
+            const database = richiestaDB.result;
+
+            //controllo che non esista già una tabella con questo nome
+            if(!database.objectStoreNames.contains("Copie")){
+                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                const tabellaCopie = database.createObjectStore("Copie", {
+                    keyPath: "codiceUnivoco",
+                });
+
+                tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
+                tabellaCopie.createIndex("venditore", "venditore", {unique: false});
+            }
+
+            //controllo che non esista già una tabella con questo nome
+            if(!database.objectStoreNames.contains("Venditori")){
+                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                const tabellaVenditori = database.createObjectStore("Venditori", {
+                    keyPath: "codFiscale",
+                });
+
+                tabellaVenditori.createIndex("nome", "nome", {unique: false});
+                tabellaVenditori.createIndex("cognome", "cognome", {unique: false});
+                tabellaVenditori.createIndex("email", "email", {unique: false});
+                tabellaVenditori.createIndex("nTelefono", "nTelefono", {unique: true});
+                tabellaVenditori.createIndex("classe", "classe", {unique: false});
+                tabellaVenditori.createIndex("soldiDaDare", "soldiDaDare", {unique: false});
+                tabellaVenditori.createIndex("copieDate", "copieDate", {unique: false});
+            }
+        }
+    });
+
+    return out;
+}
+
 //funzione per creare array con elenco completo libri
 function mostraElencoCompletoLibri(): void{
     //contatore
@@ -165,7 +218,14 @@ function mostraCopieLibro(riga: HTMLTableRowElement): void{
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    //chiamata funzione a inizio pagina
-    mostraElencoCompletoLibri();
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const database = await apriDatabase();
+        console.log("Database aperto:", database.name);
+        
+        //carica elenco libri
+        mostraElencoCompletoLibri();
+    } catch (erroreDB) {
+        console.error("Errore apertura DB:", erroreDB);
+    }
 });
