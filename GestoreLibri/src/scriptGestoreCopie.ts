@@ -1,10 +1,17 @@
-//importo classe Libro nel "main"
+//importo classe Libro nel "main" 
 import { Copia } from "./Copia";
 // importo classe Copia nel "main"
 import { Libro } from "./Libro";
 
+//prelevo parametri passati da URL
+const parametri = new URLSearchParams(window.location.search);
+//prelevo isbn
+const isbn = parametri.get("isbn");
+//database
+let database: IDBDatabase;
+
 // libro di cui analizzo le copie
-let libro;
+let libro: Libro;
 
 //associo funzione al bottone per registrare una nuova copia del libro
 const bottoneAggiungiCopie = document.getElementById("aggiungiCopia") as HTMLButtonElement;
@@ -20,17 +27,63 @@ bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneCopia);
 const bottoneApriVenditori = document.getElementById("scegliVenditore");
 bottoneApriVenditori?.addEventListener("click", mostraVenditori);
 
-function isLibro(obj: any): obj is Libro {
-    return obj && typeof obj.materia === 'string' && typeof obj.isbn === 'number' && typeof obj.autore === 'string' && typeof obj.titolo === 'string' && typeof obj.volume === 'string' && typeof obj.editore === 'string' && typeof obj.prezzoListino === 'number' && typeof obj.classe === 'string';
+// funzione per aprire il database
+function apriDatabase(): Promise<IDBDatabase>{
+    let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
+        const richiestaDB = indexedDB.open("Database", 1);
+
+        //cosa fare in caso di errore
+        richiestaDB.onerror = () => {
+            // restituisco motivo errore
+            reject(richiestaDB.onerror);
+        }
+
+        // richiesta accolta
+        richiestaDB.onsuccess = () => {
+            const database = richiestaDB.result;
+            resolve(database);
+        }
+    });
+
+    return out;
 }
 
-function caricaCopieLibro(evento: MessageEvent): void{
-    libro = evento.data;
-    
-    console.log(libro);
+async function caricaCopieLibro(): Promise<void>{
+    if (!isbn) throw new Error("ISBN non valido");
 
-    // controllo se l'evento contiene dati ed è di tipo libro
-    if(isLibro(libro)){
+    console.log("ISBN cercato:", isbn);  // Aggiungi questo log per verificare l'ISBN
+
+    //preparo transazione per leggere dal database
+    const transazione = database.transaction("Libri", "readonly");
+    //prelevo reference tabella libri del database
+    const tabellaLibri = transazione.objectStore("Libri");
+    
+    //assegno libro o errore di recupero
+    libro = await new Promise<Libro>((resolve, reject) => {
+        // cerco per isbn
+        const richiesta = tabellaLibri.get(Number(isbn));
+
+        richiesta.onsuccess = () => {
+            if (richiesta.result) {
+                resolve(richiesta.result);
+            } else {
+                reject(new Error("Libro non trovato con ISBN: " + isbn));
+            }
+        };
+
+        richiesta.onerror = (event) => {
+            console.error("Errore nella richiesta:", event);
+            reject(richiesta.error);
+        };
+
+        console.log("Libro trovato:", libro);
+    });   
+
+    //controllo se il libro è stato trovato
+    if (!libro) {
+        console.error("Libro non trovato con ISBN:", isbn);
+
+    }else{
         //prelevo reference del corpo della tabella (ad una riga) che utilizzo per mostrare le info del libro di cui sto gestendo le copie
         const corpoInfoLibro = document.getElementById("corpoInfoLibro") as HTMLTableSectionElement;
         //svuoto tabella
@@ -84,8 +137,15 @@ function mostraVenditori(): void{
     window.open("gestoreVenditori.html", "_blank", "menubar=no, width=700px, height=500px");
 }
 
-// registro ascoltatore quando la pagina è pronta
-window.addEventListener("DOMContentLoaded", () => {
-    //ascolto messaggi inviati alla finestra
-    window.addEventListener("message", (evento) => caricaCopieLibro(evento));
+// al caricamento della pagina, apro database
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        database = await apriDatabase();
+        console.log("Database aperto:", database.name);
+
+        //mostro le copie del libro
+        await caricaCopieLibro();
+    } catch (erroreDB) {
+        console.error("Errore apertura DB:", erroreDB);
+    }
 });

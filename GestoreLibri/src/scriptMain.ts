@@ -166,7 +166,7 @@ function mostraElencoCompletoLibri(): void{
     };
 
     // errore  nella transazione
-    transazione.onerror = function (event) {
+    transazione.onerror = function () {
         console.error('Errore nella transazione');
     };
 
@@ -251,19 +251,15 @@ function mostraCopieLibro(isbnLibro: number): void{
 
     //se la richiesta va a buon fine, apro pagina delle copie del libro
     richiestaPrelieloLibro.onsuccess = () => {
-        // apro finestra per visualizzare le copie
-        const paginaGestoreCopie = window.open("html/popupGestoreCopie.html", "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`); 
-
-        // attendo che la nuova finestra si carichi e poi passo oggetto libro
-        if(paginaGestoreCopie){  
-            window.setTimeout(() => {
-                // passo oggetto alla nuovba finestra
-                paginaGestoreCopie.postMessage(richiestaPrelieloLibro, "*");
-            }, 1000);
-        }
+        //salvo libro prelavto dalla richiesta
+        const libro: Libro = richiestaPrelieloLibro.result;
+    
+        // apro finestra per visualizzare le copie, passando nell'URL l'ISBN del libro
+        window.open(`html/popupGestoreCopie.html?isbn=${libro.isbn}`, "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`); 
     }
 }
 
+// al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         database = await apriDatabase();

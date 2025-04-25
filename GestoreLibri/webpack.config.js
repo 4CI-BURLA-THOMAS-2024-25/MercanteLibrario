@@ -6,9 +6,6 @@ module.exports = {
     scriptMainUnico: './src/scriptMain.ts',  // script principale
     scriptGestoreCopieUnico: './src/scriptGestoreCopie.ts', //script pagina popup del gestore copie
     scriptGestoreVenditoriUnico: './src/scriptGestoreVenditori.ts', //script pagina gestore venditori
-
-    //provbo indexedDB
-    scriptIndexedDB: './src/indexedDB/indexedDB.ts'
   },
   output: {
     filename: '[name].js', // nome basato sul file di output
