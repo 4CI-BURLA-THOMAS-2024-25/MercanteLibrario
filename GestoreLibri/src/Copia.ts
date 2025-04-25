@@ -2,14 +2,14 @@ import { Libro } from "./Libro";
 import { Venditore } from "./Venditore";
 
 export class Copia{
-    //readonly libroDellaCopia: Libro;
+    readonly libroDellaCopia: Libro;
     readonly codiceUnivoco: number;
     readonly scontoPrezzoListino: number;
-    readonly venditore: string;
+    readonly venditore: Venditore;
 
-    constructor(codiceUnivoco: number, scontoPrezzoListino: number, venditore: string){
+    constructor(libroDellaCopia: Libro, codiceUnivoco: number, scontoPrezzoListino: number, venditore: Venditore){
         //libro a cui è associata la copia
-        //this.libroDellaCopia = libroDellaCopia;
+        this.libroDellaCopia = libroDellaCopia;
 
         // codice univoco per identificare la copia senza abiguità tra le altre
         this.codiceUnivoco = codiceUnivoco;

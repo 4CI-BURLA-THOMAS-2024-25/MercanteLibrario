@@ -19,12 +19,13 @@ bottoneAggiungiCopie?.addEventListener("click", apriRegistrazioneCopia);
 
 //prelevo reference del popup per aggiungere nuove copie
 const popupAggiungiCopie = document.getElementById("popupRegistraCopia");
+
 //prelevo reference del bottone per chiudere il popup e vi associo funzione per chiuderlo
-const bottoneChiudiPopup = document.getElementById("chiudiPopup");
+const bottoneChiudiPopup = document.getElementById("chiudiPopup") as HTMLButtonElement;
 bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneCopia);
 
 // prelevo reference del bottone per aprire finestra con i venditori
-const bottoneApriVenditori = document.getElementById("scegliVenditore");
+const bottoneApriVenditori = document.getElementById("scegliVenditore") as HTMLButtonElement;
 bottoneApriVenditori?.addEventListener("click", mostraVenditori);
 
 // funzione per aprire il database
@@ -75,8 +76,6 @@ async function caricaCopieLibro(): Promise<void>{
             console.error("Errore nella richiesta:", event);
             reject(richiesta.error);
         };
-
-        console.log("Libro trovato:", libro);
     });   
 
     //controllo se il libro è stato trovato

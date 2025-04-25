@@ -165,11 +165,6 @@ function mostraElencoCompletoLibri(): void{
         console.log('Tutti i libri sono stati aggiunti');
     };
 
-    // errore  nella transazione
-    transazione.onerror = function () {
-        console.error('Errore nella transazione');
-    };
-
     // chiamo funzione per mostrare l'array di libri
     mostraLibri(elencoLibri);
 }
