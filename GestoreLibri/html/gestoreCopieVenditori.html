@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Visualizza copie del venditore</title>
+        <link rel="icon" type="image/png" href="..\img\favicon.png">
+        <link rel="stylesheet" href="../style.css"/>
+    </head>
+
+    <body>
+        <header id="intestazionePaginaCopie">
+            <h2>Copie del venditore</h2>
+        </header>
+
+        <!-- tabella ad una riga per mostrare le info del venditore su cui si stanno gestendo le copie -->
+        <table id="infoVenditore">
+            <!-- dimensioni delle colonne della tabella; proporzionate alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 14%;">
+                <col style="width: 14%;">
+                <col style="width: 14%;">
+                <col style="width: 14%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Email</th>
+                    <th>Telefono</th>
+                    <th>Classe</th>
+                    <th>€ dovuti</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->  
+            <tbody id="corpoInfoVenditore"></tbody>
+        </table>
+
+        <br>
+
+        <!-- tabella che mostra tutte le copie di questo venditore -->
+        <table id="elencoCopie">
+            <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 50%;">
+                <col style="width: 40%;">
+                <col style="width: 10%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>Codice univoco</th>
+                    <th>Venditore</th>
+                    <th>Prezzo scontato</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->  
+            <tbody id="corpoTabellaCopie"></tbody>
+        </table>
+
+        <script src="../out/" defer></script>
+    </body>
+</html>

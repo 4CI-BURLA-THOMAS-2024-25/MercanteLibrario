@@ -133,7 +133,11 @@ function chiudiRegistrazioneCopia(): void{
 
 // funzione che mostra la pagina per scegliere un venditore/aggiungerne uno nuovo
 function mostraVenditori(): void{
-    window.open("gestoreVenditori.html", "_blank", "menubar=no, width=700px, height=500px");
+    //prelevo dimensioni schermo
+    const altezza = screen.height;
+    const larghezza = screen.width;
+
+    window.open("gestoreVenditori.html", "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
 }
 
 // al caricamento della pagina, apro database

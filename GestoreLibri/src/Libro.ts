@@ -12,7 +12,7 @@ export class Libro{
     readonly prezzoListino: number;
     readonly classe: string;
     //tengo traccia delle copie che ho del libro
-    private copie: Copia[];
+    public copie: Copia[];
 
     //costruttore
     constructor(materia: string, isbn: string, autore: string, titolo: string, volume: string, editore: string, prezzoString: string, classe: string){

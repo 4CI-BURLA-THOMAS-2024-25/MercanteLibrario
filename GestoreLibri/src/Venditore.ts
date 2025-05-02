@@ -10,8 +10,8 @@ export class Venditore{
     readonly email: string;
     readonly nTelefono: number;
     readonly classe: string;
-    private soldiDaDare: number;
-    private copieDate: Copia[];
+    public soldiDaDare: number;
+    public copieDate: Copia[];
 
     //costruttore
     constructor(codFiscale: string, nome: string, cognome: string, email: string, nTelefonoString: string, classe: string){
