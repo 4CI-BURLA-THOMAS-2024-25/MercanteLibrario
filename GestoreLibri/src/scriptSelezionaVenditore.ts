@@ -130,6 +130,19 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
         //creo riga con le info del venditore
         const riga: HTMLTableRowElement = document.createElement("tr");
 
+        //creo cella per checkbox
+        const cellaSelezione = document.createElement("td");
+        //creo checkbox per la selezione
+        const casellaSelezione = document.createElement("input");
+        //imposto casella con spunta
+        casellaSelezione.setAttribute("type", "checkbox");
+        //imposto classe per CSS
+        casellaSelezione.setAttribute("class", "caselleSelezione");
+        //aggiungo casella alla sua cella
+        cellaSelezione.appendChild(casellaSelezione);
+        //aggiungo cella alla riga
+        riga.appendChild(casellaSelezione);
+
         //creo cella del bottone di eliminazione
         const cellaBottoneRimuoviVenditore  = document.createElement("td");
         //creo bottone per "eliminare" il venditore
@@ -178,33 +191,10 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
         cellaSoldi.textContent = String(venditori[i].soldiDaDare);
         riga.appendChild(cellaSoldi);
 
-        //creo cella con bottone per vedere copie
-        const cellaBottoneVediCopie = document.createElement("td");
-        //creo bottone per mostrare le copie associate a ciascun venditore
-        const bottoneCopieVenditore = document.createElement("button");
-        //aggiungo testo al bottone
-        bottoneCopieVenditore.textContent = "Visualizza copie consegnate";
-        //associo ascoltatore e passo riga
-        bottoneCopieVenditore.addEventListener("click", () => mostraCopieVenditore(venditori[i].codFiscale));
-        //aggiungo cella alla riga
-        cellaBottoneVediCopie.appendChild(bottoneCopieVenditore);
-        //inserisco bottone nella cella
-        riga.appendChild(cellaBottoneVediCopie);
-
         //inserisco riga nel corpo della tabella
         corpoVenditori.appendChild(riga);
     }
 } 
-
-//funzione per mostrare le copie di un venditore
-function mostraCopieVenditore(codFiscale: string): void{
-    //prelevo dimensioni schermo
-    const altezza = screen.height;
-    const larghezza = screen.width;
-
-    //apro nuova pagina e passo CV
-    window.open(`gestoreCopieVenditore.html?codFiscale=${codFiscale}`, "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
-}
 
 //funzione per rimuovere venditore
 async function rimuoviVenditore(codiceFiscale: string): Promise<void>{
@@ -257,6 +247,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log("Database aperto:", database.name);
 
         await prelevaVenditori();
+        
+        //prelevo tutte le caselle di selezione
+        const checkboxes = document.querySelectorAll<HTMLInputElement>(".caselleSelezione");
+        //ad ognuna assegno ascoltatore che reagisce al cambiamento (spunta/despunta)
+        checkboxes.forEach((checkbox) => {
+            checkbox.addEventListener("change", () => {
+                //se una viene selezionata...
+                if (checkbox.checked) {
+                    //tutte le altre diverse da lei vengono deselezionate
+                    checkboxes.forEach((checkboxesDeselezionate) => {
+                        if (checkboxesDeselezionate !== checkbox) {
+                            checkboxesDeselezionate.checked = false;
+                        }
+                    });
+                }
+            });
+        });
+        
     } catch (erroreDB) {
         console.error("Errore apertura DB:", erroreDB);
     }

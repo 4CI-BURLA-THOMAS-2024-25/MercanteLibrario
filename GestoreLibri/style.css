@@ -104,3 +104,20 @@ header {
     font-family: 'Work Sans';
     font-size: 20px;
 }
+
+.caselleSelezione {
+    width: 100%;         /* Riempi tutta la cella in larghezza */
+    height: 100%;        /* Riempi tutta la cella in altezza */
+    margin: 0;           /* Rimuovi margine */
+    display: block;      /* Permette di occupare tutto lo spazio */
+    box-sizing: border-box; /* Assicura che width e height includano padding/border */
+    cursor: pointer;     /* Cambia il cursore quando ci passi sopra */
+    zoom: 3;
+    transform-origin: center; /* Centra la scala */
+}
+
+/* sistemo celle che contengono le caselle di spunta */
+td:has(.caselleSelezione) {
+    vertical-align: middle;
+    text-align: center;
+}
