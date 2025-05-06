@@ -137,8 +137,10 @@ function mostraVenditori(): void{
     const altezza = screen.height;
     const larghezza = screen.width;
 
-    window.open("gestoreVenditori.html", "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
+    window.open("selezionaVenditore.html", "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
 }
+
+
 
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {

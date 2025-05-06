@@ -21,6 +21,10 @@ bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneVenditore);
 //prelevo reference delle caselle di input
 const caselleInput = document.querySelectorAll(".testoInputPopup");
 
+//bottone per confermare la selezione
+const bottoneTornaAlleCopie = document.getElementById("tornaAlleCopie");
+bottoneTornaAlleCopie?.addEventListener("click", () => tornaAlleCopie());
+
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -237,7 +241,27 @@ async function rimuoviVenditore(codiceFiscale: string): Promise<void>{
     }else{
         window.alert("Eliminazione annullata");
     }
+}
 
+//funzione per tornare alle copie, dopo aver selezionato un venditore salvando CF in sessionStorage
+function tornaAlleCopie():void {
+    //prelevo prima spunta (e unica) e cerco la riga alla quale apprtiene
+    const rigaSelezionata = document.querySelector("input[type='checkbox']:checked")?.closest("tr");
+
+    //verifico se è stata selezionata una spunta
+    if (rigaSelezionata) {
+        //ottieni il codice fiscale dalla cella corrispondente (nella terza colonna della riga)
+        const codiceFiscale: string = rigaSelezionata.querySelector("td:nth-child(3)")?.textContent as string;
+
+        //passa il codice fiscale alla pagina precedente
+        window.opener.sessionStorage.setItem("codiceFiscaleSelezionato", codiceFiscale); // Salva il codice fiscale
+        //chiudo pagina e torno alle copie
+        window.close();
+
+    //nessun venditore selezionato
+    } else {
+        alert("Seleziona una riga prima di tornare indietro.");
+    }
 }
 
 // al caricamento della pagina, apro database
