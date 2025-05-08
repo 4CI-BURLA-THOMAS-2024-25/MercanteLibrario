@@ -274,14 +274,14 @@ function tornaAlleCopie():void {
         //preparo parametri da passare alla pagina precedente
         const parametriRitorno = new URLSearchParams();
         //isbn, da mantenere, passato all'apertura della suddetta pagina
-        parametri.set("isbn", isbn);
+        parametriRitorno.set("isbn", isbn);
         //percentuale sconto, da mantenere
-        parametri.set("percentualeSconto", percentualeSconto);
+        parametriRitorno.set("percentualeSconto", percentualeSconto);
         //passo CF venditore
-        parametri.set("codiceFiscale", codiceFiscale);
+        parametriRitorno.set("codiceFiscale", codiceFiscale);
 
         //cambio pagina, torno indietro
-        window.location.href = `popupGestoreCopie.html?${parametri.toString()}`;
+        window.location.href = `popupGestoreCopie.html?${parametriRitorno.toString()}`;
 
     //nessun venditore selezionato
     } else {

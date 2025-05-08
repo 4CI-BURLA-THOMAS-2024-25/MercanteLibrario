@@ -14,8 +14,6 @@ const isbn:string = parametri.get("isbn") as string;
 //prelevo eventuale CV di venditore, nel caso in cui sia di ritorno dalla selezione del venditore
 const codiceFiscaleVenditore = parametri.get("codiceFiscale");
 
-console.log(codiceFiscaleVenditore)
-
 //database
 let database: IDBDatabase;
 
@@ -50,12 +48,7 @@ const casellaPercentualeSconto = document.getElementById("selezionaSconto") as H
 //reference del campo di testo non modificabile che mostra il venditore selezionato per la registrazione della copia
 const etichettaIDVenditore = document.getElementById("IDVenditore") as HTMLInputElement;
 
-//se CF ha del contenuto, significa che sono di ritorno dalla scelta del venditore: riapro popup per registrare la copia
-if(codiceFiscaleVenditore != null){
-    ripristinaPopup();
-}
-
-//
+//funzione che ripristina il popup aperto (quando ritorno dalla pagina di selezione del venditore)
 async function ripristinaPopup(): Promise<void>{
     //gestisco errore di venditore non reperibile
     try{
@@ -67,7 +60,7 @@ async function ripristinaPopup(): Promise<void>{
             casellaPercentualeSconto.value = parametri.get("percentualeSconto") as string;
     
             //imposto nome e cognome del venditore nella casella
-            etichettaIDVenditore.textContent = venditore.nome + " " + venditore.cognome;
+            etichettaIDVenditore.value = venditore.nome + " " + venditore.cognome;
         
             //riapro popup di registrazione
             apriRegistrazioneCopia();
@@ -211,7 +204,12 @@ function apriRegistrazioneCopia(): void{
 
 //funzione per registrare una copia del libro in questione
 function registraCopia():void{
-    
+    // Copia copia = new Copia(libro, )
+}
+
+//genero numero della copia
+function generaCodiceCopia():void {
+    //
 }
 
 function chiudiRegistrazioneCopia(): void{
@@ -245,6 +243,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         //mostro le copie del libro
         await caricaCopieLibro();
+
+        
+        //se CF ha del contenuto, significa che sono di ritorno dalla scelta del venditore: riapro popup per registrare la copia
+        if(codiceFiscaleVenditore != null){
+            ripristinaPopup();
+        }
+
     } catch (erroreDB) {
         console.error("Errore apertura DB:", erroreDB);
     }
