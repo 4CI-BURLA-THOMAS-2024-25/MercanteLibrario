@@ -1,6 +1,9 @@
 // importo classe Copia nel "main"
 import { Libro } from "./Libro";
 
+//importo daro per notificare aggiornamenti al DB
+import { databaseChannel } from "./broadcast";
+
 //associo listener alla casella di ricerca,se non è null ed è definita
 const casellaRicerca = document.getElementById("casellaRicerca") as HTMLInputElement;
 casellaRicerca?.addEventListener("keydown", ricercaLibri);
@@ -34,7 +37,7 @@ function apriDatabase(): Promise<IDBDatabase>{
 
             //controllo che non esista già una tabella con questo nome
             if(!database.objectStoreNames.contains("Libri")){
-                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                //creo nuova tabella e specifico chiave primaria
                 const tabellaLibri = database.createObjectStore("Libri", {
                     keyPath: "isbn",
                 });
@@ -62,7 +65,7 @@ function apriDatabase(): Promise<IDBDatabase>{
 
             //controllo che non esista già una tabella con questo nome
             if(!database.objectStoreNames.contains("Venditori")){
-                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                //creo nuova tabella e specifico chiave primaria
                 const tabellaVenditori = database.createObjectStore("Venditori", {
                     keyPath: "codFiscale",
                 });

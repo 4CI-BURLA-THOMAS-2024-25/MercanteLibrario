@@ -1,5 +1,15 @@
 import { Venditore } from "./Venditore";
 
+//importo dato per notificare aggiornamenti al DB
+import { databaseChannel} from "./broadcast";
+
+//prelevo parametri passati da URL
+const parametri = new URLSearchParams(window.location.search);
+//prelvo isbn del libro di cui si sta registrando la copia e alla quale si vuole associare un venditore
+const isbn:string = parametri.get("isbn") as string;
+//prelevo percentuale di sconto, per poi ripassarla indietro
+const percentualeSconto:string = parametri.get("percentualeSconto") as string;
+
 //database
 let database: IDBDatabase;
 
@@ -79,15 +89,19 @@ function registraVenditore(): void{
     const tabellaVenditori = transazione.objectStore("Venditori");
     //richiesta di aggiunta all'object store
     const richiestaAggiuntaVenditore = tabellaVenditori.add(venditore);
-
+    
+    
     //aggiunta andata a buon fine
     richiestaAggiuntaVenditore.onsuccess = () => {
-
+        
         //aggiorno lista venditori, rileggendo da DB
         prelevaVenditori();
-
+        
         //chiudo popup di inserimento
         chiudiRegistrazioneVenditore();
+
+        //notifico aggiunta nuovo venditore
+        databaseChannel.postMessage({store: "Venditori", action: "add"});
     }
 
     //errore, venditore già presente
@@ -222,6 +236,10 @@ async function rimuoviVenditore(codiceFiscale: string): Promise<void>{
         
                 richiesta.onsuccess = () => {
                     window.alert("Venditore eliminato con successo");
+
+                    //notifico eliminazione
+                    databaseChannel.postMessage({store: "Venditori", action: "delete"});
+
                     resolve();
                 };
         
@@ -253,10 +271,17 @@ function tornaAlleCopie():void {
         //ottieni il codice fiscale dalla cella corrispondente (nella terza colonna della riga)
         const codiceFiscale: string = rigaSelezionata.querySelector("td:nth-child(3)")?.textContent as string;
 
-        //passa il codice fiscale alla pagina precedente
-        window.opener.sessionStorage.setItem("codiceFiscaleSelezionato", codiceFiscale); // Salva il codice fiscale
-        //chiudo pagina e torno alle copie
-        window.close();
+        //preparo parametri da passare alla pagina precedente
+        const parametriRitorno = new URLSearchParams();
+        //isbn, da mantenere, passato all'apertura della suddetta pagina
+        parametri.set("isbn", isbn);
+        //percentuale sconto, da mantenere
+        parametri.set("percentualeSconto", percentualeSconto);
+        //passo CF venditore
+        parametri.set("codiceFiscale", codiceFiscale);
+
+        //cambio pagina, torno indietro
+        window.location.href = `popupGestoreCopie.html?${parametri.toString()}`;
 
     //nessun venditore selezionato
     } else {

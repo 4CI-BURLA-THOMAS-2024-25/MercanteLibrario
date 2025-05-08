@@ -1,5 +1,8 @@
 import { Venditore } from "./Venditore";
 
+//importo daro per notificare aggiornamenti al DB
+import { databaseChannel } from "./broadcast";
+
 //database
 let database: IDBDatabase;
 
@@ -84,6 +87,9 @@ function registraVenditore(): void{
 
         //chiudo popup di inserimento
         chiudiRegistrazioneVenditore();
+
+        //notifico aggiunta
+        databaseChannel.postMessage({store: "Venditori", action: "add"});
     }
 
     //errore, venditore già presente
@@ -228,6 +234,10 @@ async function rimuoviVenditore(codiceFiscale: string): Promise<void>{
         
                 richiesta.onsuccess = () => {
                     window.alert("Venditore eliminato con successo");
+
+                    //notifico eliminazione
+                    databaseChannel.postMessage({store: "Venditori", action: "delete"});
+
                     resolve();
                 };
         

@@ -2,16 +2,28 @@
 import { Copia } from "./Copia";
 // importo classe Copia nel "main"
 import { Libro } from "./Libro";
+import { Venditore } from "./Venditore";
+
+//importo dato per notificare aggiornamenti al DB
+import { databaseChannel} from "./broadcast";
 
 //prelevo parametri passati da URL
 const parametri = new URLSearchParams(window.location.search);
 //prelevo isbn
-const isbn = parametri.get("isbn");
+const isbn:string = parametri.get("isbn") as string;
+//prelevo eventuale CV di venditore, nel caso in cui sia di ritorno dalla selezione del venditore
+const codiceFiscaleVenditore = parametri.get("codiceFiscale");
+
+console.log(codiceFiscaleVenditore)
+
 //database
 let database: IDBDatabase;
 
 // libro di cui analizzo le copie
 let libro: Libro;
+
+//venditore associato alla copia in registrazione
+let venditore: Venditore;
 
 //associo funzione al bottone per registrare una nuova copia del libro
 const bottoneAggiungiCopie = document.getElementById("aggiungiCopia") as HTMLButtonElement;
@@ -20,6 +32,10 @@ bottoneAggiungiCopie?.addEventListener("click", apriRegistrazioneCopia);
 //prelevo reference del popup per aggiungere nuove copie
 const popupAggiungiCopie = document.getElementById("popupRegistraCopia");
 
+//reference del bottone che conferma la registrazione della copia con relativo comportamento associato
+const bottoneRegistraCopia = document.getElementById("registraCopia");
+bottoneRegistraCopia?.addEventListener("click", registraCopia);
+
 //prelevo reference del bottone per chiudere il popup e vi associo funzione per chiuderlo
 const bottoneChiudiPopup = document.getElementById("chiudiPopup") as HTMLButtonElement;
 bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneCopia);
@@ -27,6 +43,75 @@ bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneCopia);
 // prelevo reference del bottone per aprire finestra con i venditori
 const bottoneApriVenditori = document.getElementById("scegliVenditore") as HTMLButtonElement;
 bottoneApriVenditori?.addEventListener("click", mostraVenditori);
+
+//reference della casella di scelta per il prezzo del libro, scontato
+const casellaPercentualeSconto = document.getElementById("selezionaSconto") as HTMLSelectElement;
+
+//reference del campo di testo non modificabile che mostra il venditore selezionato per la registrazione della copia
+const etichettaIDVenditore = document.getElementById("IDVenditore") as HTMLInputElement;
+
+//se CF ha del contenuto, significa che sono di ritorno dalla scelta del venditore: riapro popup per registrare la copia
+if(codiceFiscaleVenditore != null){
+    ripristinaPopup();
+}
+
+//
+async function ripristinaPopup(): Promise<void>{
+    //gestisco errore di venditore non reperibile
+    try{
+        if(codiceFiscaleVenditore != null){
+            //recupero venditore da database dato il suo CF, con funzione anonima asincrona
+            venditore = await prelevaVenditore(codiceFiscaleVenditore);
+            
+            //ripristino percentuale di sconto, selezionata prima
+            casellaPercentualeSconto.value = parametri.get("percentualeSconto") as string;
+    
+            //imposto nome e cognome del venditore nella casella
+            etichettaIDVenditore.textContent = venditore.nome + " " + venditore.cognome;
+        
+            //riapro popup di registrazione
+            apriRegistrazioneCopia();
+        }
+
+    //venditore non reperibile
+    }catch(errore){
+        console.error("Venditore NON reperibile", errore);
+    }
+}
+
+//recupero venditore dato CF
+async function prelevaVenditore(codiceFiscale: string): Promise<Venditore>{
+    //preparo transazione per leggere
+    const transazione = database.transaction("Venditori", "readonly");
+    //prelevo reference dell'object store
+    const tabellaVenditori = transazione.objectStore("Venditori");
+
+    const venditoreLetto = await new Promise<Venditore>((resolve, reject) => {
+        //cerco per CF (chiave primaria)
+        const richiesta = tabellaVenditori.get(codiceFiscale);
+
+        //richiesta andata a buon fine
+        richiesta.onsuccess = () => {
+            //venditore trovato
+            if (richiesta.result) {
+                resolve(richiesta.result);
+
+            //venditore NON trovato
+            } else {
+                reject(new Error("Venditore non trovato con codice fiscale: " + codiceFiscale));
+            }
+        }
+
+        //errore nella richiesta
+        richiesta.onerror = (event) => {
+            console.error("Errore nella richiesta:", event);
+            reject(richiesta.error);
+        };
+    });
+
+    //restituisco venditore
+    return venditoreLetto;
+}
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -101,10 +186,10 @@ async function caricaCopieLibro(): Promise<void>{
         corpoTabellaCopie.innerHTML = "";
 
         //prelevo elenco di copie del libro
-        const copieLibro: Copia[] = libro.getCopieAsArray();
+        const copieLibro: Copia[] = libro.copie;
 
         //itero e visualizzo ogni copia del libro
-        for(let i = 0; i < libro.getNCopie(); i++){
+        for(let i = 0; i < copieLibro.length; i++){
             let copiaDelLibro: Copia = copieLibro[i];
 
             //creo riga nella tabella
@@ -116,12 +201,17 @@ async function caricaCopieLibro(): Promise<void>{
     }
 }
 
-// funzione per registrare una nuova copia di un determinato libro
+// funzione per registrare una nuova copia di un determinato libro, passando eventuale venditore
 function apriRegistrazioneCopia(): void{
     if(popupAggiungiCopie != null){
         //quando clicco il bottone per registrare una nuova copia, apro il form
         popupAggiungiCopie.style.display = "flex";
     }
+}
+
+//funzione per registrare una copia del libro in questione
+function registraCopia():void{
+    
 }
 
 function chiudiRegistrazioneCopia(): void{
@@ -133,14 +223,19 @@ function chiudiRegistrazioneCopia(): void{
 
 // funzione che mostra la pagina per scegliere un venditore/aggiungerne uno nuovo
 function mostraVenditori(): void{
-    //prelevo dimensioni schermo
-    const altezza = screen.height;
-    const larghezza = screen.width;
 
-    window.open("selezionaVenditore.html", "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
+    //preparo passaggio di partametri tramite URL, per non perderli quando apro pagina venditori con la scelta
+    const parametriTrasmessi = new URLSearchParams();
+    //passo isbn
+    parametriTrasmessi.set("isbn", isbn);
+    //leggo valore della casella dello sconto
+    const percentualeSconto = casellaPercentualeSconto.value;
+    //passo percentuale sconto
+    parametriTrasmessi.set("percentualeSconto", percentualeSconto);
+
+    //cambio pagina aprendo i venditori e passando il parametro isbn (così al ritorno nella pagina attuale NON verrà perso)
+    window.location.href = `selezionaVenditore.html?${parametriTrasmessi.toString()}`;
 }
-
-
 
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {
