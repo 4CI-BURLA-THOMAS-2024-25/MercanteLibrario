@@ -56,7 +56,7 @@ function apriDatabase(): Promise<IDBDatabase>{
             if(!database.objectStoreNames.contains("Copie")){
                 //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
                 const tabellaCopie = database.createObjectStore("Copie", {
-                    keyPath: "codiceUnivoco",
+                    keyPath: "codiceUnivoco", autoIncrement: true
                 });
 
                 tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});

@@ -203,13 +203,57 @@ function apriRegistrazioneCopia(): void{
 }
 
 //funzione per registrare una copia del libro in questione
-function registraCopia():void{
-    // Copia copia = new Copia(libro, )
+async function registraCopia():Promise<void>{
+    const codiceUltimaCopia = await leggiUltimaChiaveCopia();
+
+    let codiceCopiaAttuale; 
+    //verifico che vi siano copie nello store
+    if(codiceUltimaCopia !== null){
+        codiceCopiaAttuale = codiceUltimaCopia + 1;
+    //store vuoto
+    }else{
+        codiceCopiaAttuale = 1;
+    }
+
+    //verifico che sia stata indicata la  percentuale di sconto
+    if(!(casellaPercentualeSconto.value === "default")){
+        //calcolo prezzo scontato
+        const prezzoScontato
+    
+
+        const copia: Copia = new Copia(libro, codiceCopia,casellaPercentualeSconto.value )
+
+    }
+    //creo oggetto copia
+
+
 }
 
 //genero numero della copia
-function generaCodiceCopia():void {
-    //
+async function leggiUltimaChiaveCopia(): Promise<number | null> {
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction("Copie", "readonly");
+        const store = transaction.objectStore("Copie");
+
+        // Apro un cursore ordinato in modo DECRESCENTE per chiavi
+        const request = store.openCursor(null, "prev");
+
+        request.onsuccess = () => {
+            //prelevo cursore
+            const cursor = request.result;
+            if (cursor) {
+                // La prima chiave che troviamo è la più grande (ultima)
+                resolve(cursor.primaryKey as number);
+            } else {
+                // Nessun record nello store
+                resolve(null);
+            }
+        };
+
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
 
 function chiudiRegistrazioneCopia(): void{
