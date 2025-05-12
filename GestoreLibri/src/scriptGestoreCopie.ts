@@ -187,7 +187,7 @@ async function caricaCopieLibro(): Promise<void>{
 
             //creo riga nella tabella
             const riga: HTMLTableRowElement = document.createElement("tr");
-            riga.innerHTML = `<td>${copiaDelLibro.codiceUnivoco}</td><td>${copiaDelLibro.venditore}</td><td>${copiaDelLibro.scontoPrezzoListino}</td>`;
+            riga.innerHTML = `<td>${copiaDelLibro.codiceUnivoco}</td><td>${copiaDelLibro.venditore}</td><td>${copiaDelLibro.prezzoScontato}</td>`;
             // inserisco riga nel corpo della tabella
             corpoTabellaCopie.appendChild(riga);
         }
@@ -217,15 +217,32 @@ async function registraCopia():Promise<void>{
 
     //verifico che sia stata indicata la  percentuale di sconto
     if(!(casellaPercentualeSconto.value === "default")){
-        //calcolo prezzo scontato
-        const prezzoScontato
-    
+        //creo oggetto copia
+        const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(casellaPercentualeSconto.value), venditore);
 
-        const copia: Copia = new Copia(libro, codiceCopia,casellaPercentualeSconto.value )
+        //apro transazione
+        const transazione = database.transaction("Copie", "readwrite");
+        const tabellaCopie = transazione.objectStore("Copie");
 
+        const richiestaAggiungiCopia = tabellaCopie.add(copia);
+
+        //richiesta andata a buon fine
+        richiestaAggiungiCopia.onsuccess = () => {
+            //aggiorno lista copie, rileggendo da DB
+            caricaCopieLibro();
+
+            //chiudo popup di inserimento
+            chiudiRegistrazioneCopia();
+
+            //notifico aggiunta nuova copia
+            databaseChannel.postMessage({store: "Copie", action: "add"});
+        }
+
+        //errore, copia già presente (improbabile, genero io la chiave primaria)
+        richiestaAggiungiCopia.onerror = () => {
+            console.error("Copia già presente");
+        }
     }
-    //creo oggetto copia
-
 
 }
 

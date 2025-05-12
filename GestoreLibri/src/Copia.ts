@@ -4,7 +4,7 @@ import { Venditore } from "./Venditore";
 export class Copia{
     readonly libroDellaCopia: Libro;
     readonly codiceUnivoco: number;
-    readonly scontoPrezzoListino: number;
+    readonly prezzoScontato: number;
     readonly venditore: Venditore;
 
     constructor(libroDellaCopia: Libro, codiceUnivoco: number, scontoPrezzoListino: number, venditore: Venditore){
@@ -14,8 +14,8 @@ export class Copia{
         // codice univoco per identificare la copia senza abiguità tra le altre
         this.codiceUnivoco = codiceUnivoco;
         
-        //sconto del prezzo della copia rispetto al prezzo di listino del libro(60-70-80%)
-        this.scontoPrezzoListino = scontoPrezzoListino;
+        //prezzo della copia già scontato
+        this.prezzoScontato = libroDellaCopia.prezzoListino * scontoPrezzoListino;
 
         // per ogni copia mi serve sapere chi me l'ha portata per la vendita
         this.venditore = venditore;

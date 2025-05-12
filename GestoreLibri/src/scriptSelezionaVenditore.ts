@@ -106,7 +106,7 @@ function registraVenditore(): void{
 
     //errore, venditore già presente
     richiestaAggiuntaVenditore.onerror = () => {
-        console.log("Venditore già presente");
+        console.error("Venditore già presente");
     }
 }
 
