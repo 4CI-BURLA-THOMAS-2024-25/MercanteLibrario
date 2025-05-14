@@ -10,8 +10,6 @@ export class Venditore{
     readonly email: string;
     readonly nTelefono: number;
     readonly classe: string;
-    public soldiDaDare: number;
-    public copieDate: Copia[];
 
     //costruttore
     constructor(codFiscale: string, nome: string, cognome: string, email: string, nTelefonoString: string, classe: string){
@@ -59,31 +57,5 @@ export class Venditore{
         }else{
             this.classe = "-";
         }
-
-        // soldi da dare alla persona in relazione al numero dei suoi libri che ho venduto
-        this.soldiDaDare = 0;
-
-        //elenco dei libri che la persona mi ha dato per la vendita
-        this.copieDate = [];
-    }
-
-    addSoldiDaDare(soldi: number): void{
-        if(soldi > 0){
-            this.soldiDaDare += soldi;
-        }
-    }
-
-    getSoldiDaDare(): number{
-        return this.soldiDaDare;
-    }
-
-    addCopia(copia: Copia): void{
-        if(copia != undefined){
-            this.copieDate.push(copia);
-        }
-    }
-
-    getCopie(): Copia[]{
-        return this.copieDate;
     }
 }

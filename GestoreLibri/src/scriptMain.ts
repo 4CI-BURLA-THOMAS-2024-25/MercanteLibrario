@@ -75,8 +75,6 @@ function apriDatabase(): Promise<IDBDatabase>{
                 tabellaVenditori.createIndex("email", "email", {unique: false});
                 tabellaVenditori.createIndex("nTelefono", "nTelefono", {unique: true});
                 tabellaVenditori.createIndex("classe", "classe", {unique: false});
-                tabellaVenditori.createIndex("soldiDaDare", "soldiDaDare", {unique: false});
-                tabellaVenditori.createIndex("copieDate", "copieDate", {unique: false});
             }
         }
     });

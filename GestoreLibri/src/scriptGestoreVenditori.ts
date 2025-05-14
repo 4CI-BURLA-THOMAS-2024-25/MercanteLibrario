@@ -1,3 +1,4 @@
+import { Copia } from "./Copia";
 import { Venditore } from "./Venditore";
 
 //importo daro per notificare aggiornamenti al DB
@@ -131,6 +132,9 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
     //svuoto tabella
     corpoVenditori.innerHTML = "";
 
+    //calcolo totale dei soldi da dare a ciascun venditore
+    const totaleDaDare: number[] = await caricaSommaPrezzoPerTuttiIVenditori();
+
     //itero e creo riga per ogni venditore
     for(let i = 0; i < venditori.length; i++){
         //creo riga con le info del venditore
@@ -181,7 +185,7 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
 
         //creo cella codicefiscale e la aggiungo alla riga
         const cellaSoldi = document.createElement("td");
-        cellaSoldi.textContent = String(venditori[i].soldiDaDare);
+        cellaSoldi.textContent = String(totaleDaDare[i]);
         riga.appendChild(cellaSoldi);
 
         //creo cella con bottone per vedere copie
@@ -201,6 +205,49 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
         corpoVenditori.appendChild(riga);
     }
 } 
+
+async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
+    let sommaPrezziCopie: number[] = new Array;
+    // 1. Preleva tutti i venditori
+    const venditori: Venditore[] = await new Promise((resolve, reject) => {
+        const transazione = database.transaction("Venditori", "readonly");
+        const tabellaVenditori = transazione.objectStore("Venditori");
+        const richiesta = tabellaVenditori.getAll();
+
+        //accesso approvato
+        richiesta.onsuccess = () => resolve(richiesta.result);
+        //accesso negato
+        richiesta.onerror = () => reject(richiesta.error);
+    });
+
+    // 2. Itera su ciascun venditore
+    for (const venditore of venditori) {
+        //prelevo elenco delle copie per ciascun venditore
+        const copie: Copia[] = await new Promise((resolve, reject) => {
+            const transazione = database.transaction("Copie", "readonly");
+            const tabellaCopie = transazione.objectStore("Copie");
+            const indice = tabellaCopie.index("venditoreCF");
+
+            const richiesta = indice.getAll(venditore.codFiscale); // Usa l’indice per filtrare
+
+            richiesta.onsuccess = () => resolve(richiesta.result);
+            richiesta.onerror = () => reject(richiesta.error);
+        });
+
+        // 3. Somma i prezzi scontati delle copie di ciascun venditore; sommo partendo da 0
+        const sommaPrezzi = copie.reduce((totale, copia) => {
+            return totale + copia.prezzoScontato;
+        }, 0);
+
+        //salvo totale del prezzo delle copie del venditore
+        sommaPrezziCopie.push(sommaPrezzi);
+    }
+
+    //restituisco array con tutte le somme delle copie per venditore
+    return sommaPrezziCopie;
+}
+
+
 
 //funzione per mostrare le copie di un venditore
 function mostraCopieVenditore(codFiscale: string): void{
