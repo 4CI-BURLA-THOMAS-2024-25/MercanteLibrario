@@ -127,7 +127,33 @@ function apriDatabase(): Promise<IDBDatabase>{
     return out;
 }
 
+//prelevo da DB tutte le copie del libro, in base al suio isbn
+async function prelevaCopieLibroISBN():Promise<Copia[]>{
+    return new Promise((resolve, reject) => {
+        const transazione = database.transaction("Copie", "readonly");
+        const tabellaCopie = transazione.objectStore("Copie");
+        const indice = tabellaCopie.index("libroDellaCopiaISBN");
+
+        console.log(isbn);
+
+        const richiesta = indice.getAll(Number(isbn)); // cerca tutte le copie con quel isbn
+
+        richiesta.onsuccess = () => {
+            //array delle copie con l'isbn cercato
+            resolve(richiesta.result);
+        };
+
+        richiesta.onerror = () => {
+            reject(richiesta.error);
+        };
+    });
+}
+
+
 async function caricaCopieLibro(): Promise<void>{
+    //prelevo copie che hanno libro con ISBN coerente con il libro con cui si sta operando
+    const copieLibro: Copia[] = await prelevaCopieLibroISBN();
+
     if (!isbn) throw new Error("ISBN non valido");
 
     console.log("ISBN cercato:", isbn);  // Aggiungi questo log per verificare l'ISBN
@@ -178,9 +204,6 @@ async function caricaCopieLibro(): Promise<void>{
         //svuoto tabella
         corpoTabellaCopie.innerHTML = "";
 
-        //prelevo elenco di copie del libro
-        const copieLibro: Copia[] = libro.copie;
-
         //itero e visualizzo ogni copia del libro
         for(let i = 0; i < copieLibro.length; i++){
             let copiaDelLibro: Copia = copieLibro[i];
@@ -226,12 +249,12 @@ async function registraCopia():Promise<void>{
 
         const richiestaAggiungiCopia = tabellaCopie.add(copia);
 
-        console.log(libro);
-
         //richiesta andata a buon fine
         richiestaAggiungiCopia.onsuccess = () => {
             //aggiorno lista copie, rileggendo da DB
             console.log(libro);
+
+            //aggiorno tabella
             caricaCopieLibro();
 
             //chiudo popup di inserimento

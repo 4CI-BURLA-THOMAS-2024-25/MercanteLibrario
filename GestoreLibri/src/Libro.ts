@@ -11,8 +11,6 @@ export class Libro{
     readonly editore: string;
     readonly prezzoListino: number;
     readonly classe: string;
-    //tengo traccia delle copie che ho del libro
-    public copie: Copia[];
 
     //costruttore
     constructor(materia: string, isbn: string, autore: string, titolo: string, volume: string, editore: string, prezzoString: string, classe: string){
@@ -74,9 +72,6 @@ export class Libro{
         }else{
             this.classe = "-";
         }
-
-        // numero di copie associate al libro
-        this.copie = [];
     }
 
     // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa
@@ -86,15 +81,5 @@ export class Libro{
         
         //"converto" gli elementi dell'array in stringhe
         return valoriAttributi.join(" "); 
-    }
-
-    // numero di copie del libro
-    getNCopie(): number{
-        return this.copie.length;
-    }
-
-    // array con le copie del libro
-    getCopieAsArray(): Copia[]{
-        return this.copie;
     }
 }

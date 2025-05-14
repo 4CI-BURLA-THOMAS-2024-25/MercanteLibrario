@@ -49,16 +49,16 @@ function apriDatabase(): Promise<IDBDatabase>{
                 tabellaLibri.createIndex("editore", "editore", {unique: false});
                 tabellaLibri.createIndex("prezzoListino", "prezzoListino", {unique: false});
                 tabellaLibri.createIndex("classe", "classe", {unique: false});
-                tabellaLibri.createIndex("copie", "copie", {unique: false});
             }
 
             //controllo che non esista già una tabella con questo nome
             if(!database.objectStoreNames.contains("Copie")){
                 //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
                 const tabellaCopie = database.createObjectStore("Copie", {
-                    keyPath: "codiceUnivoco", autoIncrement: true
+                    keyPath: "codiceUnivoco",
                 });
 
+                tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
                 tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
                 tabellaCopie.createIndex("venditore", "venditore", {unique: false});
             }
@@ -184,7 +184,7 @@ function mostraLibri(elencoLibri: Libro[]): void{
     for(let i = 0; i < elencoLibri.length; i++){
         const libro: Libro = elencoLibri[i];
         const riga: HTMLTableRowElement = document.createElement("tr");
-        riga.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzoListino}</td><td>${libro.classe}</td><td>${libro.getNCopie()}</td>`;
+        riga.innerHTML = `<td>${libro.materia}</td><td>${libro.isbn}</td><td>${libro.autore}</td><td>${libro.titolo}</td><td>${libro.volume}</td><td>${libro.editore}</td><td>${libro.prezzoListino}</td><td>${libro.classe}</td>`;
         
         // creo bottone per gestire le copie di ciascun libro (di ciascuna riga della tabella)
         const bottone = document.createElement("button");
