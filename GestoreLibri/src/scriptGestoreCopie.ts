@@ -156,29 +156,27 @@ async function caricaCopieLibro(): Promise<void>{
 
     if (!isbn) throw new Error("ISBN non valido");
 
-    console.log("ISBN cercato:", isbn);  // Aggiungi questo log per verificare l'ISBN
-
     //preparo transazione per leggere dal database
-    const transazione = database.transaction("Libri", "readonly");
+    const transazioneLibri = database.transaction("Libri", "readonly");
     //prelevo reference tabella libri del database
-    const tabellaLibri = transazione.objectStore("Libri");
+    const tabellaLibri = transazioneLibri.objectStore("Libri");
     
     //assegno libro o errore di recupero
     libro = await new Promise<Libro>((resolve, reject) => {
         // cerco per isbn
-        const richiesta = tabellaLibri.get(Number(isbn));
+        const richiestaLibri = tabellaLibri.get(Number(isbn));
 
-        richiesta.onsuccess = () => {
-            if (richiesta.result) {
-                resolve(richiesta.result);
+        richiestaLibri.onsuccess = () => {
+            if (richiestaLibri.result) {
+                resolve(richiestaLibri.result);
             } else {
                 reject(new Error("Libro non trovato con ISBN: " + isbn));
             }
         };
 
-        richiesta.onerror = (event) => {
+        richiestaLibri.onerror = (event) => {
             console.error("Errore nella richiesta:", event);
-            reject(richiesta.error);
+            reject(richiestaLibri.error);
         };
     });   
 
@@ -208,9 +206,36 @@ async function caricaCopieLibro(): Promise<void>{
         for(let i = 0; i < copieLibro.length; i++){
             let copiaDelLibro: Copia = copieLibro[i];
 
+            // Prelevo il venditore associato alla copia
+            const venditore = await new Promise<Venditore | null>((resolve, reject) => {
+                const transazioneVenditori = database.transaction("Venditori", "readonly");
+                const tabellaVenditori = transazioneVenditori.objectStore("Venditori");
+                //prelevo venditore in base al codice fiscale associato alla copia
+                const richiestaVenditore = tabellaVenditori.get(copiaDelLibro.venditoreCF);
+
+                //acesso a DB andato a buon fine
+                richiestaVenditore.onsuccess = () => {
+                    //venditore trovato
+                    if (richiestaVenditore.result) {
+                        resolve(richiestaVenditore.result);
+
+                    //venditore non trovato
+                    } else {
+                        resolve(null);  // fallback
+                    }
+                };
+
+                //accesso a DB negato
+                richiestaVenditore.onerror = () => {
+                    resolve(null); // fallback
+                };
+            });
+
             //creo riga nella tabella
             const riga: HTMLTableRowElement = document.createElement("tr");
-            riga.innerHTML = `<td>${copiaDelLibro.codiceUnivoco}</td><td>${copiaDelLibro.venditore}</td><td>${copiaDelLibro.prezzoScontato}</td>`;
+            riga.innerHTML = `<td>${copiaDelLibro.codiceUnivoco}</td>
+                            <td>${venditore?.nome + "  " + venditore?.cognome}</td>
+                            <td>${copiaDelLibro.prezzoScontato}</td>`;
             // inserisco riga nel corpo della tabella
             corpoTabellaCopie.appendChild(riga);
         }

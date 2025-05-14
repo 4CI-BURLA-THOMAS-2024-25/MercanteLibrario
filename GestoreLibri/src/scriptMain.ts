@@ -60,7 +60,7 @@ function apriDatabase(): Promise<IDBDatabase>{
 
                 tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
                 tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
-                tabellaCopie.createIndex("venditore", "venditore", {unique: false});
+            tabellaCopie.createIndex("venditoreCF", "venditoreCF", {unique: false});
             }
 
             //controllo che non esista già una tabella con questo nome
