@@ -226,9 +226,12 @@ async function registraCopia():Promise<void>{
 
         const richiestaAggiungiCopia = tabellaCopie.add(copia);
 
+        console.log(libro);
+
         //richiesta andata a buon fine
         richiestaAggiungiCopia.onsuccess = () => {
             //aggiorno lista copie, rileggendo da DB
+            console.log(libro);
             caricaCopieLibro();
 
             //chiudo popup di inserimento
@@ -304,7 +307,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         //mostro le copie del libro
         await caricaCopieLibro();
-
         
         //se CF ha del contenuto, significa che sono di ritorno dalla scelta del venditore: riapro popup per registrare la copia
         if(codiceFiscaleVenditore != null){
@@ -312,6 +314,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
     } catch (erroreDB) {
-        console.error("Errore apertura DB:", erroreDB);
+        console.error(erroreDB);
     }
 });
