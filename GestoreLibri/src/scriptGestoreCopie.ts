@@ -381,7 +381,7 @@ async function prelevaVenditoreCF(codiceFiscalePassato: string): Promise<Libro>{
     //assegno libro o errore di recupero
     const libroPrelevato = await new Promise<Libro>((resolve, reject) => {
         // cerco per isbn
-        const richiestaLibri = tabellaVenditori.get(codiceFiscalePassato);
+        const richiestaVenditori = tabellaVenditori.get(codiceFiscalePassato);
 
         richiestaLibri.onsuccess = () => {
             if (richiestaLibri.result) {
