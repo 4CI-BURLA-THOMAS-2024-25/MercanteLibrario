@@ -32,7 +32,7 @@ const popupAggiungiCopie = document.getElementById("popupRegistraCopia");
 
 //reference del bottone che conferma la registrazione della copia con relativo comportamento associato
 const bottoneRegistraCopia = document.getElementById("registraCopia");
-bottoneRegistraCopia?.addEventListener("click", registraCopia);
+bottoneRegistraCopia?.addEventListener("click", preparaCopiaDaRegistrare);
 
 //prelevo reference del bottone per chiudere il popup e vi associo funzione per chiuderlo
 const bottoneChiudiPopup = document.getElementById("chiudiPopup") as HTMLButtonElement;
@@ -47,6 +47,90 @@ const casellaPercentualeSconto = document.getElementById("selezionaSconto") as H
 
 //reference del campo di testo non modificabile che mostra il venditore selezionato per la registrazione della copia
 const etichettaIDVenditore = document.getElementById("IDVenditore") as HTMLInputElement;
+
+// parte comunicazione
+const ws = new WebSocket('ws://localHost:8081');
+
+// funzione per aprire il database
+function apriDatabase(): Promise<IDBDatabase>{
+    let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
+        const richiestaDB = indexedDB.open("Database", 1);
+
+        //cosa fare in caso di errore
+        richiestaDB.onerror = () => {
+            // restituisco motivo errore
+            reject(richiestaDB.onerror);
+        }
+
+        // richiesta accolta
+        richiestaDB.onsuccess = () => {
+            const database = richiestaDB.result;
+            resolve(database);
+        }
+    });
+
+    return out;
+}
+
+ws.onopen = function () {
+    console.log("aperto il server");
+}
+
+ws.onclose = function () {
+    console.log("connessione server chiusa");
+}
+
+ws.onerror = function (error) {
+    console.log("errore nel webSocket", error);
+}
+
+//comunico la copia da rimuovere
+function inviaDatiRimozione(codiceUnivoco: number) {
+    ws.send("1," + String(codiceUnivoco));
+}
+
+//comunico la copia da aggiungere
+function inviaDati(copia: Copia) {
+    ws.send("0," + String(copia.toString()));
+}
+
+//ricevo messaggio
+ws.onmessage = function (event) {
+    console.log(event.data);
+
+    //prelevo dati dell'evento
+    let data = event.data;
+    //dividio azione e contenuto
+    let smista = data.split(',');
+    //aggiungi copia
+    if (smista[0] == 0) {
+        riceviMessaggio(event);
+
+    //rimuovi
+    } else {
+        //riceviDatiRimozione(event);
+    }
+}
+
+//gestisco aggiunta copia
+async function riceviMessaggio(event: any) {
+    try{
+        //ricostruisco oggeto copia che mi hanno trasmesso
+        const parametriCopia: string[] = (event.data).split(",");
+
+        //prelevo oggetto libro associato alla copia in base a isbn
+        const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
+        //prelevo oggetto Venditore associato alla copia in base a CF
+        const venditorePrelevato: Venditore = await prelevaVenditoreCF(parametriCopia[3]);
+        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato);
+
+        //salvo copia ricevuta su DB
+        await registraCopia(copiaRicevuta);
+
+    }catch(error){
+        console.error("Errore nel recupero del libro mediante ISBN o del venditore mediante CF trasmesso da socket");
+    }
+}
 
 //funzione che ripristina il popup aperto (quando ritorno dalla pagina di selezione del venditore)
 async function ripristinaPopup(): Promise<void>{
@@ -104,27 +188,6 @@ async function prelevaVenditore(codiceFiscale: string): Promise<Venditore>{
 
     //restituisco venditore
     return venditoreLetto;
-}
-
-// funzione per aprire il database
-function apriDatabase(): Promise<IDBDatabase>{
-    let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
-        const richiestaDB = indexedDB.open("Database", 1);
-
-        //cosa fare in caso di errore
-        richiestaDB.onerror = () => {
-            // restituisco motivo errore
-            reject(richiestaDB.onerror);
-        }
-
-        // richiesta accolta
-        richiestaDB.onsuccess = () => {
-            const database = richiestaDB.result;
-            resolve(database);
-        }
-    });
-
-    return out;
 }
 
 //prelevo da DB tutte le copie del libro, in base al suio isbn
@@ -250,8 +313,8 @@ function apriRegistrazioneCopia(): void{
     }
 }
 
-//funzione per registrare una copia del libro in questione
-async function registraCopia():Promise<void>{
+//funzione per preparare la registrazione di una copia del libro in questione
+async function preparaCopiaDaRegistrare():Promise<void>{
     const codiceUltimaCopia = await leggiUltimaChiaveCopia();
 
     let codiceCopiaAttuale; 
@@ -268,30 +331,35 @@ async function registraCopia():Promise<void>{
         //creo oggetto copia
         const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(casellaPercentualeSconto.value), venditore);
 
-        //apro transazione
-        const transazione = database.transaction("Copie", "readwrite");
-        const tabellaCopie = transazione.objectStore("Copie");
+        //chiamo scrittura su DB
+        await registraCopia(copia);
+    }
+}
 
-        const richiestaAggiungiCopia = tabellaCopie.add(copia);
+//funzione per registrare una copia del libro
+async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
+    //apro transazione
+    const transazione = database.transaction("Copie", "readwrite");
+    const tabellaCopie = transazione.objectStore("Copie");
 
-        //richiesta andata a buon fine
-        richiestaAggiungiCopia.onsuccess = () => {
-            //aggiorno lista copie, rileggendo da DB
-            caricaCopieLibro();
+    const richiestaAggiungiCopia = tabellaCopie.add(copiaDaSalvare);
 
-            //chiudo popup di inserimento
-            chiudiRegistrazioneCopia();
+    //richiesta andata a buon fine
+    richiestaAggiungiCopia.onsuccess = () => {
+        //aggiorno lista copie, rileggendo da DB
+        caricaCopieLibro();
 
-            //notifico aggiunta nuova copia
-            //databaseChannel.postMessage({store: "Copie", action: "add"});
-        }
+        //chiudo popup di inserimento
+        chiudiRegistrazioneCopia();
 
-        //errore, copia già presente (improbabile, genero io la chiave primaria)
-        richiestaAggiungiCopia.onerror = () => {
-            console.error("Copia già presente");
-        }
+        //notifico aggiunta nuova copia
+        //databaseChannel.postMessage({store: "Copie", action: "add"});
     }
 
+    //errore, copia già presente (improbabile, genero io la chiave primaria)
+    richiestaAggiungiCopia.onerror = () => {
+        console.error("Copia già presente");
+    }
 }
 
 //genero numero della copia
@@ -330,7 +398,6 @@ function chiudiRegistrazioneCopia(): void{
 
 // funzione che mostra la pagina per scegliere un venditore/aggiungerne uno nuovo
 function mostraVenditori(): void{
-
     //preparo passaggio di partametri tramite URL, per non perderli quando apro pagina venditori con la scelta
     const parametriTrasmessi = new URLSearchParams();
     //passo isbn
@@ -351,7 +418,7 @@ async function prelevaLibroISBN(isbnPassato: number): Promise<Libro>{
     const tabellaLibri = transazione.objectStore("Libri");
 
     //assegno libro o errore di recupero
-    const libroPrelevato = await new Promise<Libro>((resolve, reject) => {
+    const libroPrelevato: Libro = await new Promise<Libro>((resolve, reject) => {
         // cerco per isbn
         const richiestaLibri = tabellaLibri.get(isbnPassato);
 
@@ -373,31 +440,31 @@ async function prelevaLibroISBN(isbnPassato: number): Promise<Libro>{
 }
 
 //funzione che preleva un venditore dato il suo CF
-async function prelevaVenditoreCF(codiceFiscalePassato: string): Promise<Libro>{
+async function prelevaVenditoreCF(codiceFiscalePassato: string): Promise<Venditore>{
     //apro transazione
     const transazione = database.transaction("Venditori", "readonly");
     const tabellaVenditori = transazione.objectStore("Venditori");
 
     //assegno libro o errore di recupero
-    const libroPrelevato = await new Promise<Libro>((resolve, reject) => {
+    const venditorePrelevato: Venditore = await new Promise<Venditore>((resolve, reject) => {
         // cerco per isbn
         const richiestaVenditori = tabellaVenditori.get(codiceFiscalePassato);
 
-        richiestaLibri.onsuccess = () => {
-            if (richiestaLibri.result) {
-                resolve(richiestaLibri.result);
+        richiestaVenditori.onsuccess = () => {
+            if (richiestaVenditori.result) {
+                resolve(richiestaVenditori.result);
             } else {
                 reject(new Error("Venditore non trovato con codice fiscale: " + codiceFiscalePassato));
             }
         };
 
-        richiestaLibri.onerror = (event) => {
+        richiestaVenditori.onerror = (event) => {
             console.error("Errore nella richiesta:", event);
-            reject(richiestaLibri.error);
+            reject(richiestaVenditori.error);
         };
     });  
     
-    return libroPrelevato;
+    return venditorePrelevato;
 }
 
 // al caricamento della pagina, apro database
@@ -413,88 +480,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         if(codiceFiscaleVenditore != null){
             ripristinaPopup();
         }
-
-        // parte comunicazione
-        const ws = new WebSocket('ws://localHost:8081');
-
-        ws.onopen = function () {
-            console.log("aperto il server");
-        }
-
-        ws.onclose = function () {
-            console.log("connessione server chiusa");
-        }
-
-        ws.onerror = function (error) {
-            console.log("errore nel webSocket", error);
-        }
-
-        //comunico la copia da rimuovere
-        function inviaDatiRimozione(codiceUnivoco: number) {
-            ws.send("1," + String(codiceUnivoco));
-        }
-
-        //comunico la copia da aggiungere
-        function inviadati(copia: Copia) {
-            ws.send("0," + String(copia.toString()));
-        }
-
-        //ricevo messaggio
-        ws.onmessage = function (event) {
-            console.log(event.data);
-
-            //prelevo dati dell'evento
-            let data = event.data;
-            //dividio azione e contenuto
-            let smista = data.split(',');
-            //aggiungi copia
-            if (smista[0] == 0) {
-                riceviMessaggio(event);
-
-            //rimuovi
-            } else {
-                //riceviDatiRimozione(event);
-            }
-        }
-
-        // function riceviDatiRimozione(event) {
-        //     let data = event.data;
-        //     data = data.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
-        //     let vet5 = data.split(',');
-        //     let c = new copiaLibro(vet5[1], vet5[3], vet5[4], true, vet5[2]);
-        //     rimuoviCopiaLibro(c.nome, c.prezzo, c.numero);
-        // }
-
-        //gestisco aggiunta copia
-        async function riceviMessaggio(event: any) {
-            try{
-                //ricostruisco oggeto copia che mi hanno trasmesso
-                const parametriCopia: string[] = (event.data).split(",");
-    
-                //prelevo oggetto libro associato alla copia in base a isbn
-                const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
-                //
-                const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), parametriCopia[3]);
-
-            }catch(error){
-                console.error("Errore nel recupero del libro mediante ISBN trasmesso da socket");
-            }
-        }
-
-        // let data = event.data;
-        // data = data.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
-        // let vet = data.split(',');
-        // let c = new copiaLibro(vet[1], vet[3], vet[4], true, vet[2]);
-        // copialibri.push(c);
-        // c.aggiungiCopiaLibro();
-        // for (let i = 0; i < libri.length; i++) {
-        //     let li = libri[i];
-        //     let cod1 = libri[i].codiceVolume;
-        //     if (cod1 == c.codiceVolume) {
-        //     li.visualizzaCopie();
-        //     }
-        // }
-        // }
 
     } catch (erroreDB) {
         console.error(erroreDB);
