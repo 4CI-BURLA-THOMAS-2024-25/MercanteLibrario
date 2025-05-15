@@ -20,4 +20,8 @@ export class Copia{
         // per ogni copia mi serve sapere chi me l'ha portata per la vendita
         this.venditoreCF = venditore.codFiscale;
     }
+
+    toString(): string {
+        return `${this.libroDellaCopiaISBN},${this.codiceUnivoco},${this.prezzoScontato},${this.venditoreCF}`;
+    }
 }

@@ -344,6 +344,62 @@ function mostraVenditori(): void{
     window.location.href = `selezionaVenditore.html?${parametriTrasmessi.toString()}`;
 }
 
+//funzione che preleva un libro dato il suo isbn
+async function prelevaLibroISBN(isbnPassato: number): Promise<Libro>{
+    //apro transazione
+    const transazione = database.transaction("Libri", "readonly");
+    const tabellaLibri = transazione.objectStore("Libri");
+
+    //assegno libro o errore di recupero
+    const libroPrelevato = await new Promise<Libro>((resolve, reject) => {
+        // cerco per isbn
+        const richiestaLibri = tabellaLibri.get(isbnPassato);
+
+        richiestaLibri.onsuccess = () => {
+            if (richiestaLibri.result) {
+                resolve(richiestaLibri.result);
+            } else {
+                reject(new Error("Libro non trovato con ISBN: " + isbn));
+            }
+        };
+
+        richiestaLibri.onerror = (event) => {
+            console.error("Errore nella richiesta:", event);
+            reject(richiestaLibri.error);
+        };
+    });  
+    
+    return libroPrelevato;
+}
+
+//funzione che preleva un venditore dato il suo CF
+async function prelevaVenditoreCF(codiceFiscalePassato: string): Promise<Libro>{
+    //apro transazione
+    const transazione = database.transaction("Venditori", "readonly");
+    const tabellaVenditori = transazione.objectStore("Venditori");
+
+    //assegno libro o errore di recupero
+    const libroPrelevato = await new Promise<Libro>((resolve, reject) => {
+        // cerco per isbn
+        const richiestaLibri = tabellaVenditori.get(codiceFiscalePassato);
+
+        richiestaLibri.onsuccess = () => {
+            if (richiestaLibri.result) {
+                resolve(richiestaLibri.result);
+            } else {
+                reject(new Error("Venditore non trovato con codice fiscale: " + codiceFiscalePassato));
+            }
+        };
+
+        richiestaLibri.onerror = (event) => {
+            console.error("Errore nella richiesta:", event);
+            reject(richiestaLibri.error);
+        };
+    });  
+    
+    return libroPrelevato;
+}
+
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {
     try {
@@ -362,56 +418,83 @@ document.addEventListener("DOMContentLoaded", async () => {
         const ws = new WebSocket('ws://localHost:8081');
 
         ws.onopen = function () {
-        console.log("aperto il server");
+            console.log("aperto il server");
         }
 
         ws.onclose = function () {
-        console.log("connessione server chiusa");
+            console.log("connessione server chiusa");
         }
 
         ws.onerror = function (error) {
-        console.log("errore nel webSocket", error);
+            console.log("errore nel webSocket", error);
         }
 
+        //comunico la copia da rimuovere
         function inviaDatiRimozione(codiceUnivoco: number) {
-        ws.send("1," + String(codiceUnivoco));
+            ws.send("1," + String(codiceUnivoco));
         }
 
+        //comunico la copia da aggiungere
         function inviadati(copia: Copia) {
-        ws.send("0," + String(messaggio));
+            ws.send("0," + String(copia.toString()));
         }
+
+        //ricevo messaggio
         ws.onmessage = function (event) {
-        console.log(event.data);
-        let data = event.data;
-        let smista = data.split(',');
-        if (smista[0] == 0) {
-            riceviMessaggio(event);
-        } else {
-            riceviDatiRimozione(event);
-        }
-        }
-        function riceviDatiRimozione(event) {
-        let data = event.data;
-        data = data.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
-        let vet5 = data.split(',');
-        let c = new copiaLibro(vet5[1], vet5[3], vet5[4], true, vet5[2]);
-        rimuoviCopiaLibro(c.nome, c.prezzo, c.numero);
-        }
-        function riceviMessaggio(event) {
-        let data = event.data;
-        data = data.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
-        let vet = data.split(',');
-        let c = new copiaLibro(vet[1], vet[3], vet[4], true, vet[2]);
-        copialibri.push(c);
-        c.aggiungiCopiaLibro();
-        for (let i = 0; i < libri.length; i++) {
-            let li = libri[i];
-            let cod1 = libri[i].codiceVolume;
-            if (cod1 == c.codiceVolume) {
-            li.visualizzaCopie();
+            console.log(event.data);
+
+            //prelevo dati dell'evento
+            let data = event.data;
+            //dividio azione e contenuto
+            let smista = data.split(',');
+            //aggiungi copia
+            if (smista[0] == 0) {
+                riceviMessaggio(event);
+
+            //rimuovi
+            } else {
+                //riceviDatiRimozione(event);
             }
         }
+
+        // function riceviDatiRimozione(event) {
+        //     let data = event.data;
+        //     data = data.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
+        //     let vet5 = data.split(',');
+        //     let c = new copiaLibro(vet5[1], vet5[3], vet5[4], true, vet5[2]);
+        //     rimuoviCopiaLibro(c.nome, c.prezzo, c.numero);
+        // }
+
+        //gestisco aggiunta copia
+        async function riceviMessaggio(event: any) {
+            try{
+                //ricostruisco oggeto copia che mi hanno trasmesso
+                const parametriCopia: string[] = (event.data).split(",");
+    
+                //prelevo oggetto libro associato alla copia in base a isbn
+                const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
+                //
+                const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), parametriCopia[3]);
+
+            }catch(error){
+                console.error("Errore nel recupero del libro mediante ISBN trasmesso da socket");
+            }
         }
+
+        // let data = event.data;
+        // data = data.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
+        // let vet = data.split(',');
+        // let c = new copiaLibro(vet[1], vet[3], vet[4], true, vet[2]);
+        // copialibri.push(c);
+        // c.aggiungiCopiaLibro();
+        // for (let i = 0; i < libri.length; i++) {
+        //     let li = libri[i];
+        //     let cod1 = libri[i].codiceVolume;
+        //     if (cod1 == c.codiceVolume) {
+        //     li.visualizzaCopie();
+        //     }
+        // }
+        // }
 
     } catch (erroreDB) {
         console.error(erroreDB);
