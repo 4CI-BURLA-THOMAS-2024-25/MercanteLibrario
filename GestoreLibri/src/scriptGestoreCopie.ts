@@ -277,16 +277,13 @@ async function registraCopia():Promise<void>{
         //richiesta andata a buon fine
         richiestaAggiungiCopia.onsuccess = () => {
             //aggiorno lista copie, rileggendo da DB
-            console.log(libro);
-
-            //aggiorno tabella
             caricaCopieLibro();
 
             //chiudo popup di inserimento
             chiudiRegistrazioneCopia();
 
             //notifico aggiunta nuova copia
-            databaseChannel.postMessage({store: "Copie", action: "add"});
+            //databaseChannel.postMessage({store: "Copie", action: "add"});
         }
 
         //errore, copia già presente (improbabile, genero io la chiave primaria)
@@ -359,6 +356,61 @@ document.addEventListener("DOMContentLoaded", async () => {
         //se CF ha del contenuto, significa che sono di ritorno dalla scelta del venditore: riapro popup per registrare la copia
         if(codiceFiscaleVenditore != null){
             ripristinaPopup();
+        }
+
+        // parte comunicazione
+        const ws = new WebSocket('ws://localHost:8081');
+
+        ws.onopen = function () {
+        console.log("aperto il server");
+        }
+
+        ws.onclose = function () {
+        console.log("connessione server chiusa");
+        }
+
+        ws.onerror = function (error) {
+        console.log("errore nel webSocket", error);
+        }
+
+        function inviaDatiRimozione(codiceUnivoco: number) {
+        ws.send("1," + String(codiceUnivoco));
+        }
+
+        function inviadati(copia: Copia) {
+        ws.send("0," + String(messaggio));
+        }
+        ws.onmessage = function (event) {
+        console.log(event.data);
+        let data = event.data;
+        let smista = data.split(',');
+        if (smista[0] == 0) {
+            riceviMessaggio(event);
+        } else {
+            riceviDatiRimozione(event);
+        }
+        }
+        function riceviDatiRimozione(event) {
+        let data = event.data;
+        data = data.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
+        let vet5 = data.split(',');
+        let c = new copiaLibro(vet5[1], vet5[3], vet5[4], true, vet5[2]);
+        rimuoviCopiaLibro(c.nome, c.prezzo, c.numero);
+        }
+        function riceviMessaggio(event) {
+        let data = event.data;
+        data = data.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
+        let vet = data.split(',');
+        let c = new copiaLibro(vet[1], vet[3], vet[4], true, vet[2]);
+        copialibri.push(c);
+        c.aggiungiCopiaLibro();
+        for (let i = 0; i < libri.length; i++) {
+            let li = libri[i];
+            let cod1 = libri[i].codiceVolume;
+            if (cod1 == c.codiceVolume) {
+            li.visualizzaCopie();
+            }
+        }
         }
 
     } catch (erroreDB) {
