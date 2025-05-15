@@ -253,8 +253,8 @@ function tornaAlleCopie():void {
 
     //verifico se è stata selezionata una spunta
     if (rigaSelezionata) {
-        //ottieni il codice fiscale dalla cella corrispondente (nella terza colonna della riga)
-        const codiceFiscale: string = rigaSelezionata.querySelector("td:nth-child(3)")?.textContent as string;
+        //ottieni il codice fiscale dalla cella corrispondente (nella seconda colonna della riga)
+        const codiceFiscale: string = rigaSelezionata.querySelector("td:nth-child(2)")?.textContent as string;
 
         //preparo parametri da passare alla pagina precedente
         const parametriRitorno = new URLSearchParams();
