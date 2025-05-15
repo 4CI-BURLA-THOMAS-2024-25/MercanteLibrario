@@ -97,14 +97,12 @@ function inviaDati(copia: Copia) {
 //ricevo messaggio
 ws.onmessage = function (event) {
     console.log(event.data);
-
-    //prelevo dati dell'evento
-    let data = event.data;
-    //dividio azione e contenuto
-    let smista = data.split(',');
+    
+    //divido azione e contenuto
+    let smista:any[] = (event.data).split(',');
     //aggiungi copia
-    if (smista[0] == 0) {
-        riceviMessaggio(event);
+    if (Number(smista[0]) == 0) {
+        riceviMessaggio(smista[1]);
 
     //rimuovi
     } else {
@@ -113,10 +111,12 @@ ws.onmessage = function (event) {
 }
 
 //gestisco aggiunta copia
-async function riceviMessaggio(event: any) {
+async function riceviMessaggio(parametriCopiaStringa: string) {
     try{
-        //ricostruisco oggeto copia che mi hanno trasmesso
-        const parametriCopia: string[] = (event.data).split(",");
+        //ricostruisco oggetto copia che mi hanno trasmesso
+        const parametriCopia: string[] = (parametriCopiaStringa).split(",");
+
+        console.log(parametriCopia);
 
         //prelevo oggetto libro associato alla copia in base a isbn
         const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
@@ -346,6 +346,9 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
 
     //richiesta andata a buon fine
     richiestaAggiungiCopia.onsuccess = () => {
+        //comunico scrittura copia 
+        inviaDati(copiaDaSalvare);
+
         //aggiorno lista copie, rileggendo da DB
         caricaCopieLibro();
 

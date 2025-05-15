@@ -165,19 +165,6 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
         //aggiungo cella alla riga
         riga.appendChild(casellaSelezione);
 
-        //creo cella del bottone di eliminazione
-        const cellaBottoneRimuoviVenditore  = document.createElement("td");
-        //creo bottone per "eliminare" il venditore
-        const bottoneRimuoviVenditore = document.createElement("button");
-        //aggiungo testo al bottone
-        bottoneRimuoviVenditore.textContent = "Rimuovi venditore";
-        //associo ascoltatore
-        bottoneRimuoviVenditore.addEventListener("click", () => rimuoviVenditore(venditori[i].codFiscale));
-        //inserisco bottone nella sua cella
-        cellaBottoneRimuoviVenditore.appendChild(bottoneRimuoviVenditore);
-        //aggiungo cella alla riga
-        riga.appendChild(cellaBottoneRimuoviVenditore);
-
         //creo cella codicefiscale e la aggiungo alla riga
         const cellaCF = document.createElement("td");
         cellaCF.textContent = venditori[i].codFiscale;
@@ -257,54 +244,6 @@ async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
 
     //restituisco array con tutte le somme delle copie per venditore
     return sommaPrezziCopie;
-}
-
-
-//funzione per rimuovere venditore
-async function rimuoviVenditore(codiceFiscale: string): Promise<void>{
-    //chiedo conferma per la cancellazione
-    const confermaCancellazioneVenditore = window.confirm("Sei sicuro di voler cancellare il venditore?");
-
-    //conferma della cancellazione
-    if(confermaCancellazioneVenditore){
-        //gestisco eventuali errori
-        try{
-            //apro transazione verso tabella dei venditori, in modifica
-            const transazione = database.transaction("Venditori", "readwrite");
-            //prelevo reference della tabella dei venditori
-            const tabellaVenditori = transazione.objectStore("Venditori");
-        
-            //richiedo la cancellazione, passando la chiave primaria
-            const richiesta = tabellaVenditori.delete(codiceFiscale);
-    
-            //gestisco transazione DB
-            await new Promise<void>((resolve, reject) => {
-        
-                richiesta.onsuccess = () => {
-                    window.alert("Venditore eliminato con successo");
-
-                    //notifico eliminazione
-                    databaseChannel.postMessage({store: "Venditori", action: "delete"});
-
-                    resolve();
-                };
-        
-                richiesta.onerror = () => {
-                    console.error("Errore nella cancellazione:", richiesta.error);
-                    reject(richiesta.error);
-                };
-            });
-    
-            //aggiorno tabella rileggendo da DB
-            prelevaVenditori();
-    
-        }catch(errore){
-            window.alert("Errore nella cancellazione:" + errore);
-        }
-
-    }else{
-        window.alert("Eliminazione annullata");
-    }
 }
 
 //funzione per tornare alle copie, dopo aver selezionato un venditore salvando CF in sessionStorage

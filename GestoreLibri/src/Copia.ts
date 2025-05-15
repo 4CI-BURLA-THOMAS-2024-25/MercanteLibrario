@@ -22,6 +22,6 @@ export class Copia{
     }
 
     toString(): string {
-        return `${this.libroDellaCopiaISBN},${this.codiceUnivoco},${this.prezzoScontato},${this.venditoreCF}`;
+        return `${this.libroDellaCopiaISBN};${this.codiceUnivoco};${this.prezzoScontato};${this.venditoreCF}`;
     }
 }
