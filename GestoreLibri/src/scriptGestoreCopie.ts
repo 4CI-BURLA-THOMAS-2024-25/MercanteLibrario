@@ -114,7 +114,7 @@ ws.onmessage = function (event) {
 async function riceviMessaggio(parametriCopiaStringa: string) {
     try{
         //ricostruisco oggetto copia che mi hanno trasmesso
-        const parametriCopia: string[] = (parametriCopiaStringa).split(",");
+        const parametriCopia: string[] = (parametriCopiaStringa).split(";");
 
         console.log(parametriCopia);
 
