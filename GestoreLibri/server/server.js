@@ -22,6 +22,7 @@ wss.on('connection', function connection(ws) {
             }
         });
 
+        
         // Scrittura su file
         const mess1 = mes.replace(/(nome|isCopia|prezzo|codiceVolume|numero|[{}:" ])/g, '');
         fs.appendFile('db_server.txt', mess1 + "\n", (err) => {
