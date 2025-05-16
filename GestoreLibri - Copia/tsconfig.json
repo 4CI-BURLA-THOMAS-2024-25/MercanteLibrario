@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    //imposto versione di JavaScript a cui compilare
+    "target": "ES6",  
+    "lib": ["ES2017", "DOM"], 
+    //cartella codice typescript
+    "rootDir": "./src",
+    "module": "ES6", 
+    "strict": true,
+    "esModuleInterop": true
+  }
+}

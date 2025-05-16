@@ -1,0 +1,123 @@
+/* importo font di h1 da Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=New+Rocker&display=swap');
+
+/* importo font di h2 da Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Macondo&display=swap');
+
+/* importo font dei bottoni del popup per gestire le copie di un libro da Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+/* importo font per campi di testo/menù a tendina del popup gestore copie da Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+/* importo font per labels del popup gestore copie da Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+h1 {
+    color:darkorange;
+    font-family: 'New Rocker';
+    text-align: center;
+    font-size: 100px;
+}
+
+h2 {
+    color:fuchsia;
+    font-family: 'Macondo';
+    font-size: 50px;
+}
+
+table {
+    border: 1px solid black;
+    width: 100%;
+    border-collapse: collapse
+}
+
+th, td {
+    border: 1px solid black
+}
+
+#casellaRicerca {
+    width: 98%;
+    height: 40px;
+    margin: 10px;
+    border-radius: 6px;
+    gap: 5px;
+    text-size-adjust: 100%;
+    font-size: 2em;
+}
+
+/* html {
+    background-color:greenyellow;
+} */
+
+header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /*spinge gli elementi ai lati */
+    align-items: center; /*allinea verticalmente */
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.contenutoPopup {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    width: 500px;
+    text-align: center;
+}
+
+/*bottone di chiusura del popup */
+#chiudi {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* bottoni del popup per aggiungere copie */
+.bottoniPopup {
+    font-size: 20px;
+    font-family: 'Inter';
+}
+
+/* testo delle caselle di input del popup per gestire le copie */
+.testoInputPopup {
+    font-family: 'Nunito';
+    font-size: 20px;
+}
+
+/* testo delle etichette del popup gestore copie */
+.testoLabelPopup {
+    font-family: 'Work Sans';
+    font-size: 20px;
+}
+
+.caselleSelezione {
+    width: 100%;         /* Riempi tutta la cella in larghezza */
+    height: 100%;        /* Riempi tutta la cella in altezza */
+    margin: 0;           /* Rimuovi margine */
+    display: block;      /* Permette di occupare tutto lo spazio */
+    box-sizing: border-box; /* Assicura che width e height includano padding/border */
+    cursor: pointer;     /* Cambia il cursore quando ci passi sopra */
+    zoom: 3;
+    transform-origin: center; /* Centra la scala */
+}
+
+/* sistemo celle che contengono le caselle di spunta */
+td:has(.caselleSelezione) {
+    vertical-align: middle;
+    text-align: center;
+}
