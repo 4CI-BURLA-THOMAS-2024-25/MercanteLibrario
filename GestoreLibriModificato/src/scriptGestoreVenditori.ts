@@ -41,6 +41,65 @@ function apriDatabase(): Promise<IDBDatabase>{
             const database = richiestaDB.result;
             resolve(database);
         }
+
+        //database aggiornato o creato per la prima volta
+        richiestaDB.onupgradeneeded = () => {
+            const database = richiestaDB.result;
+
+            //controllo che non esista già una tabella con questo nome
+            if(!database.objectStoreNames.contains("Libri")){
+                //creo nuova tabella e specifico chiave primaria
+                const tabellaLibri = database.createObjectStore("Libri", {
+                    keyPath: "isbn",
+                });
+
+                tabellaLibri.createIndex("materia", "materia", {unique: false});
+                tabellaLibri.createIndex("autore", "autore", {unique: false});
+                tabellaLibri.createIndex("titolo", "titolo", {unique: false});
+                tabellaLibri.createIndex("volume", "volume", {unique: false});
+                tabellaLibri.createIndex("editore", "editore", {unique: false});
+                tabellaLibri.createIndex("prezzoListino", "prezzoListino", {unique: false});
+                tabellaLibri.createIndex("classe", "classe", {unique: false});
+            }
+
+            //controllo che non esista già una tabella con questo nome
+            if(!database.objectStoreNames.contains("Copie")){
+                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                const tabellaCopie = database.createObjectStore("Copie", {
+                    keyPath: "codiceUnivoco",
+                });
+
+                tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
+                tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
+                tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
+            }
+
+            //controllo che non esista già una tabella con questo nome
+            if(!database.objectStoreNames.contains("Venditori")){
+                //creo nuova tabella e specifico chiave primaria
+                const tabellaVenditori = database.createObjectStore("Venditori", {
+                    keyPath: "id",
+                });
+
+                tabellaVenditori.createIndex("nome", "nome", {unique: false});
+                tabellaVenditori.createIndex("cognome", "cognome", {unique: false});
+                tabellaVenditori.createIndex("email", "email", {unique: false});
+                tabellaVenditori.createIndex("nTelefono", "nTelefono", {unique: true});
+                tabellaVenditori.createIndex("classe", "classe", {unique: false});
+            }
+
+            //creo object store in cui salvare le copie eliminate, così da poterle reperire in caso di errore umano
+            if(!database.objectStoreNames.contains("CopieEliminate")){
+                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                const tabellaCopie = database.createObjectStore("CopieEliminate", {
+                    keyPath: "codiceUnivoco",
+                });
+
+                tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
+                tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
+                tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
+            }
+        }
     });
 
     return out;
@@ -61,17 +120,28 @@ function chiudiRegistrazioneVenditore(): void{
     }
 }
 
-function registraVenditore(): void{
+async function registraVenditore(): Promise<void>{
     //array in cui salvo l'input dell'utente e che uso per creare nuovo oggetto venditore
-    let datiVenditore: any[] = new Array(6);
+    let datiVenditore: any[] = new Array(5);
 
     //leggo tutte le caselle
     for(let i = 0; i < caselleInput.length; i++){
         datiVenditore[i] = (caselleInput[i] as HTMLInputElement).value;
     }
 
+    //leggo id dell'ultimo venditore
+    const ultimoIDVenditore = await leggiUltimoIDVenditore();
+    let venditoreID; 
+    //verifico che vi siano venditori nello store
+    if(ultimoIDVenditore !== null){
+        venditoreID = ultimoIDVenditore + 1;
+    //store vuoto
+    }else{
+        venditoreID = 1;
+    }
+
     //creo oggetto venditore
-    const venditore: Venditore = new Venditore(datiVenditore[0], datiVenditore[1], datiVenditore[2], datiVenditore[3], datiVenditore[4], datiVenditore[5]);
+    const venditore: Venditore = new Venditore(venditoreID, datiVenditore[0], datiVenditore[1], datiVenditore[2], datiVenditore[3], datiVenditore[4]);
 
     //apro transazione verso object store dei venditori, in scrittura
     const transazione = database.transaction("Venditori", "readwrite");
@@ -86,6 +156,11 @@ function registraVenditore(): void{
         //aggiorno lista venditori, rileggendo da DB
         prelevaVenditori();
 
+        //svuoto campi di inserimento
+        for(let i = 0; i < caselleInput.length; i++){
+            (caselleInput[i] as HTMLInputElement).value = "";
+        }
+
         //chiudo popup di inserimento
         chiudiRegistrazioneVenditore();
 
@@ -99,7 +174,34 @@ function registraVenditore(): void{
     }
 }
 
-//prelevo elenco completo vendirori da DB
+//prelevo ID dell'ultimo venditore, se il DB è popolato
+async function leggiUltimoIDVenditore(): Promise<number | null> {
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction("Venditori", "readonly");
+        const store = transaction.objectStore("Venditori");
+
+        // Apro un cursore ordinato in modo DECRESCENTE per chiavi
+        const request = store.openCursor(null, "prev");
+
+        request.onsuccess = () => {
+            //prelevo cursore
+            const cursor = request.result;
+            if (cursor) {
+                // La prima chiave che troviamo è la più grande (ultima)
+                resolve(cursor.primaryKey as number);
+            } else {
+                // Nessun record nello store
+                resolve(null);
+            }
+        };
+
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
+
+//prelevo elenco completo venditori da DB
 async function prelevaVenditori(): Promise<void>{
     //preparo transazione per leggere dal database
     const transazione = database.transaction("Venditori", "readonly");
@@ -120,6 +222,7 @@ async function prelevaVenditori(): Promise<void>{
     
         //se la lettura non genera errore, chiamo funzione per mostrare lista dei venditori
         mostraVenditori(venditori);
+
     }catch(errore){
         window.alert("Errore durante il caricamento dei venditori:" + errore);
     }
@@ -142,7 +245,7 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
 
         //creo cella codicefiscale e la aggiungo alla riga
         const cellaCF = document.createElement("td");
-        cellaCF.textContent = venditori[i].codFiscale;
+        cellaCF.textContent = String(venditori[i].id);
         riga.appendChild(cellaCF);
 
         //creo cella codicefiscale e la aggiungo alla riga
@@ -182,7 +285,7 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
         //aggiungo testo al bottone
         bottoneCopieVenditore.textContent = "Visualizza copie consegnate";
         //associo ascoltatore e passo riga
-        bottoneCopieVenditore.addEventListener("click", () => mostraCopieVenditore(venditori[i].codFiscale));
+        bottoneCopieVenditore.addEventListener("click", () => mostraCopieVenditore(venditori[i].id));
         //aggiungo cella alla riga
         cellaBottoneVediCopie.appendChild(bottoneCopieVenditore);
         //inserisco bottone nella cella
@@ -193,6 +296,7 @@ async function mostraVenditori(venditori: Venditore[]): Promise<void>{
     }
 } 
 
+//calcolo il prezzo MAX da dare al venditore, nel caso in cui vengano vendute tutte le sue copie
 async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
     let sommaPrezziCopie: number[] = new Array;
     // 1. Preleva tutti i venditori
@@ -213,9 +317,9 @@ async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
         const copie: Copia[] = await new Promise((resolve, reject) => {
             const transazione = database.transaction("Copie", "readonly");
             const tabellaCopie = transazione.objectStore("Copie");
-            const indice = tabellaCopie.index("venditoreCF");
+            const indice = tabellaCopie.index("venditoreID");
 
-            const richiesta = indice.getAll(venditore.codFiscale); // Usa l’indice per filtrare
+            const richiesta = indice.getAll(venditore.id); // Usa l’indice per filtrare
 
             richiesta.onsuccess = () => resolve(richiesta.result);
             richiesta.onerror = () => reject(richiesta.error);
@@ -234,16 +338,14 @@ async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
     return sommaPrezziCopie;
 }
 
-
-
 //funzione per mostrare le copie di un venditore
-function mostraCopieVenditore(codFiscale: string): void{
+function mostraCopieVenditore(id: number): void{
     //prelevo dimensioni schermo
     const altezza = screen.height;
     const larghezza = screen.width;
 
     //apro nuova pagina e passo CV
-    window.open(`gestoreCopieVenditore.html?codFiscale=${codFiscale}`, "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
+    window.open(`html/gestoreCopieVenditore.html?id=${id}`, "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
 }
 
 // al caricamento della pagina, apro database

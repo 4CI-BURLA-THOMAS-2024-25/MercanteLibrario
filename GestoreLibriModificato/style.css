@@ -12,6 +12,7 @@
 
 /* importo font per labels del popup gestore copie da Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
 h1 {
     color:darkorange;
     font-family: 'New Rocker';
@@ -23,6 +24,7 @@ h2 {
     color:fuchsia;
     font-family: 'Macondo';
     font-size: 50px;
+    margin: 20px;
 }
 
 table {
@@ -44,10 +46,6 @@ th, td {
     text-size-adjust: 100%;
     font-size: 2em;
 }
-
-/* html {
-    background-color:greenyellow;
-} */
 
 header {
     width: 100%;

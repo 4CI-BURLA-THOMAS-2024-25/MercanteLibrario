@@ -1,5 +1,3 @@
-import { Copia } from "./Copia";
-
 //creo classe esportabile, così da essere importata e usata dalla classe "main"
 export class Libro{
     //creo attributi costanti

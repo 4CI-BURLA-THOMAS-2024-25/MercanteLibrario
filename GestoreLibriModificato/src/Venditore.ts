@@ -1,10 +1,7 @@
-//importo classe Libro
-import { Copia } from "./Copia";
-
 //creo classe esportabile, così da essere importata e usata dalla classe "main"
 export class Venditore{
     //creo attributi costanti
-    readonly codFiscale: string;
+    readonly id: number;
     readonly nome: string;
     readonly cognome: string;
     readonly email: string;
@@ -12,15 +9,15 @@ export class Venditore{
     readonly classe: string;
 
     //costruttore
-    constructor(codFiscale: string, nome: string, cognome: string, email: string, nTelefonoString: string, classe: string){
+    constructor(id: number, nome: string, cognome: string, email: string, nTelefonoString: string, classe: string){
         //provo a convertire numero di telefono da stringa a numero effettivo
         let nTelefono = Number(nTelefonoString);
 
-        //controllo codice fiscale
-        if(codFiscale != undefined){
-            this.codFiscale = codFiscale;
+        //controllo id
+        if(id >= 0){
+            this.id = id;
         }else{
-            this.codFiscale = "-";
+            this.id = 0;
         }
 
         // controllo nome
