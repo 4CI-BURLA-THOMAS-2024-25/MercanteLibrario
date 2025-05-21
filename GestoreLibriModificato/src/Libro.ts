@@ -75,7 +75,7 @@ export class Libro{
     // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa
     toString(): string{
         //preparo array degli attributi
-        let valoriAttributi: any[] = [this.materia, this.isbn, this.autore, this.titolo, this.volume, this.editore, this.prezzoListino, this.classe];
+        const valoriAttributi: any[] = [this.materia, this.isbn, this.autore, this.titolo, this.volume, this.editore, this.prezzoListino, this.classe];
         
         //"converto" gli elementi dell'array in stringhe
         return valoriAttributi.join(" "); 

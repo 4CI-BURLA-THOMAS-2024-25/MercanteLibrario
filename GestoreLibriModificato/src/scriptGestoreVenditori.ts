@@ -7,6 +7,9 @@ import { databaseChannel } from "./broadcast";
 //database
 let database: IDBDatabase;
 
+//array dei venditori
+let elencoVenditori: Venditore[] | null;
+
 //prelevo reference del bottone per aggiungere venditori e vi associo la relativa funzione
 const bottoneAggiungiVenditore = document.getElementById("aggiungiVenditore") as HTMLButtonElement;
 bottoneAggiungiVenditore?.addEventListener("click", apriRegistrazioneVenditore);
@@ -24,6 +27,10 @@ bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneVenditore);
 
 //prelevo reference delle caselle di input
 const caselleInput = document.querySelectorAll(".testoInputPopup");
+
+//associo listener alla casella di ricerca,se non è null ed è definita
+const casellaRicerca = document.getElementById("casellaRicerca") as HTMLInputElement;
+casellaRicerca?.addEventListener("input", ricercaVenditori);
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -141,7 +148,7 @@ async function registraVenditore(): Promise<void>{
     }
 
     //creo oggetto venditore
-    const venditore: Venditore = new Venditore(venditoreID, datiVenditore[0], datiVenditore[1], datiVenditore[2], datiVenditore[3], datiVenditore[4]);
+    const venditore: Venditore = new Venditore(venditoreID, datiVenditore[0], datiVenditore[1], datiVenditore[2], Number(datiVenditore[3]), datiVenditore[4]);
 
     //apro transazione verso object store dei venditori, in scrittura
     const transazione = database.transaction("Venditori", "readwrite");
@@ -202,16 +209,17 @@ async function leggiUltimoIDVenditore(): Promise<number | null> {
 }
 
 //prelevo elenco completo venditori da DB
-async function prelevaVenditori(): Promise<void>{
-    //preparo transazione per leggere dal database
-    const transazione = database.transaction("Venditori", "readonly");
-    //prelevo reference tabella libri del database
-    const tabellaVenditori = transazione.objectStore("Venditori");
+async function prelevaVenditori(): Promise<Venditore[] | null>{
+    let venditori: Venditore[];
 
     //gestisco eventuale errore di lettura da DB
     try{
-        //array dei venditori
-        const venditori: Venditore[] = await new Promise<any[]>((resolve, reject) => {
+        //preparo transazione per leggere dal database
+        const transazione = database.transaction("Venditori", "readonly");
+        //prelevo reference tabella libri del database
+        const tabellaVenditori = transazione.objectStore("Venditori");
+        //array dei venditori (puri, come oggetti plain, da convertire in Venditori effettivi per applicare toString)
+        const rawVenditori = await new Promise<Venditore[]>((resolve, reject) => {
             //ottengo tutti venditori
             const richiesta = tabellaVenditori.getAll();
             //accetto richiesta e restituisco risultato
@@ -219,82 +227,95 @@ async function prelevaVenditori(): Promise<void>{
             //rifiuto richiesta e restituisco errore
             richiesta.onerror = () => reject(richiesta.error);
         });
-    
-        //se la lettura non genera errore, chiamo funzione per mostrare lista dei venditori
-        mostraVenditori(venditori);
 
+        //ricostruisco le istanze reali di Venditore
+        venditori = rawVenditori.map(oggettoGrezzo => new Venditore(
+            oggettoGrezzo.id,
+            oggettoGrezzo.nome,
+            oggettoGrezzo.cognome,
+            oggettoGrezzo.email,
+            oggettoGrezzo.nTelefono,
+            oggettoGrezzo.classe
+        ));
+
+        return venditori;
     }catch(errore){
         window.alert("Errore durante il caricamento dei venditori:" + errore);
+        return null;
     }
 }
 
-//mostro in tabella elenco che mi viene passato
-async function mostraVenditori(venditori: Venditore[]): Promise<void>{
+//mostro in tabella elenco dei venditori
+async function mostraVenditori(listaVenditori: Venditore[] | null): Promise<void>{
     //prelevo reference del corpo della tabella dei venditori
     const corpoVenditori = document.getElementById("corpoTabellaVenditori") as HTMLTableSectionElement;
     //svuoto tabella
     corpoVenditori.innerHTML = "";
 
-    //calcolo totale dei soldi da dare a ciascun venditore
-    const totaleDaDare: number[] = await caricaSommaPrezzoPerTuttiIVenditori();
-
-    //itero e creo riga per ogni venditore
-    for(let i = 0; i < venditori.length; i++){
-        //creo riga con le info del venditore
-        const riga: HTMLTableRowElement = document.createElement("tr");
-
-        //creo cella codicefiscale e la aggiungo alla riga
-        const cellaCF = document.createElement("td");
-        cellaCF.textContent = String(venditori[i].id);
-        riga.appendChild(cellaCF);
-
-        //creo cella codicefiscale e la aggiungo alla riga
-        const cellaNome = document.createElement("td");
-        cellaNome.textContent = venditori[i].nome;
-        riga.appendChild(cellaNome);
-
-        //creo cella codicefiscale e la aggiungo alla riga
-        const cellaCognome = document.createElement("td");
-        cellaCognome.textContent = venditori[i].cognome;
-        riga.appendChild(cellaCognome);
-
-        //creo cella codicefiscale e la aggiungo alla riga
-        const cellaEmail = document.createElement("td");
-        cellaEmail.textContent = venditori[i].email;
-        riga.appendChild(cellaEmail);
-
-        //creo cella codicefiscale e la aggiungo alla riga
-        const cellaTelefono = document.createElement("td");
-        cellaTelefono.textContent = String(venditori[i].nTelefono);
-        riga.appendChild(cellaTelefono);
-
-        //creo cella codicefiscale e la aggiungo alla riga
-        const cellaClasse = document.createElement("td");
-        cellaClasse.textContent = venditori[i].classe;
-        riga.appendChild(cellaClasse);
-
-        //creo cella codicefiscale e la aggiungo alla riga
-        const cellaSoldi = document.createElement("td");
-        cellaSoldi.textContent = String(totaleDaDare[i]);
-        riga.appendChild(cellaSoldi);
-
-        //creo cella con bottone per vedere copie
-        const cellaBottoneVediCopie = document.createElement("td");
-        //creo bottone per mostrare le copie associate a ciascun venditore
-        const bottoneCopieVenditore = document.createElement("button");
-        //aggiungo testo al bottone
-        bottoneCopieVenditore.textContent = "Visualizza copie consegnate";
-        //associo ascoltatore e passo riga
-        bottoneCopieVenditore.addEventListener("click", () => mostraCopieVenditore(venditori[i].id));
-        //aggiungo cella alla riga
-        cellaBottoneVediCopie.appendChild(bottoneCopieVenditore);
-        //inserisco bottone nella cella
-        riga.appendChild(cellaBottoneVediCopie);
-
-        //inserisco riga nel corpo della tabella
-        corpoVenditori.appendChild(riga);
+    if(listaVenditori != null){
+        //calcolo totale dei soldi da dare a ciascun venditore
+        const totaleDaDare: number[] = await caricaSommaPrezzoPerTuttiIVenditori();
+    
+        //itero e creo riga per ogni venditore
+        for(let i = 0; i < listaVenditori.length; i++){
+            //creo riga con le info del venditore
+            const riga: HTMLTableRowElement = document.createElement("tr");
+    
+            //creo cella codicefiscale e la aggiungo alla riga
+            const cellaCF = document.createElement("td");
+            cellaCF.textContent = String(listaVenditori[i].id);
+            riga.appendChild(cellaCF);
+    
+            //creo cella codicefiscale e la aggiungo alla riga
+            const cellaNome = document.createElement("td");
+            cellaNome.textContent = listaVenditori[i].nome;
+            riga.appendChild(cellaNome);
+    
+            //creo cella codicefiscale e la aggiungo alla riga
+            const cellaCognome = document.createElement("td");
+            cellaCognome.textContent = listaVenditori[i].cognome;
+            riga.appendChild(cellaCognome);
+    
+            //creo cella codicefiscale e la aggiungo alla riga
+            const cellaEmail = document.createElement("td");
+            cellaEmail.textContent = listaVenditori[i].email;
+            riga.appendChild(cellaEmail);
+    
+            //creo cella codicefiscale e la aggiungo alla riga
+            const cellaTelefono = document.createElement("td");
+            cellaTelefono.textContent = String(listaVenditori[i].nTelefono);
+            riga.appendChild(cellaTelefono);
+    
+            //creo cella codicefiscale e la aggiungo alla riga
+            const cellaClasse = document.createElement("td");
+            cellaClasse.textContent = listaVenditori[i].classe;
+            riga.appendChild(cellaClasse);
+    
+            //creo cella codicefiscale e la aggiungo alla riga
+            const cellaSoldi = document.createElement("td");
+            cellaSoldi.textContent = String(totaleDaDare[i]);
+            riga.appendChild(cellaSoldi);
+    
+            //creo cella con bottone per vedere copie
+            const cellaBottoneVediCopie = document.createElement("td");
+            //creo bottone per mostrare le copie associate a ciascun venditore
+            const bottoneCopieVenditore = document.createElement("button");
+            //aggiungo testo al bottone
+            bottoneCopieVenditore.textContent = "Visualizza copie consegnate";
+            //associo ascoltatore e passo riga
+            bottoneCopieVenditore.addEventListener("click", () => mostraCopieVenditore(listaVenditori[i].id));
+            //aggiungo cella alla riga
+            cellaBottoneVediCopie.appendChild(bottoneCopieVenditore);
+            //inserisco bottone nella cella
+            riga.appendChild(cellaBottoneVediCopie);
+    
+            //inserisco riga nel corpo della tabella
+            corpoVenditori.appendChild(riga);
+        }
+    }else{
+        console.log("Nessun venditore da mostrare");
     }
-} 
+}
 
 //calcolo il prezzo MAX da dare al venditore, nel caso in cui vengano vendute tutte le sue copie
 async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
@@ -345,7 +366,37 @@ function mostraCopieVenditore(id: number): void{
     const larghezza = screen.width;
 
     //apro nuova pagina e passo CV
-    window.open(`html/gestoreCopieVenditore.html?id=${id}`, "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
+    window.open(`html/gestoreCopieVenditore.html?venditoreID=${id}`, "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
+}
+
+//funzione che ricerca tra i venditori e mostra quelli che soddisafno il criterio di ricerca
+async function ricercaVenditori(): Promise<void>{
+    if(elencoVenditori != null){
+        let criterioRicerca: string;
+        //array di venditori con gli oggetti corrispondenti al criterio di ricerca
+        let risultatiRicerca: Venditore[] = [];
+
+        //leggo dalla casella di ricerca, se non è null ed è definita e la assegno se non è vuota
+        if(casellaRicerca && (casellaRicerca.value.trim() !== "")){
+            //ricerca case unsensitive, tutto minuscolo
+            criterioRicerca = casellaRicerca.value.toLowerCase();
+    
+            //array che contiene i venditori corrispondenti al campo di ricerca
+            for(let i = 0; i < elencoVenditori.length; i++){
+                //se tra gli attributi del venditore compare il criterio di ricerca...
+                if((elencoVenditori[i].toString().toLowerCase()).includes(criterioRicerca)){
+                    //salvo il venditore nell'array che contiene i venditori corrispondenti alla ricerca
+                    risultatiRicerca.push(elencoVenditori[i]);
+                }
+            }
+            
+            //passo nuova lista venditori e la visualizzo
+            await mostraVenditori(risultatiRicerca);
+        //con campo di ricerca vuoto, mostra lista completa
+        }else{
+            await mostraVenditori(elencoVenditori);
+        }
+    }
 }
 
 // al caricamento della pagina, apro database
@@ -354,7 +405,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         database = await apriDatabase();
         console.log("Database aperto:", database.name);
 
-        await prelevaVenditori();
+        //prelevo array dei venditori
+        elencoVenditori = await prelevaVenditori();
+
+        await mostraVenditori(elencoVenditori);
     } catch (erroreDB) {
         console.error("Errore apertura DB:", erroreDB);
     }

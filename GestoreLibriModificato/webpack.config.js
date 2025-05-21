@@ -4,6 +4,7 @@ module.exports = {
   mode: "production",
   entry: {
     scriptGestoreVenditori: './src/scriptGestoreVenditori.ts', //script pagina gestore venditori
+    scriptGestoreCopieVenditore: './src/scriptGestoreCopieVenditore.ts' //script pagina per gestire le copie di ciascun venditore
   },
   output: {
     filename: '[name].js', // nome basato sul file di output

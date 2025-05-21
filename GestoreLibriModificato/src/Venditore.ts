@@ -9,7 +9,7 @@ export class Venditore{
     readonly classe: string;
 
     //costruttore
-    constructor(id: number, nome: string, cognome: string, email: string, nTelefonoString: string, classe: string){
+    constructor(id: number, nome: string, cognome: string, email: string, nTelefonoString: number, classe: string){
         //provo a convertire numero di telefono da stringa a numero effettivo
         let nTelefono = Number(nTelefonoString);
 
@@ -54,5 +54,13 @@ export class Venditore{
         }else{
             this.classe = "-";
         }
+    }
+
+    toString(): string{
+        //preparo array degli attributi
+        const valoriAttributi: any[] = [this.id, this.nome, this.cognome, this.email, this.nTelefono, this.classe];
+
+        //"converto" in stringa con spazio come separatore
+        return valoriAttributi.join(" ");
     }
 }
