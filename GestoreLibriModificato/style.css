@@ -30,11 +30,13 @@ h2 {
 table {
     border: 1px solid black;
     width: 100%;
-    border-collapse: collapse
+    border-collapse: collapse;
+    table-layout: fixed;
 }
 
 th, td {
-    border: 1px solid black
+    border: 1px solid black;
+    padding: 3px;
 }
 
 #casellaRicerca {
@@ -110,7 +112,7 @@ header {
     display: block;      /* Permette di occupare tutto lo spazio */
     box-sizing: border-box; /* Assicura che width e height includano padding/border */
     cursor: pointer;     /* Cambia il cursore quando ci passi sopra */
-    zoom: 3;
+    zoom: 4;
     transform-origin: center; /* Centra la scala */
 }
 

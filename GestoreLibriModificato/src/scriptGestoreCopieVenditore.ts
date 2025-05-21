@@ -111,8 +111,6 @@ async function prelevaCopieVenditoreID():Promise<Copia[]>{
         const tabellaCopie = transazione.objectStore("Copie");
         const indice = tabellaCopie.index("venditoreID");
 
-        console.log(venditoreID);
-
         const richiesta = indice.getAll(venditoreID); // cerca tutte le copie con quel ID venditore
 
         richiesta.onsuccess = () => {
@@ -233,7 +231,7 @@ function calcolaSommaPrezzoVenditore(copieDelVenditore: Copia[]): number {
         sommaPrezziCopie += copieDelVenditore[i].prezzoScontato;
     }
 
-    return sommaPrezziCopie;
+    return Number(sommaPrezziCopie.toFixed(2));
 }
 
 //funzione per preparare la registrazione di una copia del venditore in questione
@@ -307,6 +305,17 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
 
     //richiesta andata a buon fine
     richiestaAggiungiCopia.onsuccess = () => {
+        //svuoto campi
+        campoPrezzoCopertina.value = "";
+        etichettaTitoloLibro.value = "";
+
+        //rimuovo parametri da URL non più necessari
+        parametri.delete("isbn");
+        parametri.delete("prezzoCopertina");
+        // Applica le modifiche all'URL (senza ricaricare la pagina)
+        const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
+        window.history.replaceState({}, "", nuovoURL);
+
         //comunico scrittura copia 
         //inviaDati(copiaDaSalvare);
 
@@ -381,9 +390,9 @@ async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore
     const transazione = database.transaction("Venditori", "readonly");
     const tabellaVenditori = transazione.objectStore("Venditori");
 
-    //assegno libro o errore di recupero
+    //assegno venditore o errore di recupero
     const venditorePrelevato: Venditore = await new Promise<Venditore>((resolve, reject) => {
-        // cerco per isbn
+        // cerco per id venditore
         const richiestaVenditori = tabellaVenditori.get(venditoreIDPassato);
 
         richiestaVenditori.onsuccess = () => {

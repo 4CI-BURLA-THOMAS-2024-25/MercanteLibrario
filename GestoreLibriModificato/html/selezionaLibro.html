@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Seleziona libro</title>
+        <link rel="icon" type="image/png" href="..\img\favicon.png">
+        <link rel="stylesheet" href="../style.css"/>
+    </head>
+
+    <body>
+        <header id="intestazionePaginaLibri">
+            <h2>Libri della libreria</h2>
+
+            <button id="tornaAlleCopie">Conferma selezione</button>
+        </header>
+
+        <!-- tabella che mostra tutti i libri -->
+        <input id="casellaRicerca" type="text" placeholder="Cercare il libro per titolo, ISBN, autore o materia">
+        
+        <!-- tabella con elenco dei libri generata da script -->
+        <table id="elencoLibri">
+            <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 5%;">
+                <col style="width: 15%;">
+                <col style="width: 8%;">
+                <col style="width: 19%;">
+                <col style="width: 30%;">
+                <col style="width: 4%;">
+                <col style="width: 10%;">
+                <col style="width: 5%;">
+                <col style="width: 4%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>Seleziona</th>
+                    <th>Materia</th>
+                    <th>ISBN</th>
+                    <th>Autore</th>
+                    <th>Titolo</th>
+                    <th>Volume</th>
+                    <th>Editore</th>
+                    <th>Classe</th>
+                    <th>Copie</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->
+            <tbody id="corpoTabellaLibri"></tbody>
+        </table>
+        
+        <script src="../out/scriptSelezionaLibro.js" defer></script>
+        
+    </body>
+</html>

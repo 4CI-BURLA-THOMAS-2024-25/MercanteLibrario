@@ -3,6 +3,7 @@ import { Venditore } from "./Venditore";
 
 //importo daro per notificare aggiornamenti al DB
 import { databaseChannel } from "./broadcast";
+import { elencoLibri } from "./elencoLibri";
 
 //database
 let database: IDBDatabase;
@@ -158,15 +159,15 @@ async function registraVenditore(): Promise<void>{
     const richiestaAggiuntaVenditore = tabellaVenditori.add(venditore);
 
     //aggiunta andata a buon fine
-    richiestaAggiuntaVenditore.onsuccess = () => {
-
-        //aggiorno lista venditori, rileggendo da DB
-        prelevaVenditori();
+    richiestaAggiuntaVenditore.onsuccess = async () => {
 
         //svuoto campi di inserimento
         for(let i = 0; i < caselleInput.length; i++){
             (caselleInput[i] as HTMLInputElement).value = "";
         }
+
+        //aggiorno lista venditori, rileggendo da DB
+        mostraVenditori(await prelevaVenditori());
 
         //chiudo popup di inserimento
         chiudiRegistrazioneVenditore();
@@ -352,7 +353,7 @@ async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
         }, 0);
 
         //salvo totale del prezzo delle copie del venditore
-        sommaPrezziCopie.push(sommaPrezzi);
+        sommaPrezziCopie.push(Number(sommaPrezzi.toFixed(2)));
     }
 
     //restituisco array con tutte le somme delle copie per venditore
@@ -365,7 +366,7 @@ function mostraCopieVenditore(id: number): void{
     const altezza = screen.height;
     const larghezza = screen.width;
 
-    //apro nuova pagina e passo CV
+    //apro nuova pagina e passo ID venditore
     window.open(`html/gestoreCopieVenditore.html?venditoreID=${id}`, "_blank", `menubar=no", height=${altezza}, width=${larghezza}, top=0, left=0`);
 }
 
@@ -399,11 +400,61 @@ async function ricercaVenditori(): Promise<void>{
     }
 }
 
+//funzione che controlla se l'object store dei libri è da popolare oppure no
+async function verificaElencoLibri(): Promise<void>{
+    try{
+        const transazione = database.transaction("Libri", "readonly");
+        const tabellaLibri = transazione.objectStore("Libri");
+
+        const richiestaConta = tabellaLibri.count();
+
+        richiestaConta.onsuccess = () => {
+            //controllo se l'elenco è vuoto
+            if(richiestaConta.result === 0){
+                caricaLibriNelDatabase();
+
+            }else{
+                console.log("Libri già presenti nel database");
+            }
+        };
+
+        richiestaConta.onerror = () => {
+            console.error("Errore nel conteggio dei libri.");
+        };
+    } catch (errore) {
+        console.error("Errore durante l'accesso al DB:", errore);
+    }
+}
+
+//funzione che carica sul database l'elenco dei libri, letti da array "esterno"
+function caricaLibriNelDatabase(): void {
+    const transazione = database.transaction("Libri", "readwrite");
+    const tabellaLibri = transazione.objectStore("Libri");
+
+    //aggiungo ogni oggetto libro dell'array già pronto
+    for(let i = 0; i < elencoLibri.length; i++){
+        tabellaLibri.add(elencoLibri[i]);
+    }
+
+    //transazione completata
+    transazione.oncomplete = () => {
+        console.log("Libri caricati con successo.");
+    };
+
+    //errore
+    transazione.onerror = () => {
+        console.error("Errore durante il caricamento dei libri statici.");
+    };
+}
+
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         database = await apriDatabase();
         console.log("Database aperto:", database.name);
+
+        //carico su DB l'elenco dei libri passato dalla scuola, se non c'è già
+        await verificaElencoLibri();
 
         //prelevo array dei venditori
         elencoVenditori = await prelevaVenditori();

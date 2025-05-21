@@ -7,14 +7,10 @@ export class Libro{
     readonly titolo: string;
     readonly volume: string;
     readonly editore: string;
-    readonly prezzoListino: number;
     readonly classe: string;
 
     //costruttore
-    constructor(materia: string, isbn: string, autore: string, titolo: string, volume: string, editore: string, prezzoString: string, classe: string){
-        //salvo prezzo separato da . anzichè da , e lo converto in numero
-        let prezzo: number = Number(prezzoString.replace(",", "."));
-        
+    constructor(materia: string, isbn: string, autore: string, titolo: string, volume: string, editore: string, classe: string){
         //controllo materia
         if(materia != undefined){
             this.materia = materia;
@@ -57,13 +53,6 @@ export class Libro{
             this.editore = "-";
         }
 
-        //controllo prezzo 
-        if(prezzo > 0.0){
-            this.prezzoListino = prezzo;
-        }else{
-            this.prezzoListino = 0.0;
-        }
-
         //controllo classe
         if(classe != undefined){
             this.classe = classe;
@@ -75,7 +64,7 @@ export class Libro{
     // toString per ottenere tutti i valori degli attributi accorpati in un'unica stringa
     toString(): string{
         //preparo array degli attributi
-        const valoriAttributi: any[] = [this.materia, this.isbn, this.autore, this.titolo, this.volume, this.editore, this.prezzoListino, this.classe];
+        const valoriAttributi: any[] = [this.materia, this.isbn, this.autore, this.titolo, this.volume, this.editore, this.classe];
         
         //"converto" gli elementi dell'array in stringhe
         return valoriAttributi.join(" "); 
