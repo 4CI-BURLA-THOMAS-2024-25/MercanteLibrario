@@ -13,6 +13,8 @@
             <h2>Aggiungi o rimuovi copia</h2>
 
             <button id="aggiungiCopia">Registra nuova copia del venditore</button>
+
+            <button id="eliminaCopie">Elimina copie</button>
         </header>
 
         <!-- popup per inserire copie del venditore -->
@@ -76,7 +78,8 @@
         <table id="elencoCopie">
             <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
             <colgroup>
-                <col style="width: 20%;">
+                <col style="width: 5%;">
+                <col style="width: 15%;">
                 <col style="width: 10%;">
                 <col style="width: 50%;">
                 <col style="width: 10%;">
@@ -86,6 +89,7 @@
             <!-- intestazione tabella -->
             <thead>
                 <tr>
+                    <th>Seleziona</th>
                     <th>Codice univoco</th>
                     <th>ISBN</th>
                     <th>Titolo</th>
