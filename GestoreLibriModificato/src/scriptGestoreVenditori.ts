@@ -1,7 +1,7 @@
 import { Copia } from "./Copia";
 import { Venditore } from "./Venditore";
 
-//importo daro per notificare aggiornamenti al DB
+//importo dato per notificare aggiornamenti al DB
 import { databaseChannel } from "./broadcast";
 import { elencoLibri } from "./elencoLibri";
 
@@ -113,6 +113,20 @@ function apriDatabase(): Promise<IDBDatabase>{
     return out;
 }
 
+//ascolto modifiche al DB dei venditori
+databaseChannel.onmessage = async (evento) => {
+    const dati = evento.data;
+
+    if (dati.store === "Venditori") {
+        console.log("Aggiornamento ricevuto: ricarico venditori...");
+        
+        //prelevo array dei venditori (modificato)
+        elencoVenditori = await prelevaVenditori();
+        //mostro nuovo elenco
+        await mostraVenditori(elencoVenditori);
+    }
+};
+
 //funzione per registrare nuovo venditore
 function apriRegistrazioneVenditore(): void {
     if(popupAggiungiVenditore != null){
@@ -165,15 +179,14 @@ async function registraVenditore(): Promise<void>{
         for(let i = 0; i < caselleInput.length; i++){
             (caselleInput[i] as HTMLInputElement).value = "";
         }
+        //notifico aggiunta
+        databaseChannel.postMessage({store: "Venditori"});
 
         //aggiorno lista venditori, rileggendo da DB
         mostraVenditori(await prelevaVenditori());
 
         //chiudo popup di inserimento
         chiudiRegistrazioneVenditore();
-
-        //notifico aggiunta
-        databaseChannel.postMessage({store: "Venditori", action: "add"});
     }
 
     //errore, venditore già presente

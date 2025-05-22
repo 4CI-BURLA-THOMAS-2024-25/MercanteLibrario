@@ -2,6 +2,9 @@ import { Copia } from "./Copia";
 import { Libro } from "./Libro";
 import { Venditore } from "./Venditore";
 
+//importo dato per notificare aggiornamenti al DB
+import { databaseChannel } from "./broadcast";
+
 //prelevo parametri passati da URL
 const parametri = new URLSearchParams(window.location.search);
 //prelevo ID del venditore
@@ -67,6 +70,18 @@ function apriDatabase(): Promise<IDBDatabase>{
 
     return out;
 }
+
+//ascolto modifiche al DB delle copie
+databaseChannel.onmessage = async (evento) => {
+    const dati = evento.data;
+
+    if (dati.store === "Copie") {
+        console.log("Aggiornamento ricevuto: ricarico copie...");
+        
+        //mostro le copie del libro (aggiornate)
+        await caricaCopieVenditore();
+    }
+};
 
 // funzione per registrare una nuova copia di un determinato libro, passando eventuale venditore
 function apriRegistrazioneCopia(): void{
@@ -357,14 +372,14 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
         //comunico scrittura copia 
         //inviaDati(copiaDaSalvare);
 
+        //notifico aggiunta nuova copia
+        databaseChannel.postMessage({store: "Copie"});
+
         //aggiorno lista copie, rileggendo da DB
         caricaCopieVenditore();
 
         //chiudo popup di inserimento
         chiudiRegistrazioneCopia();
-
-        //notifico aggiunta nuova copia
-        //databaseChannel.postMessage({store: "Copie", action: "add"});
     }
 
     //errore, copia già presente (improbabile, genero io la chiave primaria)
@@ -496,6 +511,11 @@ async function eliminaLogicamenteCopie(): Promise<void> {
                                         richiestaAdd.onsuccess = () => {
                                             //solo dopo aver aggiunto al cestino elimino la copia
                                             storeCopie.delete(Number(idCopia));
+
+                                            //notifico modifiche ai due DB delle copie
+                                            databaseChannel.postMessage({store: "Copie"});
+                                            databaseChannel.postMessage({store: "CopieEliminate"});
+
                                             resolve();
                                         };
                     

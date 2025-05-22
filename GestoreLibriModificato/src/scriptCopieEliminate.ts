@@ -1,13 +1,15 @@
 import { Copia } from "./Copia";
 import { Libro } from "./Libro";
 
+//importo dato per notificare aggiornamenti al DB
+import { databaseChannel } from "./broadcast";
+
 //database
 let database: IDBDatabase;
 
 //bottone che, quando cliccato, ripristina le copie selezionate
 const bottoneEliminaCopie = document.getElementById("ripristinaCopie") as HTMLButtonElement;
 bottoneEliminaCopie?.addEventListener("click", ripristinaCopieEliminate);
-
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -29,6 +31,18 @@ function apriDatabase(): Promise<IDBDatabase>{
 
     return out;
 }
+
+//ascolto modifiche al DB delle copie eliminate
+databaseChannel.onmessage = async (evento) => {
+    const dati = evento.data;
+
+    if (dati.store === "CopieEliminate") {
+        console.log("Aggiornamento ricevuto: ricarico copie del cestino...");
+        
+        //mostro le copie del libro (aggiornate)
+        await caricaCopieCestino();
+    }
+};
 
 //prelevo da DB tutte le copie nel cestino
 async function prelevaCopieCestino():Promise<Copia[]>{
@@ -187,6 +201,11 @@ async function ripristinaCopieEliminate(): Promise<void> {
                                         richiestaAdd.onsuccess = () => {
                                             //rimuovo copia dal cestino
                                             storeEliminate.delete(Number(idCopia));
+                                            
+                                            //notifico modifiche ai due DB delle copie
+                                            databaseChannel.postMessage({store: "Copie"});
+                                            databaseChannel.postMessage({store: "CopieEliminate"});
+
                                             resolve();
                                         };
 
