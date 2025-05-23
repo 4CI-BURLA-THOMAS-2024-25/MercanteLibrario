@@ -175,10 +175,8 @@ databaseChannel.onmessage = async (evento) => {
     if (dati.store === "Venditori") {
         console.log("Aggiornamento ricevuto: ricarico venditori...");
         
-        //prelevo array dei venditori (modificato)
-        elencoVenditori = await prelevaVenditori();
-        //mostro nuovo elenco
-        await mostraVenditori(elencoVenditori);
+        //aggiorno pagina
+        location.reload();
     }
 };
 

@@ -78,8 +78,8 @@ databaseChannel.onmessage = async (evento) => {
     if (dati.store === "Copie") {
         console.log("Aggiornamento ricevuto: ricarico copie...");
         
-        //mostro le copie del libro (aggiornate)
-        await caricaCopieVenditore();
+        //aggiorno pagina
+        location.reload();f
     }
 };
 
@@ -261,7 +261,7 @@ async function caricaCopieVenditore(): Promise<void>{
 
             //creo cella prezzo scontato e la aggiungo alla riga
             const cellaPrezzoScontato = document.createElement("td");
-            cellaPrezzoScontato.textContent = String(copiaDelVenditore.prezzoCopertina);
+            cellaPrezzoScontato.textContent = String(copiaDelVenditore.prezzoScontato);
             riga.appendChild(cellaPrezzoScontato);
 
             // inserisco riga nel corpo della tabella
