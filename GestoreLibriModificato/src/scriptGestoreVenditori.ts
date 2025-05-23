@@ -7,6 +7,7 @@ import { elencoLibri } from "./elencoLibri";
 
 //database
 let database: IDBDatabase;
+const ws = new WebSocket('ws://localHost:8081');
 
 //array dei venditori
 let elencoVenditori: Venditore[] | null;
@@ -113,6 +114,60 @@ function apriDatabase(): Promise<IDBDatabase>{
     return out;
 }
 
+//comunicazione
+ws.onopen = function () {
+    console.log("aperto il server");
+}
+
+ws.onclose = function () {
+    console.log("connessione server chiusa");
+}
+
+ws.onerror = function (error) {
+    console.log("errore nel webSocket", error);
+}
+
+//comunico il venditore da rimuovere
+function inviaDatiRimozione(venditoreID: number) {
+    ws.send("1," + String(venditoreID));
+}
+
+//comunico il venditore da aggiungere
+function inviaDati(venditore: Venditore) {
+    ws.send("0," + String(venditore.toString()));
+}
+
+//ricevo messaggio
+ws.onmessage = function (event) {
+    console.log(event.data);
+    
+    //divido azione e contenuto
+    let smista:any[] = (event.data).split(',');
+    //aggiungi copia
+    if (Number(smista[0]) == 0) {
+        riceviMessaggio(smista[1]);
+
+    //rimuovi
+    } else {
+        //riceviDatiRimozione(event);
+    }
+}
+//gestisco aggiunta copia
+async function riceviMessaggio(parametriVenditoreStringa: string) {
+    try{
+        //ricostruisco oggetto copia che mi hanno trasmesso
+        const parametriVenditore: string[] = (parametriVenditoreStringa).split(";");
+
+        console.log(parametriVenditore);
+        const venditoreRicevuto: Venditore = new Venditore(Number(parametriVenditore[0]),parametriVenditore[1],parametriVenditore[2],parametriVenditore[3],Number(parametriVenditore[4]),parametriVenditore[5]);
+
+        //salvo venditore ricevuta su DB
+        await registraVenditorePassato(venditoreRicevuto);
+
+    }catch(error){
+        console.error("Errore nel salvataggio del venditore mediante CF trasmesso da socket");
+    }
+}
 //ascolto modifiche al DB dei venditori
 databaseChannel.onmessage = async (evento) => {
     const dati = evento.data;
@@ -139,6 +194,37 @@ function chiudiRegistrazioneVenditore(): void{
     if(popupAggiungiVenditore != null){
         // quando clicco il bottone per chiudere il popupAggiungiCopie, lo imposto come nascosto
         popupAggiungiVenditore.style.display = "none";
+    }
+}
+
+async function registraVenditorePassato(venditoreRicevuto: Venditore): Promise<void>{
+    const venditore: Venditore = venditoreRicevuto;
+    //apro transazione verso object store dei venditori, in scrittura
+    const transazione = database.transaction("Venditori", "readwrite");
+    //salvo reference dell'object store
+    const tabellaVenditori = transazione.objectStore("Venditori");
+    //richiesta di aggiunta all'object store
+    const richiestaAggiuntaVenditore = tabellaVenditori.add(venditore);
+
+    //aggiunta andata a buon fine
+    richiestaAggiuntaVenditore.onsuccess = async () => {
+
+        //svuoto campi di inserimento
+        for(let i = 0; i < caselleInput.length; i++){
+            (caselleInput[i] as HTMLInputElement).value = "";
+        }
+        //notifico aggiunta
+        databaseChannel.postMessage({store: "Venditori"});
+
+        //aggiorno lista venditori, rileggendo da DB
+        mostraVenditori(await prelevaVenditori());
+
+        //chiudo popup di inserimento
+        chiudiRegistrazioneVenditore();
+    }
+    //errore, venditore già presente
+    richiestaAggiuntaVenditore.onerror = () => {
+        console.log("Venditore già presente");
     }
 }
 
