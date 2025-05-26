@@ -108,6 +108,18 @@ function apriDatabase(): Promise<IDBDatabase>{
                 tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
                 tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
             }
+
+            //creo object store in cui salvare le copie eliminate, così da poterle reperire in caso di errore umano
+            if(!database.objectStoreNames.contains("CopieVendute")){
+                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                const tabellaCopie = database.createObjectStore("CopieVendute", {
+                    keyPath: "codiceUnivoco",
+                });
+
+                tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
+                tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
+                tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
+            }
         }
     });
 
@@ -265,6 +277,9 @@ async function registraVenditore(): Promise<void>{
         }
         //notifico aggiunta
         databaseChannel.postMessage({store: "Venditori"});
+
+        //invio dati del nuovo venditore
+        inviaDati(venditore);
 
         //aggiorno lista venditori, rileggendo da DB
         mostraVenditori(await prelevaVenditori());

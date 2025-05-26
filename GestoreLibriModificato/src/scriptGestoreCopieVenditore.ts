@@ -50,6 +50,9 @@ const etichettaTitoloLibro = document.getElementById("titoloLibro") as HTMLInput
 const bottoneEliminaCopie = document.getElementById("eliminaCopie") as HTMLButtonElement;
 bottoneEliminaCopie?.addEventListener("click", eliminaLogicamenteCopie);
 
+const bottoneVendiCopie = document.getElementById("vendiCopie") as HTMLButtonElement;
+bottoneVendiCopie?.addEventListener("click", vendiCopie);
+
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -540,6 +543,98 @@ async function eliminaLogicamenteCopie(): Promise<void> {
 
                 //risolvo quando tutte le eliminazioni sono state effettuate;
                 await Promise.all(eliminazioni);
+                window.alert("Copia/e eliminate logicamente.");
+                // Ricarica la tabella per aggiornare la UI
+                await caricaCopieVenditore();
+
+            //stampo errore nella console
+            }catch(errore){
+                if(errore instanceof Error){
+                    console.error(errore.message);
+                }
+            }
+        }
+
+    }else{
+        window.alert("Seleziona almeno una copia da eliminare.");
+    }
+}
+
+//funzione per segnalare una copia come venduta
+async function vendiCopie(): Promise<void> {
+    //prelevo checkbox selezionate
+    const checkboxSelezionate = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"].caselleSelezione:checked');
+
+    //controllo che sia selezionata almeno una checkbox
+    if (checkboxSelezionate.length !== 0) {
+        //chiedo conferma
+        const confermaVendita = window.confirm("Sei sicuro di voler vendere le copie selezionate?");
+
+        //se la conferma non viene fornita, non eseguo
+        if(confermaVendita){
+            try{
+                const transazione = database.transaction(["Copie", "CopieVendute"], "readwrite");
+                const storeCopie = transazione.objectStore("Copie");
+                const storeVendute = transazione.objectStore("CopieVendute");
+
+                //itero sulle copie selezionate, eseguendo le vendite
+                const vendite = Array.from(checkboxSelezionate).map(async (checkbox) => {
+                    // Trova la riga della checkbox
+                    const riga = checkbox.closest("tr");
+            
+                    //controllo che sia stata selezionata una riga
+                    if(riga){
+                        // Preleva la seconda cella (indice 1) che contiene l'ID della copia
+                        const idCopia = riga.cells[0]?.textContent?.trim();
+    
+                        //controllo id copia (anche se dovrebbe sempre essere valido)
+                        if(idCopia){
+                            return new Promise<void>((resolve, reject) => {
+                                //cerco copia da vendere
+                                const richiestaGet = storeCopie.get(Number(idCopia));
+                    
+                                //richiesta accettata da DB
+                                richiestaGet.onsuccess = () => {
+                                    const copia: Copia = richiestaGet.result;
+                                    
+                                    //copia trovata
+                                    if (copia) {
+                                        //richiesta di aggiunta al cestino
+                                        const richiestaAdd = storeVendute.add(copia);
+    
+                                        //copia aggiunta al cestino
+                                        richiestaAdd.onsuccess = () => {
+                                            //solo dopo aver aggiunto al cestino elimino la copia
+                                            storeCopie.delete(Number(idCopia));
+
+                                            //notifico modifiche ai due DB delle copie
+                                            databaseChannel.postMessage({store: "Copie"});
+                                            databaseChannel.postMessage({store: "CopieVendute"});
+
+                                            resolve();
+                                        };
+                    
+                                        //errore di aggiunta al cestino
+                                        richiestaAdd.onerror = () => {
+                                            reject(new Error(`Errore nella vendita della copia ${idCopia}.`));
+                                        };
+    
+                                    //copia non trovata
+                                    } else {
+                                        reject(new Error(`Copia con ID ${idCopia} non trovata.`));
+                                    }
+                                };
+                    
+                                richiestaGet.onerror = () => {
+                                    reject(new Error(`Errore nel recupero della copia ${idCopia}.`));
+                                };
+                            });
+                        }
+                    }
+                });
+
+                //risolvo quando tutte le vendite sono state effettuate
+                await Promise.all(vendite);
                 window.alert("Copia/e eliminate logicamente.");
                 // Ricarica la tabella per aggiornare la UI
                 await caricaCopieVenditore();
