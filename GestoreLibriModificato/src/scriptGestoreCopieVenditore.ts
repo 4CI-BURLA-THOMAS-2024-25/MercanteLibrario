@@ -325,10 +325,14 @@ async function caricaCopieVenditore(): Promise<void>{
                 casellaSelezione.setAttribute("type", "checkbox");
                 //imposto classe per CSS
                 casellaSelezione.setAttribute("class", "caselleSelezione");
+                //se la copia è venduta, disabilito la checkbox
+                if(copiaDelVenditore.stato === "V"){
+                    casellaSelezione.disabled = true;
+                }
                 //aggiungo casella alla sua cella
                 cellaSelezione.appendChild(casellaSelezione);
                 //aggiungo cella alla riga
-                riga.appendChild(casellaSelezione);
+                riga.appendChild(cellaSelezione);
     
                 //creo cella id copia e la aggiungo alla riga
                 const cellaIDCopia = document.createElement("td");

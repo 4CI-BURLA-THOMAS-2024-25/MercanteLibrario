@@ -151,7 +151,6 @@ async function caricaCopieCestino(): Promise<void>{
         if(error instanceof Error){
             console.error(error.message);
         }
-        
     }
 }
 
