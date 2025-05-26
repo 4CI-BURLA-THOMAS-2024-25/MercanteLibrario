@@ -81,6 +81,7 @@ function apriDatabase(): Promise<IDBDatabase>{
                 tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
                 tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
                 tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
+                tabellaCopie.createIndex("stato", "stato", {unique: false});
             }
 
             //controllo che non esista già una tabella con questo nome
@@ -95,30 +96,6 @@ function apriDatabase(): Promise<IDBDatabase>{
                 tabellaVenditori.createIndex("email", "email", {unique: false});
                 tabellaVenditori.createIndex("nTelefono", "nTelefono", {unique: true});
                 tabellaVenditori.createIndex("classe", "classe", {unique: false});
-            }
-
-            //creo object store in cui salvare le copie eliminate, così da poterle reperire in caso di errore umano
-            if(!database.objectStoreNames.contains("CopieEliminate")){
-                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
-                const tabellaCopie = database.createObjectStore("CopieEliminate", {
-                    keyPath: "codiceUnivoco",
-                });
-
-                tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
-                tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
-                tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
-            }
-
-            //creo object store in cui salvare le copie eliminate, così da poterle reperire in caso di errore umano
-            if(!database.objectStoreNames.contains("CopieVendute")){
-                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
-                const tabellaCopie = database.createObjectStore("CopieVendute", {
-                    keyPath: "codiceUnivoco",
-                });
-
-                tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
-                tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
-                tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
             }
         }
     });

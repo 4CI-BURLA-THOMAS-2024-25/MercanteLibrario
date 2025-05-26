@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Visualizza copie del venditore</title>
+        <link rel="icon" type="image/png" href="..\img\favicon.png">
+        <link rel="stylesheet" href="../style.css"/>
+    </head>
+
+    <body>
+        <header id="intestazionePaginaCopie">
+            <h2>Aggiungi o rimuovi copia</h2>
+
+            <button id="aggiungiCopia">Registra nuova copia del venditore</button>
+
+            <button id="eliminaCopie">Elimina copie</button>
+
+            <button id="vendiCopie">Vendi copie</button>
+        </header>
+
+        <!-- popup per inserire copie del venditore -->
+        <div id="popupRegistraCopia" class="popup">
+
+            <!-- contenuto del popup -->
+            <div class="contenutoPopup">
+                <h2>Registra nuova copia</h2>
+
+                <form>
+                    <!-- prezzo di copertina della copia -->
+                    <label for="prezzoCopertina" class="testoLabelPopup">Prezzo di copertina della copia:</label><br>
+                    <input name="prezzo" id="prezzoCopertina" class="testoInputPopup" required><br><br>
+
+                    <!-- libro da scegliere dalla libreria -->
+                    <label for="libro" class="testoLabelPopup">Libro:</label><br>
+                    <input type="text" id="titoloLibro" class="testoInputPopup" disabled required><br><br>
+                    <button type="button" id="scegliLibro" class="bottoniPopup">Scegli dalla libreria il libro da associare alla copia</button>
+
+                    <br><br>
+                    
+                    <button type="button" id="registraCopia" class="bottoniPopup">Invia</button>
+                    <button type="button" id="chiudiPopup" class="bottoniPopup">Annulla</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- tabella ad una riga per mostrare le info del venditore su cui si stanno gestendo le copie -->
+        <table id="infoVenditore">
+            <!-- dimensioni delle colonne della tabella; proporzionate alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 2%;">
+                <col style="width: 25%;">
+                <col style="width: 25%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 5%;">
+                <col style="width: 5%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Email</th>
+                    <th>Telefono</th>
+                    <th>Classe</th>
+                    <th>€ dovuti</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->  
+            <tbody id="corpoInfoVenditore"></tbody>
+        </table>
+
+        <br>
+
+        <!-- tabella che mostra tutte le copie di questo venditore -->
+        <table id="elencoCopie">
+            <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 5%;">
+                <col style="width: 15%;">
+                <col style="width: 10%;">
+                <col style="width: 50%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>Seleziona</th>
+                    <th>Codice univoco</th>
+                    <th>ISBN</th>
+                    <th>Titolo</th>
+                    <th>Prezzo di copertina</th>
+                    <th>Prezzo di vendita</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->  
+            <tbody id="corpoTabellaCopie"></tbody>
+        </table>
+
+        <script src="../out/scriptGestoreCopieVenditore.js" defer></script>
+    </body>
+</html>
