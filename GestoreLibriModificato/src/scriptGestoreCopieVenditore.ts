@@ -1,5 +1,6 @@
 import { Copia } from "./Copia";
 import { Libro } from "./Libro";
+import { StatoCopia } from "./StatoCopia";
 import { Venditore } from "./Venditore";
 
 //importo dato per notificare aggiornamenti al DB
@@ -75,6 +76,21 @@ function apriDatabase(): Promise<IDBDatabase>{
     return out;
 }
 
+//funzione che associa il tipo enum al suo valore come stringa
+function associaEnum(valore: string): StatoCopia {
+    switch (valore) {
+        case "D":
+            return StatoCopia.Disponibile;
+        case "V":
+            return StatoCopia.Venduta;
+        case "E":
+            return StatoCopia.Eliminata;
+        default:
+            throw new Error(`Valore di stato non riconosciuto: ${valore}`);
+    }
+}
+
+
 //comunicazione
 ws.onopen = function () {
     console.log("aperto il server");
@@ -88,14 +104,9 @@ ws.onerror = function (error) {
     console.log("errore nel webSocket", error);
 }
 
-//comunico il venditore da rimuovere
-function inviaDatiRimozione(venditoreID: number) {
-    ws.send("C," + "1," + String(venditoreID));
-}
-
-//comunico il venditore da aggiungere
+//comunico copia modificata
 function inviaDati(copia: Copia) {
-    ws.send("C," + "0," + String(copia.toString()));
+    ws.send("C," + String(copia.toString()));
 }
 
 //ricevo messaggio
@@ -107,14 +118,8 @@ ws.onmessage = function (event) {
 
     //controllo che l'azione sia stata eseguita sulle copie
     if(smista[0] === "C"){
-        //aggiungi copia
-        if (Number(smista[1]) == 0) {
-            riceviMessaggio(smista[2]);
-    
-        //rimuovi
-        } else {
-            //riceviDatiRimozione(event);
-        }
+        //aggiungi o aggiorna stato della copia
+        riceviMessaggio(smista[1]);
     }
 }
 
@@ -125,11 +130,15 @@ async function riceviMessaggio(parametriCopiaStringa: string) {
         const parametriCopia: string[] = (parametriCopiaStringa).split(";");
 
         console.log(parametriCopia);
+
+        //associo stato della copia al tipo enumerativo
+        const statoCopiaRicevuta: StatoCopia = associaEnum(parametriCopia[4]);
+
         //prelevo oggetto libro associato alla copia in base a isbn
         const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
         //prelevo oggetto Venditore associato alla copia in base a CF
         const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
-        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato);
+        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, statoCopiaRicevuta);
 
         console.log(copiaRicevuta);
 
@@ -213,20 +222,6 @@ async function prelevaCopieVenditoreID():Promise<Copia[]>{
     });
 }
 
-//prelevo le copie disponibili del venditore
-async function ottieniCopieDisponibili(): Promise<Copia[]>{
-    try{
-        const copieDelVenditore: Copia[] = await prelevaCopieVenditoreID();
-        //filtro copie disponibili, con stato = D
-        const copieDisponibili: Copia[] = copieDelVenditore.filter(copia => copia.stato === "S");
-    
-        return copieDisponibili;
-    }catch (errore) {
-        console.error("Errore nel recupero delle copie disponibili:", errore);
-        return [];
-    }
-}
-
 async function caricaCopieVenditore(): Promise<void>{
     try{
         //prelevo copie che hanno ID del venditore coerente con il venditore che si sta gestendo
@@ -263,8 +258,8 @@ async function caricaCopieVenditore(): Promise<void>{
         //svuoto tabella
         corpoInfoVenditore.innerHTML = "";
 
-        //chiamo funzione per calcolare il denaro MAX da dare al venditore, se vendo tutte le sue copie
-        const denaroMAX: number = calcolaSommaPrezzoVenditore(copieVenditore);
+        //chiamo funzione per calcolare il denaro MAX da dare al venditore
+        const denaroMAX: number = 0;
 
         //creo riga con le info del venditore
         const rigaInfoVenditore: HTMLTableRowElement = document.createElement("tr");
@@ -280,10 +275,12 @@ async function caricaCopieVenditore(): Promise<void>{
 
         //itero e visualizzo ogni copia del venditore
         for(let i = 0; i < copieVenditore.length; i++){
-            let copiaDelVenditore: Copia = copieVenditore[i];
+            const copiaDelVenditore: Copia = copieVenditore[i];
+            //prelevo stato come dato enum
+            const statoCopia: StatoCopia = associaEnum(copiaDelVenditore.stato);
 
             //controllo che la copia esaminata non sia contrassegnata come eliminata
-            if(copiaDelVenditore.stato !== "E"){
+            if(statoCopia !== StatoCopia.Eliminata){
                 // Prelevo il libro associato alla copia
                 const libro: Libro = await new Promise<Libro>((resolve, reject) => {
                     const transazioneLibri = database.transaction("Libri", "readonly");
@@ -311,11 +308,6 @@ async function caricaCopieVenditore(): Promise<void>{
     
                 //creo riga nella tabella
                 const riga: HTMLTableRowElement = document.createElement("tr");
-                
-                //controllo se la copia è stata venduta e imposto eventuale colore della casella
-                if(copiaDelVenditore.stato === "V"){
-                    riga.classList.add("venduta");
-                }
     
                 //creo cella per selezionare le copie da eliminare "fake"
                 const cellaSelezione = document.createElement("td");
@@ -326,8 +318,9 @@ async function caricaCopieVenditore(): Promise<void>{
                 //imposto classe per CSS
                 casellaSelezione.setAttribute("class", "caselleSelezione");
                 //se la copia è venduta, disabilito la checkbox
-                if(copiaDelVenditore.stato === "V"){
+                if(statoCopia === StatoCopia.Venduta){
                     casellaSelezione.disabled = true;
+                    riga.classList.add("venduta");
                 }
                 //aggiungo casella alla sua cella
                 cellaSelezione.appendChild(casellaSelezione);
@@ -361,6 +354,8 @@ async function caricaCopieVenditore(): Promise<void>{
     
                 // inserisco riga nel corpo della tabella
                 corpoTabellaCopie.appendChild(riga);
+            }else{
+                throw new Error("Errore confronto con enum");
             }
         }
     }catch(error){
@@ -370,19 +365,21 @@ async function caricaCopieVenditore(): Promise<void>{
     }
 }
 
-//calcolo il totale da dare al venditore, in base alle copie vendute
-function calcolaSommaPrezzoVenditore(copieDelVenditore: Copia[]): number {
-    let sommaPrezziCopie: number = 0;
+// //calcolo il totale da dare al venditore, in base alle copie vendute
+// function calcolaSommaPrezzoVenditore(copieDelVenditore: Copia[]): number {
+//     let sommaPrezziCopie: number = 0;
 
-    //sommo prezzi scontati delle copie vendute (stato === "V")
-    for (let i = 0; i < copieDelVenditore.length; i++) {
-        if (copieDelVenditore[i].stato === "V") {
-            sommaPrezziCopie += copieDelVenditore[i].prezzoScontato;
-        }
-    }
+//     //sommo prezzi scontati delle copie vendute (stato === "V")
+//     for (let i = 0; i < copieDelVenditore.length; i++) {
+//         const statoCopia: StatoCopia = associaEnum(copieDelVenditore[i].stato);
 
-    return Number(sommaPrezziCopie.toFixed(2));
-}
+//         if (statoCopia == StatoCopia.Venduta) {
+//             sommaPrezziCopie += copieDelVenditore[i].prezzoScontato;
+//         }
+//     }
+
+//     return Number(sommaPrezziCopie.toFixed(2));
+// }
 
 //funzione per preparare la registrazione di una copia del venditore in questione
 async function preparaCopiaDaRegistrare():Promise<void>{
@@ -402,7 +399,7 @@ async function preparaCopiaDaRegistrare():Promise<void>{
         //verifico che sia stato scelto il libro da associare alla copia
         if(libro != null){
             //creo oggetto copia
-            const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(campoPrezzoCopertina.value), venditore);
+            const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(campoPrezzoCopertina.value), venditore, StatoCopia.Disponibile);
     
             //svuoto libro
             libro = null;
@@ -634,8 +631,9 @@ async function eliminaLogicamenteCopie(): Promise<void> {
 
                                     //copia trovata
                                     if (copia) {
+                                        console.log("RIsultato prova eliminazione:" + copia);
                                         //imposto stato della copia come "E" (eliminata)
-                                        copia.stato = "E";
+                                        copia.stato = StatoCopia.Eliminata;
 
                                         //aggiorno la copia nel database
                                         const richiestaUpdate = storeCopie.put(copia);
@@ -662,7 +660,11 @@ async function eliminaLogicamenteCopie(): Promise<void> {
                                     reject(new Error(`Errore nel recupero della copia ${idCopia}.`));
                                 };
                             });
+                        }else{
+                            Promise.resolve(); //ignora elemento non valido
                         }
+                    }else{
+                        Promise.resolve(); //ignora elemento non valido
                     }
                 });
 
@@ -708,7 +710,7 @@ async function vendiCopie(): Promise<void> {
 
                     //controllo che sia stata selezionata una riga
                     if (riga) {
-                        // Preleva la seconda cella (indice 1) che contiene l'ID della copia
+                        // Preleva la seconda cella (indice 0) che contiene l'ID della copia
                         const idCopia = riga.cells[0]?.textContent?.trim();
 
                         //controllo id copia (anche se dovrebbe sempre essere valido)
@@ -724,7 +726,7 @@ async function vendiCopie(): Promise<void> {
                                     //copia trovata
                                     if (copia) {
                                         //imposto stato della copia come "V" (venduta)
-                                        copia.stato = "V";
+                                        copia.stato = StatoCopia.Venduta;
 
                                         //aggiorno la copia nel database
                                         const richiestaUpdate = storeCopie.put(copia);
@@ -753,7 +755,11 @@ async function vendiCopie(): Promise<void> {
                                     reject(new Error(`Errore nel recupero della copia ${idCopia}.`));
                                 };
                             });
+                        }else{
+                            Promise.resolve(); //ignora elemento non valido
                         }
+                    }else{
+                        Promise.resolve(); //ignora elemento non valido
                     }
                 });
 

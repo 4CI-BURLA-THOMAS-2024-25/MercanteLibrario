@@ -1,4 +1,5 @@
 import { Libro } from "./Libro";
+import { StatoCopia } from "./StatoCopia";
 import { Venditore } from "./Venditore";
 
 export class Copia{
@@ -7,9 +8,9 @@ export class Copia{
     readonly prezzoCopertina: number;
     readonly prezzoScontato: number;
     readonly venditoreID: number; //prendo CF del venditore
-    public stato: string; //tengo traccia di copia disponibile(D), venduta(V) o cancellata(C)
+    public stato: StatoCopia; //tengo traccia di copia disponibile(D), venduta(V) o cancellata(C)
 
-    constructor(libroDellaCopia: Libro, codiceUnivoco: number, prezzoCopertina: number, venditore: Venditore){
+    constructor(libroDellaCopia: Libro, codiceUnivoco: number, prezzoCopertina: number, venditore: Venditore, stato:StatoCopia){
         //libro a cui è associata la copia
         this.libroDellaCopiaISBN = libroDellaCopia.isbn;
 
@@ -25,8 +26,8 @@ export class Copia{
         // per ogni copia mi serve sapere chi me l'ha portata per la vendita
         this.venditoreID = venditore.id;
 
-        //di default, la copia è disponibile
-        this.stato = "D";
+        //stato della copia
+        this.stato = stato;
     }
 
     toString(): string {

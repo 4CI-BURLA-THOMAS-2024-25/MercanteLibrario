@@ -1,5 +1,6 @@
 import { Copia } from "./Copia";
 import { Libro } from "./Libro";
+import { StatoCopia } from "./StatoCopia";
 
 //importo dato per notificare aggiornamenti al DB
 import { databaseChannel } from "./broadcast";
@@ -54,7 +55,7 @@ async function prelevaCopieVendute(): Promise<Copia[]> {
 
         richiesta.onsuccess = () => {
             // filtro le copie con stato === "V"
-            const copieVendute = richiesta.result.filter((copia: Copia) => copia.stato === "V");
+            const copieVendute = richiesta.result.filter((copia: Copia) => copia.stato === StatoCopia.Venduta);
             resolve(copieVendute);
         };
 
@@ -195,7 +196,7 @@ async function annullaVendita(): Promise<void> {
                                     //se la copia è stata trovata...
                                     if (copia) {
                                         //aggiorno lo stato della copia a "D"
-                                        copia.stato = "D";
+                                        copia.stato = StatoCopia.Disponibile;
 
                                         //richiedo aggiornamento nello store
                                         const richiestaPut = storeCopie.put(copia);
