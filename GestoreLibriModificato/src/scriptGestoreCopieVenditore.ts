@@ -4,6 +4,7 @@ import { Venditore } from "./Venditore";
 
 //importo dato per notificare aggiornamenti al DB
 import { databaseChannel } from "./broadcast";
+import { ws } from "./websocket";
 
 //prelevo parametri passati da URL
 const parametri = new URLSearchParams(window.location.search);
@@ -72,6 +73,70 @@ function apriDatabase(): Promise<IDBDatabase>{
     });
 
     return out;
+}
+
+//comunicazione
+ws.onopen = function () {
+    console.log("aperto il server");
+}
+
+ws.onclose = function () {
+    console.log("connessione server chiusa");
+}
+
+ws.onerror = function (error) {
+    console.log("errore nel webSocket", error);
+}
+
+//comunico il venditore da rimuovere
+function inviaDatiRimozione(venditoreID: number) {
+    ws.send("C," + "1," + String(venditoreID));
+}
+
+//comunico il venditore da aggiungere
+function inviaDati(copia: Copia) {
+    ws.send("C," + "0," + String(copia.toString()));
+}
+
+//ricevo messaggio
+ws.onmessage = function (event) {
+    console.log(event.data);
+
+    //divido azione e contenuto
+    let smista:any[] = (event.data).split(',');
+
+    //controllo che l'azione sia stata eseguita sulle copie
+    if(smista[0] === "C"){
+        //aggiungi copia
+        if (Number(smista[1]) == 0) {
+            riceviMessaggio(smista[2]);
+    
+        //rimuovi
+        } else {
+            //riceviDatiRimozione(event);
+        }
+    }
+}
+
+//gestisco aggiunta copia
+async function riceviMessaggio(parametriCopiaStringa: string) {
+    try{
+        //ricostruisco oggetto copia che mi hanno trasmesso
+        const parametriCopia: string[] = (parametriCopiaStringa).split(" ");
+
+        console.log(parametriCopia);
+        //prelevo oggetto libro associato alla copia in base a isbn
+        const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
+        //prelevo oggetto Venditore associato alla copia in base a CF
+        const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
+        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato);
+
+        //salvo copia ricevuta su DB
+        await registraCopiaPassata(copiaRicevuta);
+
+    }catch(error){
+        console.error("Errore nel recupero del libro mediante ISBN o del venditore mediante CF trasmesso da socket");
+    }
 }
 
 //ascolto modifiche al DB delle copie
@@ -350,6 +415,44 @@ async function leggiUltimaChiaveCopia(): Promise<number | null> {
         };
     });
 }
+
+async function registraCopiaPassata(copiaRicevuta: Copia): Promise<void>{
+    //apro transazione verso object store dei venditori, in scrittura
+    const transazione = database.transaction("Venditori", "readwrite");
+    //salvo reference dell'object store
+    const tabellaVenditori = transazione.objectStore("Venditori");
+    //richiesta di aggiunta all'object store
+    const richiestaAggiuntaVenditore = tabellaVenditori.add(copiaRicevuta);
+
+    //aggiunta andata a buon fine
+    richiestaAggiuntaVenditore.onsuccess = async () => {
+
+        //svuoto campi
+        campoPrezzoCopertina.value = "";
+        etichettaTitoloLibro.value = "";
+
+        //rimuovo parametri da URL non più necessari
+        parametri.delete("isbn");
+        parametri.delete("prezzoCopertina");
+        // Applica le modifiche all'URL (senza ricaricare la pagina)
+        const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
+        window.history.replaceState({}, "", nuovoURL);
+
+        //notifico aggiunta
+        databaseChannel.postMessage({store: "Venditori"});
+
+        //invia dati
+        inviaDati(copiaRicevuta);
+
+        //aggiorno lista copie, rileggendo da DB
+        caricaCopieVenditore();
+    }
+    //errore, venditore già presente
+    richiestaAggiuntaVenditore.onerror = () => {
+        console.log("Venditore già presente");
+    }
+}
+
 
 //funzione per registrare una copia del libro
 async function registraCopia(copiaDaSalvare: Copia):Promise<void>{

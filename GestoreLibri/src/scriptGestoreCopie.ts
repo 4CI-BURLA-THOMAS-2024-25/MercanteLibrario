@@ -212,7 +212,6 @@ async function prelevaCopieLibroISBN():Promise<Copia[]>{
     });
 }
 
-
 async function caricaCopieLibro(): Promise<void>{
     //prelevo copie che hanno libro con ISBN coerente con il libro con cui si sta operando
     const copieLibro: Copia[] = await prelevaCopieLibroISBN();

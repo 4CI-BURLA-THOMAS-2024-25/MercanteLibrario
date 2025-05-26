@@ -168,6 +168,7 @@ ws.onmessage = function (event) {
         }
     }
 }
+
 //gestisco aggiunta copia
 async function riceviMessaggio(parametriVenditoreStringa: string) {
     try{
@@ -184,6 +185,7 @@ async function riceviMessaggio(parametriVenditoreStringa: string) {
         console.error("Errore nel salvataggio del venditore mediante CF trasmesso da socket");
     }
 }
+
 //ascolto modifiche al DB dei venditori
 databaseChannel.onmessage = async (evento) => {
     const dati = evento.data;
@@ -227,6 +229,7 @@ async function registraVenditorePassato(venditoreRicevuto: Venditore): Promise<v
         for(let i = 0; i < caselleInput.length; i++){
             (caselleInput[i] as HTMLInputElement).value = "";
         }
+
         //notifico aggiunta
         databaseChannel.postMessage({store: "Venditori"});
 
@@ -274,11 +277,11 @@ async function registraVenditore(): Promise<void>{
 
     //aggiunta andata a buon fine
     richiestaAggiuntaVenditore.onsuccess = async () => {
-
         //svuoto campi di inserimento
         for(let i = 0; i < caselleInput.length; i++){
             (caselleInput[i] as HTMLInputElement).value = "";
         }
+
         //notifico aggiunta
         databaseChannel.postMessage({store: "Venditori"});
 
