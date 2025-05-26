@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mercante librario</title>
+        <link rel="icon" type="image/png" href="img\favicon.png">
+        <link rel="stylesheet" href="style.css"/>
+    </head>
+
+    <body>
+        <h1>Mercante librario</h1>
+        
+        <header id="intestazionePaginaVenditori">
+            <h2 style="margin: 0px;">Venditori</h2>
+            
+            <button id="aggiungiVenditore">Registra nuovo venditore</button>
+        </header>
+        
+        <input id="casellaRicerca" type="text" placeholder="Cercare venditore per nome o cognome"><br>
+
+        <!-- popup per inserire nuovo venditore -->
+        <div id="popupNuovoVenditore" class="popup">
+            <!-- contenuto del popup -->
+            <div class="contenutoPopup">
+                <h2>Registra nuovo venditore</h2>
+
+                <form>
+                    <!-- nome -->
+                    <label for="nome" class="testoLabelPopup">Nome: </label><br>
+                    <input type="text" id="nome" class="testoInputPopup" required></input><br><br>
+
+                    <!-- cognome -->
+                    <label for="cognome" class="testoLabelPopup">Cognome: </label><br>
+                    <input type="text" id="cognome" class="testoInputPopup" required></input><br><br>
+
+                    <!-- email -->
+                    <label for="email" class="testoLabelPopup">Email: </label><br>
+                    <input type="email" id="email" class="testoInputPopup" required></input><br><br>
+
+                    <!-- numero telefono -->
+                    <label for="numeroTelefono" class="testoLabelPopup">Numero di telefono: </label><br>
+                    <input type="number" id="numeroTelefono" class="testoInputPopup" required></input><br><br>
+
+                    <!-- classe -->
+                    <label for="classe" class="testoLabelPopup">Classe: </label><br>
+                    <input type="text" id="classe" class="testoInputPopup" required></input>
+
+                    <br><br>
+                    
+                    <button type="button" id="registraVenditore" class="bottoniPopup">Invia</button>
+                    <button type="button" id="chiudiPopup" class="bottoniPopup">Annulla</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- tabella che mostra tutti i venditori -->
+        <table id="elencoVenditori">
+            <!-- dimensioni delle colonne della tabella; proporzionate alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 2%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 20%;">
+                <col style="width: 5%;">
+                <col style="width: 5%;">
+                <col style="width: 10%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Email</th>
+                    <th>Telefono</th>
+                    <th>Classe</th>
+                    <th>€ dovuti</th>
+                    <th>Copie fornite</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->  
+            <tbody id="corpoTabellaVenditori"></tbody>
+        </table>
+
+        <script src="out/scriptGestoreVenditori.js" defer></script>
+    </body>
+</html>

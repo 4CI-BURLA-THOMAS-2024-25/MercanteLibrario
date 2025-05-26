@@ -36,25 +36,26 @@ function apriDatabase(): Promise<IDBDatabase>{
 databaseChannel.onmessage = async (evento) => {
     const dati = evento.data;
 
-    if (dati.store === "CopieEliminate") {
-        console.log("Aggiornamento ricevuto: ricarico copie del cestino...");
+    if (dati.store === "Copie") {
+        console.log("Aggiornamento ricevuto: ricarico copie eliminate...");
         
         //aggiorno pagina
         location.reload();
     }
 };
 
-//prelevo da DB tutte le copie nel cestino
-async function prelevaCopieCestino():Promise<Copia[]>{
+//prelevo da DB tutte le copie nel cestino con stato === "E"
+async function prelevaCopieEliminate(): Promise<Copia[]> {
     return new Promise((resolve, reject) => {
-        const transazione = database.transaction("CopieEliminate", "readonly");
-        const tabellaCopieEliminate = transazione.objectStore("CopieEliminate");
+        const transazione = database.transaction("Copie", "readonly");
+        const tabellaCopieEliminate = transazione.objectStore("Copie");
 
-        const richiesta = tabellaCopieEliminate.getAll(); // cerca tutte le copie con quel ID venditore
+        const richiesta = tabellaCopieEliminate.getAll(); // cerca tutte le copie
 
         richiesta.onsuccess = () => {
-            //array di tutte le copie nel cestino
-            resolve(richiesta.result);
+            // filtro le copie con stato === "E"
+            const copieEliminate: Copia[] = richiesta.result.filter((copia: Copia) => copia.stato === "E");
+            resolve(copieEliminate);
         };
 
         richiesta.onerror = () => {
@@ -66,7 +67,7 @@ async function prelevaCopieCestino():Promise<Copia[]>{
 async function caricaCopieCestino(): Promise<void>{
     try{
         //prelevo copie 
-        const copieCestino: Copia[] = await prelevaCopieCestino();
+        const copieCestino: Copia[] = await prelevaCopieEliminate();
         
         // prelevo reference del corpo della tabella per visualizzare le singole copie del venditore
         const corpoTabellaCopie = document.getElementById("corpoTabellaCopie") as HTMLTableSectionElement;
@@ -75,14 +76,14 @@ async function caricaCopieCestino(): Promise<void>{
 
         //itero e visualizzo ogni copia
         for(let i = 0; i < copieCestino.length; i++){
-            let copiaDelVenditore: Copia = copieCestino[i];
+            let copiaEliminata: Copia = copieCestino[i];
 
             // Prelevo il libro associato alla copia
             const libro: Libro = await new Promise<Libro>((resolve, reject) => {
                 const transazioneLibri = database.transaction("Libri", "readonly");
                 const tabellaLibri = transazioneLibri.objectStore("Libri");
                 //prelevo libro in base a ISBN associato alla copia
-                const richiestaLibro = tabellaLibri.get(copiaDelVenditore.libroDellaCopiaISBN);
+                const richiestaLibro = tabellaLibri.get(copiaEliminata.libroDellaCopiaISBN);
 
                 //acesso a DB andato a buon fine
                 richiestaLibro.onsuccess = () => {
@@ -92,13 +93,13 @@ async function caricaCopieCestino(): Promise<void>{
 
                     //venditore non trovato
                     } else {
-                        reject(new Error("Libro con ISBN non trovato"));  // fallback
+                        reject(new Error("Libro con ISBN non trovato")); 
                     }
                 };
 
                 //accesso a DB negato
                 richiestaLibro.onerror = () => {
-                    reject(new Error("Database dei libri non reperibile")); // fallback
+                    reject(new Error("Database dei libri non reperibile")); 
                 };
             });
 
@@ -120,7 +121,7 @@ async function caricaCopieCestino(): Promise<void>{
 
             //creo cella id copia e la aggiungo alla riga
             const cellaIDCopia = document.createElement("td");
-            cellaIDCopia.textContent = String(copiaDelVenditore.codiceUnivoco);
+            cellaIDCopia.textContent = String(copiaEliminata.codiceUnivoco);
             riga.appendChild(cellaIDCopia);
 
             //creo cella isbn libro associato alla copia e la aggiungo alla riga
@@ -135,12 +136,12 @@ async function caricaCopieCestino(): Promise<void>{
 
             //creo cella prezzo copertina e la aggiungo alla riga
             const cellaPrezzoCopertina = document.createElement("td");
-            cellaPrezzoCopertina.textContent = String(copiaDelVenditore.prezzoCopertina);
+            cellaPrezzoCopertina.textContent = String(copiaEliminata.prezzoCopertina);
             riga.appendChild(cellaPrezzoCopertina);
 
             //creo cella prezzo scontato e la aggiungo alla riga
             const cellaPrezzoScontato = document.createElement("td");
-            cellaPrezzoScontato.textContent = String(copiaDelVenditore.prezzoScontato);
+            cellaPrezzoScontato.textContent = String(copiaEliminata.prezzoScontato);
             riga.appendChild(cellaPrezzoScontato);
 
             // inserisco riga nel corpo della tabella
@@ -165,28 +166,27 @@ async function ripristinaCopieEliminate(): Promise<void> {
         const confermaRipristino = window.confirm("Vuoi ripristinare le copie selezionate?");
 
         //ripristino dopo conferma dell'utente
-        if(confermaRipristino){
+        if (confermaRipristino) {
             try {
-                const transazione = database.transaction(["Copie", "CopieEliminate"], "readwrite");
+                const transazione = database.transaction("Copie", "readwrite");
                 const storeCopie = transazione.objectStore("Copie");
-                const storeEliminate = transazione.objectStore("CopieEliminate");
-        
-                //itero sulle copie selezionate, eseguendo le eliminazioni
+
+                //itero sulle copie selezionate, eseguendo le modifiche
                 const ripristini = Array.from(checkboxSelezionate).map(async (checkbox) => {
                     //prelevo riga corrispondente alla checkbox selezionata
                     const riga = checkbox.closest("tr");
 
                     //verifico che la riga sia valida
-                    if(riga){
+                    if (riga) {
                         //prelevo id copia
                         const idCopia = riga.cells[0]?.textContent?.trim();
-                        
-                        //controllo che l'id copia sia valido (sicuramente)
-                        if(idCopia){
+
+                        //controllo che l'id copia sia valido
+                        if (idCopia) {
                             return new Promise<void>((resolve, reject) => {
-                                //prelevo copia da ripristinare
-                                const richiestaGet = storeEliminate.get(Number(idCopia));
-                
+                                //prelevo copia da modificare
+                                const richiestaGet = storeCopie.get(Number(idCopia));
+
                                 //database accessibile
                                 richiestaGet.onsuccess = () => {
                                     //prelevo copia
@@ -194,59 +194,57 @@ async function ripristinaCopieEliminate(): Promise<void> {
 
                                     //se la copia è stata trovata...
                                     if (copia) {
-                                        //richiedo aggiunta allo store delle copie non eliminate
-                                        const richiestaAdd = storeCopie.add(copia);
+                                        //modifico lo stato della copia
+                                        copia.stato = "D";
+
+                                        //aggiorno la copia nel database
+                                        const richiestaPut = storeCopie.put(copia);
 
                                         //database accessibile
-                                        richiestaAdd.onsuccess = () => {
-                                            //rimuovo copia dal cestino
-                                            storeEliminate.delete(Number(idCopia));
-                                            
-                                            //notifico modifiche ai due DB delle copie
-                                            databaseChannel.postMessage({store: "Copie"});
-                                            databaseChannel.postMessage({store: "CopieEliminate"});
-
+                                        richiestaPut.onsuccess = () => {
+                                            //notifico modifica al DB delle copie
+                                            databaseChannel.postMessage({ store: "Copie" });
                                             resolve();
                                         };
 
                                         //database non accessibile
-                                        richiestaAdd.onerror = () => {
-                                            reject(new Error("Errore nel ripristino della copia."));
+                                        richiestaPut.onerror = () => {
+                                            reject(new Error("Errore nell'aggiornamento dello stato della copia."));
                                         };
 
                                     //copia non trovata
                                     } else {
-                                        reject(new Error(`Copia con ID ${idCopia} non trovata nello store 'CopieEliminate'.`));
+                                        reject(new Error(`Copia con ID ${idCopia} non trovata nello store 'Copie'.`));
                                     }
                                 };
-                
+
                                 //errore di accesso a DB
                                 richiestaGet.onerror = () => {
-                                    reject(new Error("Errore nel recupero della copia eliminata."));
+                                    reject(new Error("Errore nel recupero della copia."));
                                 };
                             });
-
                         }
                     }
                 });
-        
-                //risolvo quando tutti i ripristini sono state effettuate; attendo
+
+                //risolvo quando tutte le modifiche sono state effettuate; attendo
                 await Promise.all(ripristini);
-                window.alert("Copie ripristinate correttamente.");
-                
+                window.alert("Copia/e ripristinate correttamente.");
+
                 //aggiorno tabella
                 await caricaCopieCestino();
-            }catch (errore) {
-                console.error("Errore durante il ripristino:", errore);
-                alert("Errore durante il ripristino delle copie.");
+
+            //stampo errore
+            } catch (errore) {
+                if(errore instanceof Error){
+                    console.error(errore.message);
+                }
             }
         }
-    }else{
+    } else {
         window.alert("Seleziona almeno una copia da ripristinare");
     }
-
 }
-
 
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {

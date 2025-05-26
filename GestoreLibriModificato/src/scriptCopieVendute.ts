@@ -36,7 +36,7 @@ function apriDatabase(): Promise<IDBDatabase>{
 databaseChannel.onmessage = async (evento) => {
     const dati = evento.data;
 
-    if (dati.store === "CopieVendute") {
+    if (dati.store === "Copie") {
         console.log("Aggiornamento ricevuto: ricarico copie vendute...");
         
         //aggiorno pagina
@@ -44,17 +44,18 @@ databaseChannel.onmessage = async (evento) => {
     }
 };
 
-//prelevo da DB tutte le copie vendute
-async function prelevaCopieVendute():Promise<Copia[]>{
+//prelevo da DB tutte le copie vendute con stato === "V"
+async function prelevaCopieVendute(): Promise<Copia[]> {
     return new Promise((resolve, reject) => {
-        const transazione = database.transaction("CopieVendute", "readonly");
-        const tabellaCopieVendute = transazione.objectStore("CopieVendute");
+        const transazione = database.transaction("Copie", "readonly");
+        const tabellaCopieVendute = transazione.objectStore("Copie");
 
         const richiesta = tabellaCopieVendute.getAll();
 
         richiesta.onsuccess = () => {
-            //array di tutte le copie vendute
-            resolve(richiesta.result);
+            // filtro le copie con stato === "V"
+            const copieVendute = richiesta.result.filter((copia: Copia) => copia.stato === "V");
+            resolve(copieVendute);
         };
 
         richiesta.onerror = () => {
@@ -165,28 +166,27 @@ async function annullaVendita(): Promise<void> {
         const confermaRipristino = window.confirm("Vuoi ripristinare le copie selezionate?");
 
         //ripristino dopo conferma dell'utente
-        if(confermaRipristino){
+        if (confermaRipristino) {
             try {
-                const transazione = database.transaction(["Copie", "CopieVendute"], "readwrite");
+                const transazione = database.transaction("Copie", "readwrite");
                 const storeCopie = transazione.objectStore("Copie");
-                const storeVendute = transazione.objectStore("CopieVendute");
-        
-                //itero sulle copie selezionate, eseguendo gli annullamenti uno alla volta
+
+                //itero sulle copie selezionate, eseguendo gli aggiornamenti uno alla volta
                 const ripristini = Array.from(checkboxSelezionate).map(async (checkbox) => {
                     //prelevo riga corrispondente alla checkbox selezionata
                     const riga = checkbox.closest("tr");
 
                     //verifico che la riga sia valida
-                    if(riga){
+                    if (riga) {
                         //prelevo id copia
                         const idCopia = riga.cells[0]?.textContent?.trim();
-                        
+
                         //controllo che l'id copia sia valido (sicuramente)
-                        if(idCopia){
+                        if (idCopia) {
                             return new Promise<void>((resolve, reject) => {
-                                //prelevo copia da ripristinare
-                                const richiestaGet = storeVendute.get(Number(idCopia));
-                
+                                //prelevo copia da aggiornare
+                                const richiestaGet = storeCopie.get(Number(idCopia));
+
                                 //database accessibile
                                 richiestaGet.onsuccess = () => {
                                     //prelevo copia
@@ -194,59 +194,56 @@ async function annullaVendita(): Promise<void> {
 
                                     //se la copia è stata trovata...
                                     if (copia) {
-                                        //richiedo aggiunta allo store delle copie non eliminate
-                                        const richiestaAdd = storeCopie.add(copia);
+                                        //aggiorno lo stato della copia a "D"
+                                        copia.stato = "D";
+
+                                        //richiedo aggiornamento nello store
+                                        const richiestaPut = storeCopie.put(copia);
 
                                         //database accessibile
-                                        richiestaAdd.onsuccess = () => {
-                                            //rimuovo copia dal cestino
-                                            storeVendute.delete(Number(idCopia));
-                                            
-                                            //notifico modifiche ai due DB delle copie
-                                            databaseChannel.postMessage({store: "Copie"});
-                                            databaseChannel.postMessage({store: "CopieVendute"});
+                                        richiestaPut.onsuccess = () => {
+                                            //notifico modifiche al DB delle copie
+                                            databaseChannel.postMessage({ store: "Copie" });
 
                                             resolve();
                                         };
 
                                         //database non accessibile
-                                        richiestaAdd.onerror = () => {
-                                            reject(new Error("Errore nel ripristino della copia."));
+                                        richiestaPut.onerror = () => {
+                                            reject(new Error("Errore nell'aggiornamento dello stato della copia."));
                                         };
 
                                     //copia non trovata
                                     } else {
-                                        reject(new Error(`Copia con ID ${idCopia} non trovata nello store 'CopieVendute'.`));
+                                        reject(new Error(`Copia con ID ${idCopia} non trovata nello store 'Copie'.`));
                                     }
                                 };
-                
+
                                 //errore di accesso a DB
                                 richiestaGet.onerror = () => {
-                                    reject(new Error("Errore nel recupero della copia venduta."));
+                                    reject(new Error("Errore nel recupero della copia."));
                                 };
                             });
-
                         }
                     }
                 });
-        
-                //risolvo quando tutti i ripristini sono state effettuate; attendo
+
+                //risolvo quando tutti gli aggiornamenti sono stati effettuati; attendo
                 await Promise.all(ripristini);
-                window.alert("Copie ripristinate correttamente.");
-                
+                window.alert("Copia/e ripristinate correttamente.");
+
                 //aggiorno tabella
                 await caricaCopieVendute();
-            }catch (errore) {
-                console.error("Errore durante il ripristino:", errore);
-                alert("Errore durante il ripristino delle copie.");
+            } catch (errore) {
+                if(errore instanceof Error){
+                    console.log(errore.message);
+                }
             }
         }
-    }else{
+    } else {
         window.alert("Seleziona almeno una copia da ripristinare");
     }
-
 }
-
 
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {
