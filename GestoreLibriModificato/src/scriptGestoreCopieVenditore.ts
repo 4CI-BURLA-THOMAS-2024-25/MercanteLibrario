@@ -461,8 +461,6 @@ async function registraCopiaPassata(copiaRicevuta: Copia): Promise<void>{
 
         //notifico aggiunta
         databaseChannel.postMessage({store: "Copie"});
-        //notifico modifica del totale da dare al venditore
-        databaseChannel.postMessage({store: "Venditori"});
 
         // Applica le modifiche all'URL (senza ricaricare la pagina)
         const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
@@ -497,8 +495,6 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
 
         //notifico aggiunta nuova copia
         databaseChannel.postMessage({store: "Copie"});
-        //notifico modifica del totale da dare al venditore
-        databaseChannel.postMessage({store: "Venditori"});
         //invia dati
         inviaDati(copiaDaSalvare);
 
@@ -644,8 +640,6 @@ async function eliminaLogicamenteCopie(): Promise<void> {
                                         richiestaUpdate.onsuccess = () => {
                                             //notifico modifiche al DB delle copie
                                             databaseChannel.postMessage({ store: "Copie" });
-                                            //notifico modifica del totale da dare al venditore
-                                            databaseChannel.postMessage({store: "Venditori"});
                                             resolve();
                                         };
 
