@@ -168,7 +168,7 @@ ws.onmessage = function (event) {
 async function riceviMessaggio(parametriVenditoreStringa: string) {
     try{
         //ricostruisco oggetto copia che mi hanno trasmesso
-        const parametriVenditore: string[] = (parametriVenditoreStringa).split(";");
+        const parametriVenditore: string[] = (parametriVenditoreStringa).split(" ");
 
         console.log(parametriVenditore);
         const venditoreRicevuto: Venditore = new Venditore(Number(parametriVenditore[0]),parametriVenditore[1],parametriVenditore[2],parametriVenditore[3],Number(parametriVenditore[4]),parametriVenditore[5]);
