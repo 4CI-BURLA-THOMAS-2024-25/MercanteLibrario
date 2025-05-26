@@ -4,10 +4,10 @@ import { Venditore } from "./Venditore";
 //importo dato per notificare aggiornamenti al DB
 import { databaseChannel } from "./broadcast";
 import { elencoLibri } from "./elencoLibri";
+import { ws } from "./websocket";
 
 //database
 let database: IDBDatabase;
-const ws = new WebSocket('ws://localHost:8081');
 
 //array dei venditori
 let elencoVenditori: Venditore[] | null;
@@ -141,27 +141,31 @@ ws.onerror = function (error) {
 
 //comunico il venditore da rimuovere
 function inviaDatiRimozione(venditoreID: number) {
-    ws.send("1," + String(venditoreID));
+    ws.send("V," + "1," + String(venditoreID));
 }
 
 //comunico il venditore da aggiungere
 function inviaDati(venditore: Venditore) {
-    ws.send("0," + String(venditore.toString()));
+    ws.send("V," + "0," + String(venditore.toString()));
 }
 
 //ricevo messaggio
 ws.onmessage = function (event) {
     console.log(event.data);
-    
+
     //divido azione e contenuto
     let smista:any[] = (event.data).split(',');
-    //aggiungi copia
-    if (Number(smista[0]) == 0) {
-        riceviMessaggio(smista[1]);
 
-    //rimuovi
-    } else {
-        //riceviDatiRimozione(event);
+    //controllo che l'azione sia stata eseguita sui venditori
+    if(smista[0] === "V"){
+        //aggiungi copia
+        if (Number(smista[1]) == 0) {
+            riceviMessaggio(smista[2]);
+    
+        //rimuovi
+        } else {
+            //riceviDatiRimozione(event);
+        }
     }
 }
 //gestisco aggiunta copia
