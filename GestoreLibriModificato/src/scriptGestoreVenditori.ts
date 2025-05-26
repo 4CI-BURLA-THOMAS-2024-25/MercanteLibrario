@@ -126,19 +126,6 @@ function apriDatabase(): Promise<IDBDatabase>{
     return out;
 }
 
-//comunicazione
-ws.onopen = function () {
-    console.log("aperto il server");
-}
-
-ws.onclose = function () {
-    console.log("connessione server chiusa");
-}
-
-ws.onerror = function (error) {
-    console.log("errore nel webSocket", error);
-}
-
 //comunico il venditore da rimuovere
 function inviaDatiRimozione(venditoreID: number) {
     ws.send("V," + "1," + String(venditoreID));
@@ -158,9 +145,12 @@ ws.onmessage = function (event) {
 
     //controllo che l'azione sia stata eseguita sui venditori
     if(smista[0] === "V"){
+
+        console.log("DENTRO SMISTA");
         //aggiungi copia
         if (Number(smista[1]) == 0) {
             riceviMessaggio(smista[2]);
+            console.log("PRESO MESSAGGIO AGGIUNTA");
     
         //rimuovi
         } else {

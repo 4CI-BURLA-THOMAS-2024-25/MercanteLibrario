@@ -122,7 +122,7 @@ ws.onmessage = function (event) {
 async function riceviMessaggio(parametriCopiaStringa: string) {
     try{
         //ricostruisco oggetto copia che mi hanno trasmesso
-        const parametriCopia: string[] = (parametriCopiaStringa).split(" ");
+        const parametriCopia: string[] = (parametriCopiaStringa).split(";");
 
         console.log(parametriCopia);
         //prelevo oggetto libro associato alla copia in base a isbn
@@ -130,6 +130,8 @@ async function riceviMessaggio(parametriCopiaStringa: string) {
         //prelevo oggetto Venditore associato alla copia in base a CF
         const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
         const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato);
+
+        console.log(copiaRicevuta);
 
         //salvo copia ricevuta su DB
         await registraCopiaPassata(copiaRicevuta);
@@ -417,16 +419,15 @@ async function leggiUltimaChiaveCopia(): Promise<number | null> {
 }
 
 async function registraCopiaPassata(copiaRicevuta: Copia): Promise<void>{
-    //apro transazione verso object store dei venditori, in scrittura
-    const transazione = database.transaction("Venditori", "readwrite");
+    //apro transazione verso object store delle copie, in scrittura
+    const transazione = database.transaction("Copie", "readwrite");
     //salvo reference dell'object store
-    const tabellaVenditori = transazione.objectStore("Venditori");
+    const tabellaCopie = transazione.objectStore("Copie");
     //richiesta di aggiunta all'object store
-    const richiestaAggiuntaVenditore = tabellaVenditori.add(copiaRicevuta);
+    const richiestaAggiuntaCopia = tabellaCopie.add(copiaRicevuta);
 
     //aggiunta andata a buon fine
-    richiestaAggiuntaVenditore.onsuccess = async () => {
-
+    richiestaAggiuntaCopia.onsuccess = async () => {
         //svuoto campi
         campoPrezzoCopertina.value = "";
         etichettaTitoloLibro.value = "";
@@ -434,25 +435,22 @@ async function registraCopiaPassata(copiaRicevuta: Copia): Promise<void>{
         //rimuovo parametri da URL non più necessari
         parametri.delete("isbn");
         parametri.delete("prezzoCopertina");
+
+        //notifico aggiunta
+        databaseChannel.postMessage({store: "Copie"});
+
         // Applica le modifiche all'URL (senza ricaricare la pagina)
         const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
         window.history.replaceState({}, "", nuovoURL);
-
-        //notifico aggiunta
-        databaseChannel.postMessage({store: "Venditori"});
-
-        //invia dati
-        inviaDati(copiaRicevuta);
 
         //aggiorno lista copie, rileggendo da DB
         caricaCopieVenditore();
     }
     //errore, venditore già presente
-    richiestaAggiuntaVenditore.onerror = () => {
-        console.log("Venditore già presente");
+    richiestaAggiuntaCopia.onerror = () => {
+        console.log("Copia già presente");
     }
 }
-
 
 //funzione per registrare una copia del libro
 async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
@@ -471,15 +469,15 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
         //rimuovo parametri da URL non più necessari
         parametri.delete("isbn");
         parametri.delete("prezzoCopertina");
-        // Applica le modifiche all'URL (senza ricaricare la pagina)
-        const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
-        window.history.replaceState({}, "", nuovoURL);
-
-        //comunico scrittura copia 
-        //inviaDati(copiaDaSalvare);
 
         //notifico aggiunta nuova copia
         databaseChannel.postMessage({store: "Copie"});
+        //invia dati
+        inviaDati(copiaDaSalvare);
+
+        // Applica le modifiche all'URL (senza ricaricare la pagina)
+        const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
+        window.history.replaceState({}, "", nuovoURL);
 
         //aggiorno lista copie, rileggendo da DB
         caricaCopieVenditore();
