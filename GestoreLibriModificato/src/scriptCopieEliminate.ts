@@ -1,6 +1,5 @@
 import { Copia } from "./Copia";
 import { Libro } from "./Libro";
-import { StatoCopia } from "./StatoCopia";
 
 //importo dato per notificare aggiornamenti al DB
 import { databaseChannel } from "./broadcast";
@@ -55,7 +54,7 @@ async function prelevaCopieEliminate(): Promise<Copia[]> {
 
         richiesta.onsuccess = () => {
             // filtro le copie con stato === "E"
-            const copieEliminate: Copia[] = richiesta.result.filter((copia: Copia) => copia.stato === StatoCopia.Eliminata);
+            const copieEliminate: Copia[] = richiesta.result.filter((copia: Copia) => copia.stato === "E");
             resolve(copieEliminate);
         };
 
@@ -195,7 +194,7 @@ async function ripristinaCopieEliminate(): Promise<void> {
                                     //se la copia è stata trovata...
                                     if (copia) {
                                         //modifico lo stato della copia
-                                        copia.stato = StatoCopia.Disponibile;
+                                        copia.stato = "D";
 
                                         //aggiorno la copia nel database
                                         const richiestaPut = storeCopie.put(copia);

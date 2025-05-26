@@ -1,5 +1,4 @@
 import { Libro } from "./Libro";
-import { StatoCopia } from "./StatoCopia";
 import { Venditore } from "./Venditore";
 
 export class Copia{
@@ -8,9 +7,9 @@ export class Copia{
     readonly prezzoCopertina: number;
     readonly prezzoScontato: number;
     readonly venditoreID: number; //prendo CF del venditore
-    public stato: StatoCopia; //tengo traccia di copia disponibile(D), venduta(V) o cancellata(C)
+    public stato: string; //tengo traccia di copia disponibile(D), venduta(V) o cancellata(C)
 
-    constructor(libroDellaCopia: Libro, codiceUnivoco: number, prezzoCopertina: number, venditore: Venditore, stato:StatoCopia){
+    constructor(libroDellaCopia: Libro, codiceUnivoco: number, prezzoCopertina: number, venditore: Venditore, stato:string){
         //libro a cui è associata la copia
         this.libroDellaCopiaISBN = libroDellaCopia.isbn;
 

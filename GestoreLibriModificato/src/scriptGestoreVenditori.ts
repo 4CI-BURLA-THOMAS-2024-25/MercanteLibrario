@@ -1,5 +1,4 @@
 import { Copia } from "./Copia";
-import { StatoCopia } from "./StatoCopia";
 import { Venditore } from "./Venditore";
 
 //importo dato per notificare aggiornamenti al DB
@@ -432,7 +431,7 @@ async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
 
             richiesta.onsuccess = () => {
                 // Filtra solo le copie con stato === "V"
-                const copieFiltrate = richiesta.result.filter((copia: Copia) => copia.stato === StatoCopia.Venduta);
+                const copieFiltrate = richiesta.result.filter((copia: Copia) => copia.stato === "V");
                 resolve(copieFiltrate);
             };
             richiesta.onerror = () => reject(richiesta.error);

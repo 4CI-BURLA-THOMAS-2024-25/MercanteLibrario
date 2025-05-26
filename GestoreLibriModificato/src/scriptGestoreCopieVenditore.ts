@@ -1,6 +1,5 @@
 import { Copia } from "./Copia";
 import { Libro } from "./Libro";
-import { StatoCopia } from "./StatoCopia";
 import { Venditore } from "./Venditore";
 
 //importo dato per notificare aggiornamenti al DB
@@ -76,21 +75,6 @@ function apriDatabase(): Promise<IDBDatabase>{
     return out;
 }
 
-//funzione che associa il tipo enum al suo valore come stringa
-function associaEnum(valore: string): StatoCopia {
-    switch (valore) {
-        case "D":
-            return StatoCopia.Disponibile;
-        case "V":
-            return StatoCopia.Venduta;
-        case "E":
-            return StatoCopia.Eliminata;
-        default:
-            throw new Error(`Valore di stato non riconosciuto: ${valore}`);
-    }
-}
-
-
 //comunicazione
 ws.onopen = function () {
     console.log("aperto il server");
@@ -131,14 +115,11 @@ async function riceviMessaggio(parametriCopiaStringa: string) {
 
         console.log(parametriCopia);
 
-        //associo stato della copia al tipo enumerativo
-        const statoCopiaRicevuta: StatoCopia = associaEnum(parametriCopia[4]);
-
         //prelevo oggetto libro associato alla copia in base a isbn
         const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
         //prelevo oggetto Venditore associato alla copia in base a CF
         const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
-        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, statoCopiaRicevuta);
+        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[4]);
 
         console.log(copiaRicevuta);
 
@@ -276,11 +257,8 @@ async function caricaCopieVenditore(): Promise<void>{
         //itero e visualizzo ogni copia del venditore
         for(let i = 0; i < copieVenditore.length; i++){
             const copiaDelVenditore: Copia = copieVenditore[i];
-            //prelevo stato come dato enum
-            const statoCopia: StatoCopia = associaEnum(copiaDelVenditore.stato);
-
             //controllo che la copia esaminata non sia contrassegnata come eliminata
-            if(statoCopia !== StatoCopia.Eliminata){
+            if(copiaDelVenditore.stato !== "E"){
                 // Prelevo il libro associato alla copia
                 const libro: Libro = await new Promise<Libro>((resolve, reject) => {
                     const transazioneLibri = database.transaction("Libri", "readonly");
@@ -318,7 +296,7 @@ async function caricaCopieVenditore(): Promise<void>{
                 //imposto classe per CSS
                 casellaSelezione.setAttribute("class", "caselleSelezione");
                 //se la copia è venduta, disabilito la checkbox
-                if(statoCopia === StatoCopia.Venduta){
+                if(copiaDelVenditore.stato === "V"){
                     casellaSelezione.disabled = true;
                     riga.classList.add("venduta");
                 }
@@ -365,21 +343,19 @@ async function caricaCopieVenditore(): Promise<void>{
     }
 }
 
-// //calcolo il totale da dare al venditore, in base alle copie vendute
-// function calcolaSommaPrezzoVenditore(copieDelVenditore: Copia[]): number {
-//     let sommaPrezziCopie: number = 0;
+//calcolo il totale da dare al venditore, in base alle copie vendute
+function calcolaSommaPrezzoVenditore(copieDelVenditore: Copia[]): number {
+    let sommaPrezziCopie: number = 0;
 
-//     //sommo prezzi scontati delle copie vendute (stato === "V")
-//     for (let i = 0; i < copieDelVenditore.length; i++) {
-//         const statoCopia: StatoCopia = associaEnum(copieDelVenditore[i].stato);
+    //sommo prezzi scontati delle copie vendute (stato === "V")
+    for (let i = 0; i < copieDelVenditore.length; i++) {
+        if (copieDelVenditore[i].stato == "V") {
+            sommaPrezziCopie += copieDelVenditore[i].prezzoScontato;
+        }
+    }
 
-//         if (statoCopia == StatoCopia.Venduta) {
-//             sommaPrezziCopie += copieDelVenditore[i].prezzoScontato;
-//         }
-//     }
-
-//     return Number(sommaPrezziCopie.toFixed(2));
-// }
+    return Number(sommaPrezziCopie.toFixed(2));
+ }
 
 //funzione per preparare la registrazione di una copia del venditore in questione
 async function preparaCopiaDaRegistrare():Promise<void>{
@@ -399,7 +375,7 @@ async function preparaCopiaDaRegistrare():Promise<void>{
         //verifico che sia stato scelto il libro da associare alla copia
         if(libro != null){
             //creo oggetto copia
-            const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(campoPrezzoCopertina.value), venditore, StatoCopia.Disponibile);
+            const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(campoPrezzoCopertina.value), venditore, "D");
     
             //svuoto libro
             libro = null;
@@ -608,7 +584,6 @@ async function eliminaLogicamenteCopie(): Promise<void> {
             try {
                 const transazione = database.transaction("Copie", "readwrite");
                 const storeCopie = transazione.objectStore("Copie");
-
                 //itero sulle copie selezionate, eseguendo le eliminazioni logiche
                 const eliminazioni = Array.from(checkboxSelezionate).map(async (checkbox) => {
                     // Trova la riga della checkbox
@@ -617,7 +592,7 @@ async function eliminaLogicamenteCopie(): Promise<void> {
                     //controllo che sia stata selezionata una riga
                     if (riga) {
                         // Preleva la seconda cella (indice 1) che contiene l'ID della copia
-                        const idCopia = riga.cells[0]?.textContent?.trim();
+                        const idCopia = riga.cells[1]?.textContent?.trim();
 
                         //controllo id copia (anche se dovrebbe sempre essere valido)
                         if (idCopia) {
@@ -633,8 +608,7 @@ async function eliminaLogicamenteCopie(): Promise<void> {
                                     if (copia) {
                                         console.log("RIsultato prova eliminazione:" + copia);
                                         //imposto stato della copia come "E" (eliminata)
-                                        copia.stato = StatoCopia.Eliminata;
-
+                                        copia.stato = "E";
                                         //aggiorno la copia nel database
                                         const richiestaUpdate = storeCopie.put(copia);
 
@@ -711,7 +685,7 @@ async function vendiCopie(): Promise<void> {
                     //controllo che sia stata selezionata una riga
                     if (riga) {
                         // Preleva la seconda cella (indice 0) che contiene l'ID della copia
-                        const idCopia = riga.cells[0]?.textContent?.trim();
+                        const idCopia = riga.cells[1]?.textContent?.trim();
 
                         //controllo id copia (anche se dovrebbe sempre essere valido)
                         if (idCopia) {
@@ -726,8 +700,7 @@ async function vendiCopie(): Promise<void> {
                                     //copia trovata
                                     if (copia) {
                                         //imposto stato della copia come "V" (venduta)
-                                        copia.stato = StatoCopia.Venduta;
-
+                                        copia.stato = "V";
                                         //aggiorno la copia nel database
                                         const richiestaUpdate = storeCopie.put(copia);
 
