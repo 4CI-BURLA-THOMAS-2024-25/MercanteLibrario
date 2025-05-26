@@ -204,6 +204,8 @@ async function annullaVendita(): Promise<void> {
                                         richiestaPut.onsuccess = () => {
                                             //notifico modifiche al DB delle copie
                                             databaseChannel.postMessage({ store: "Copie" });
+                                            //notifico modifica del totale da dare al venditore
+                                            databaseChannel.postMessage({store: "Venditori"});
 
                                             resolve();
                                         };

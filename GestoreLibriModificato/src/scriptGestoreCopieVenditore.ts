@@ -370,9 +370,11 @@ async function caricaCopieVenditore(): Promise<void>{
 function calcolaSommaPrezzoVenditore(copieDelVenditore: Copia[]): number {
     let sommaPrezziCopie: number = 0;
 
-    //sommo prezzi scontati delle copie
-    for(let i = 0; i < copieDelVenditore.length; i++){
-        sommaPrezziCopie += copieDelVenditore[i].prezzoScontato;
+    //sommo prezzi scontati delle copie vendute (stato === "V")
+    for (let i = 0; i < copieDelVenditore.length; i++) {
+        if (copieDelVenditore[i].stato === "V") {
+            sommaPrezziCopie += copieDelVenditore[i].prezzoScontato;
+        }
     }
 
     return Number(sommaPrezziCopie.toFixed(2));
@@ -459,13 +461,15 @@ async function registraCopiaPassata(copiaRicevuta: Copia): Promise<void>{
 
         //notifico aggiunta
         databaseChannel.postMessage({store: "Copie"});
+        //notifico modifica del totale da dare al venditore
+        databaseChannel.postMessage({store: "Venditori"});
 
         // Applica le modifiche all'URL (senza ricaricare la pagina)
         const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
         window.history.replaceState({}, "", nuovoURL);
 
         //aggiorno lista copie, rileggendo da DB
-        caricaCopieVenditore();
+        await caricaCopieVenditore();
     }
     //errore, venditore già presente
     richiestaAggiuntaCopia.onerror = () => {
@@ -493,6 +497,8 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
 
         //notifico aggiunta nuova copia
         databaseChannel.postMessage({store: "Copie"});
+        //notifico modifica del totale da dare al venditore
+        databaseChannel.postMessage({store: "Venditori"});
         //invia dati
         inviaDati(copiaDaSalvare);
 
@@ -638,6 +644,8 @@ async function eliminaLogicamenteCopie(): Promise<void> {
                                         richiestaUpdate.onsuccess = () => {
                                             //notifico modifiche al DB delle copie
                                             databaseChannel.postMessage({ store: "Copie" });
+                                            //notifico modifica del totale da dare al venditore
+                                            databaseChannel.postMessage({store: "Venditori"});
                                             resolve();
                                         };
 
@@ -727,6 +735,8 @@ async function vendiCopie(): Promise<void> {
                                         richiestaUpdate.onsuccess = () => {
                                             //notifico modifiche al DB delle copie
                                             databaseChannel.postMessage({ store: "Copie" });
+                                            //notifico modifica del totale da dare al venditore
+                                            databaseChannel.postMessage({store: "Venditori"});
                                             resolve();
                                         };
 
