@@ -266,6 +266,9 @@ async function registraVenditore(): Promise<void>{
         //notifico aggiunta
         databaseChannel.postMessage({store: "Venditori"});
 
+        //invia i dati del venditore
+        inviaDati(venditore);
+
         //aggiorno lista venditori, rileggendo da DB
         mostraVenditori(await prelevaVenditori());
 
