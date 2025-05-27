@@ -5,7 +5,6 @@ import { Venditore } from "./Venditore";
 //importo dato per notificare aggiornamenti al DB
 import { databaseChannel } from "./broadcast";
 import { elencoLibri } from "./elencoLibri";
-import { prelevaLibroISBN, prelevaVenditoreID } from "./scriptGestoreCopieVenditore";
 import { ws } from "./websocket";
 
 //database
@@ -572,6 +571,69 @@ function caricaLibriNelDatabase(): void {
         console.error("Errore durante il caricamento dei libri statici.");
     };
 }
+
+//recupero libro dato isbn; esportabile su pagina principale che ascolta ws
+async function prelevaLibroISBN(isbnRicerca: number): Promise<Libro>{
+    //preparo transazione per leggere
+    const transazione = database.transaction("Libri", "readonly");
+    //prelevo reference dell'object store
+    const tabellaLibri = transazione.objectStore("Libri");
+
+    const libroLetto: Libro = await new Promise<Libro>((resolve, reject) => {
+        //cerco per isbn (chiave primaria)
+        const richiesta = tabellaLibri.get(isbnRicerca);
+
+        //richiesta andata a buon fine
+        richiesta.onsuccess = () => {
+            //venditore trovato
+            if (richiesta.result) {
+                resolve(richiesta.result);
+
+            //venditore NON trovato
+            } else {
+                reject(new Error("Libro non trovato con ISBN" + isbnRicerca));
+            }
+        }
+
+        //errore nella richiesta
+        richiesta.onerror = (event) => {
+            console.error("Errore nella richiesta:", event);
+            reject(richiesta.error);
+        };
+    });
+
+    //restituisco venditore
+    return libroLetto;
+}
+
+//funzione che preleva un venditore dato il suo ID; esportabile su pagina principale che ascolta ws
+async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore>{
+    //apro transazione
+    const transazione = database.transaction("Venditori", "readonly");
+    const tabellaVenditori = transazione.objectStore("Venditori");
+
+    //assegno venditore o errore di recupero
+    const venditorePrelevato: Venditore = await new Promise<Venditore>((resolve, reject) => {
+        // cerco per id venditore
+        const richiestaVenditori = tabellaVenditori.get(venditoreIDPassato);
+
+        richiestaVenditori.onsuccess = () => {
+            if (richiestaVenditori.result) {
+                resolve(richiestaVenditori.result);
+            } else {
+                reject(new Error("Venditore non trovato con codice fiscale: " + venditoreIDPassato));
+            }
+        };
+
+        richiestaVenditori.onerror = (event) => {
+            console.error("Errore nella richiesta:", event);
+            reject(richiestaVenditori.error);
+        };
+    });  
+    
+    return venditorePrelevato;
+}
+
 
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {
