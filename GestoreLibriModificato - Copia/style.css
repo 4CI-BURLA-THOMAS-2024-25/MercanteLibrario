@@ -121,3 +121,8 @@ td:has(.caselleSelezione) {
     vertical-align: middle;
     text-align: center;
 }
+
+/* copia venduta */
+.venduta {
+    background-color: #ffcccc; /* rosso chiaro */
+}

@@ -89,8 +89,22 @@ ws.onerror = function (error) {
 }
 
 //comunico copia modificata
-function inviaDati(copia: Copia) {
-    ws.send("C," + String(copia.toString()));
+async function inviaDati(copia: Copia) {
+    let copiaDaInviare: Copia;
+    //controllo che l'oggetto passato sia una reale istanza, altrimenti la ricreo (se letta da DB)
+    if(copia instanceof Copia){
+        copiaDaInviare = copia;
+    }else{
+        const copiaGrezza: Copia = copia as Copia;
+        //prelevo libro associato alla copia
+        const libroDellaCopia: Libro = await prelevaLibroISBN(Number(copiaGrezza.libroDellaCopiaISBN));
+        //prelevo venditore associato alla copia
+        const venditoreDellaCopia: Venditore = await prelevaVenditoreID(Number(copiaGrezza.venditoreID));
+        //ricostruisco istanza reale della copia
+        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato);
+    }
+
+    ws.send("C," + String(copiaDaInviare?.toString()));
 }
 
 //ricevo messaggio
@@ -107,7 +121,7 @@ ws.onmessage = function (event) {
     }
 }
 
-//gestisco aggiunta copia
+//gestisco operazioni su copia
 async function riceviMessaggio(parametriCopiaStringa: string) {
     try{
         //ricostruisco oggetto copia che mi hanno trasmesso
@@ -119,12 +133,12 @@ async function riceviMessaggio(parametriCopiaStringa: string) {
         const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
         //prelevo oggetto Venditore associato alla copia in base a CF
         const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
-        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[4]);
+        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[5]);
 
         console.log(copiaRicevuta);
 
-        //salvo copia ricevuta su DB
-        await registraCopiaPassata(copiaRicevuta);
+        //salvo/aggiorno copia ricevuta su DB
+        await controllaCopiaPassata(copiaRicevuta);
 
     }catch(error){
         console.error("Errore nel recupero del libro mediante ISBN o del venditore mediante CF trasmesso da socket");
@@ -418,13 +432,13 @@ async function leggiUltimaChiaveCopia(): Promise<number | null> {
     });
 }
 
-async function registraCopiaPassata(copiaRicevuta: Copia): Promise<void>{
+async function controllaCopiaPassata(copiaRicevuta: Copia): Promise<void>{
     //apro transazione verso object store delle copie, in scrittura
     const transazione = database.transaction("Copie", "readwrite");
     //salvo reference dell'object store
     const tabellaCopie = transazione.objectStore("Copie");
     //richiesta di aggiunta all'object store
-    const richiestaAggiuntaCopia = tabellaCopie.add(copiaRicevuta);
+    const richiestaAggiuntaCopia = tabellaCopie.put(copiaRicevuta);
 
     //aggiunta andata a buon fine
     richiestaAggiuntaCopia.onsuccess = async () => {
@@ -616,6 +630,9 @@ async function eliminaLogicamenteCopie(): Promise<void> {
                                         richiestaUpdate.onsuccess = () => {
                                             //notifico modifiche al DB delle copie
                                             databaseChannel.postMessage({ store: "Copie" });
+                                            //invia copia aggiornata
+                                            inviaDati(copia);
+
                                             resolve();
                                         };
 
@@ -710,6 +727,9 @@ async function vendiCopie(): Promise<void> {
                                             databaseChannel.postMessage({ store: "Copie" });
                                             //notifico modifica del totale da dare al venditore
                                             databaseChannel.postMessage({store: "Venditori"});
+                                            //invia copia aggiornata
+                                            inviaDati(copia);
+
                                             resolve();
                                         };
 

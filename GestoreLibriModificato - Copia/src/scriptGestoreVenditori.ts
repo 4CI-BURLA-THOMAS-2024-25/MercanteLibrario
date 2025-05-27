@@ -406,7 +406,7 @@ async function mostraVenditori(listaVenditori: Venditore[] | null): Promise<void
 
 //calcolo il prezzo MAX da dare al venditore, nel caso in cui vengano vendute tutte le sue copie
 async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
-    let sommaPrezziCopie: number[] = new Array;
+    let sommaPrezziCopie: number[] = new Array();
     // 1. Preleva tutti i venditori
     const venditori: Venditore[] = await new Promise((resolve, reject) => {
         const transazione = database.transaction("Venditori", "readonly");
@@ -429,7 +429,11 @@ async function caricaSommaPrezzoPerTuttiIVenditori(): Promise<number[]> {
 
             const richiesta = indice.getAll(venditore.id); // Usa l’indice per filtrare
 
-            richiesta.onsuccess = () => resolve(richiesta.result);
+            richiesta.onsuccess = () => {
+                // Filtra solo le copie con stato === "V"
+                const copieFiltrate = richiesta.result.filter((copia: Copia) => copia.stato === "V");
+                resolve(copieFiltrate);
+            };
             richiesta.onerror = () => reject(richiesta.error);
         });
 
