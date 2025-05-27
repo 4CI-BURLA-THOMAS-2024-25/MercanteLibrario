@@ -448,7 +448,7 @@ function mostraLibri(): void{
 }
 
 //recupero libro dato isbn; esportabile su pagina principale che ascolta ws
-export async function prelevaLibroISBN(isbnRicerca: number): Promise<Libro>{
+async function prelevaLibroISBN(isbnRicerca: number): Promise<Libro>{
     //preparo transazione per leggere
     const transazione = database.transaction("Libri", "readonly");
     //prelevo reference dell'object store
@@ -482,7 +482,7 @@ export async function prelevaLibroISBN(isbnRicerca: number): Promise<Libro>{
 }
 
 //funzione che preleva un venditore dato il suo ID; esportabile su pagina principale che ascolta ws
-export async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore>{
+async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore>{
     //apro transazione
     const transazione = database.transaction("Venditori", "readonly");
     const tabellaVenditori = transazione.objectStore("Venditori");
