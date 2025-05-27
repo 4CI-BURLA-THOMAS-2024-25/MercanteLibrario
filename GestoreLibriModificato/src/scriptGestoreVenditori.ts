@@ -215,11 +215,8 @@ async function controllaVenditorePassato(venditoreRicevuto: Venditore): Promise<
         //notifico aggiunta
         databaseChannel.postMessage({store: "Venditori"});
 
-        //aggiorno lista venditori, rileggendo da DB
-        mostraVenditori(await prelevaVenditori());
-
-        //chiudo popup di inserimento
-        chiudiRegistrazioneVenditore();
+        //aggiorno lista venditori, ricarico
+        location.reload();
     }
     //errore, venditore già presente
     richiestaAggiuntaVenditore.onerror = () => {
@@ -240,6 +237,9 @@ async function controllaCopiaPassata(copiaRicevuta: Copia): Promise<void>{
 
         //notifico aggiunta
         databaseChannel.postMessage({store: "Copie"});
+
+        //aggiorno lista venditori(prezzo), ricarico
+        location.reload();
     }
     //errore, copia già presente
     richiestaAggiuntaCopia.onerror = () => {
