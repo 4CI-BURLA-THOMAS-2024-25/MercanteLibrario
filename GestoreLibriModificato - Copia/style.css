@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=New+Rocker&display=swap');
 
 /* importo font di h2 da Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Macondo&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=PT+Serif+Caption:ital@0;1&display=swap');
 
 /* importo font dei bottoni del popup per gestire le copie di un libro da Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
@@ -13,6 +13,10 @@
 /* importo font per labels del popup gestore copie da Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
+body {
+    background-color: #F9F9F9;
+}
+
 h1 {
     color:darkorange;
     font-family: 'New Rocker';
@@ -21,7 +25,7 @@ h1 {
 }
 
 h2 {
-    color:fuchsia;
+    color:red;
     font-family: 'Macondo';
     font-size: 50px;
     margin: 20px;
@@ -125,4 +129,24 @@ td:has(.caselleSelezione) {
 /* copia venduta */
 .venduta {
     background-color: #ffcccc; /* rosso chiaro */
+}
+
+/* menu di navigazione tra pagine */
+nav {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    position: sticky;
+    background-color: #F9F9F9;
+    top: 0;
+}
+
+/* singole celle del menu */
+.cellaMenu {
+    /* ogni cella ha la stessa larghezza */
+    flex: 1; 
+    text-align: center; 
+    font-size: 20px;
+    border-color: #2E2E2E;
+    margin: 5px;
 }
