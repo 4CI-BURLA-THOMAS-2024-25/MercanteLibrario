@@ -107,44 +107,6 @@ async function inviaDati(copia: Copia) {
     ws.send("C," + String(copiaDaInviare?.toString()));
 }
 
-//ricevo messaggio
-ws.onmessage = function (event) {
-    console.log(event.data);
-
-    //divido azione e contenuto
-    let smista:any[] = (event.data).split(',');
-
-    //controllo che l'azione sia stata eseguita sulle copie
-    if(smista[0] === "C"){
-        //aggiungi o aggiorna stato della copia
-        riceviMessaggio(smista[1]);
-    }
-}
-
-//gestisco operazioni su copia
-async function riceviMessaggio(parametriCopiaStringa: string) {
-    try{
-        //ricostruisco oggetto copia che mi hanno trasmesso
-        const parametriCopia: string[] = (parametriCopiaStringa).split(";");
-
-        console.log(parametriCopia);
-
-        //prelevo oggetto libro associato alla copia in base a isbn
-        const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
-        //prelevo oggetto Venditore associato alla copia in base a CF
-        const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
-        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[5]);
-
-        console.log(copiaRicevuta);
-
-        //salvo/aggiorno copia ricevuta su DB
-        await controllaCopiaPassata(copiaRicevuta);
-
-    }catch(error){
-        console.error("Errore nel recupero del libro mediante ISBN o del venditore mediante CF trasmesso da socket");
-    }
-}
-
 //ascolto modifiche al DB delle copie
 databaseChannel.onmessage = async (evento) => {
     const dati = evento.data;
@@ -254,7 +216,7 @@ async function caricaCopieVenditore(): Promise<void>{
         corpoInfoVenditore.innerHTML = "";
 
         //chiamo funzione per calcolare il denaro MAX da dare al venditore
-        const denaroMAX: number = 0;
+        const denaroMAX: number = calcolaSommaPrezzoVenditore(copieVenditore);
 
         //creo riga con le info del venditore
         const rigaInfoVenditore: HTMLTableRowElement = document.createElement("tr");
@@ -346,8 +308,6 @@ async function caricaCopieVenditore(): Promise<void>{
     
                 // inserisco riga nel corpo della tabella
                 corpoTabellaCopie.appendChild(riga);
-            }else{
-                throw new Error("Errore confronto con enum");
             }
         }
     }catch(error){
@@ -369,7 +329,7 @@ function calcolaSommaPrezzoVenditore(copieDelVenditore: Copia[]): number {
     }
 
     return Number(sommaPrezziCopie.toFixed(2));
- }
+}
 
 //funzione per preparare la registrazione di una copia del venditore in questione
 async function preparaCopiaDaRegistrare():Promise<void>{
@@ -432,40 +392,6 @@ async function leggiUltimaChiaveCopia(): Promise<number | null> {
     });
 }
 
-async function controllaCopiaPassata(copiaRicevuta: Copia): Promise<void>{
-    //apro transazione verso object store delle copie, in scrittura
-    const transazione = database.transaction("Copie", "readwrite");
-    //salvo reference dell'object store
-    const tabellaCopie = transazione.objectStore("Copie");
-    //richiesta di aggiunta all'object store
-    const richiestaAggiuntaCopia = tabellaCopie.put(copiaRicevuta);
-
-    //aggiunta andata a buon fine
-    richiestaAggiuntaCopia.onsuccess = async () => {
-        //svuoto campi
-        campoPrezzoCopertina.value = "";
-        etichettaTitoloLibro.value = "";
-
-        //rimuovo parametri da URL non più necessari
-        parametri.delete("isbn");
-        parametri.delete("prezzoCopertina");
-
-        //notifico aggiunta
-        databaseChannel.postMessage({store: "Copie"});
-
-        // Applica le modifiche all'URL (senza ricaricare la pagina)
-        const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
-        window.history.replaceState({}, "", nuovoURL);
-
-        //aggiorno lista copie, rileggendo da DB
-        await caricaCopieVenditore();
-    }
-    //errore, venditore già presente
-    richiestaAggiuntaCopia.onerror = () => {
-        console.log("Copia già presente");
-    }
-}
-
 //funzione per registrare una copia del libro
 async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
     //apro transazione
@@ -521,8 +447,8 @@ function mostraLibri(): void{
     window.location.href = `selezionaLibro.html?${parametriTrasmessi.toString()}`;
 }
 
-//recupero libro dato isbn
-async function prelevaLibroISBN(isbnRicerca: number): Promise<Libro>{
+//recupero libro dato isbn; esportabile su pagina principale che ascolta ws
+export async function prelevaLibroISBN(isbnRicerca: number): Promise<Libro>{
     //preparo transazione per leggere
     const transazione = database.transaction("Libri", "readonly");
     //prelevo reference dell'object store
@@ -555,8 +481,8 @@ async function prelevaLibroISBN(isbnRicerca: number): Promise<Libro>{
     return libroLetto;
 }
 
-//funzione che preleva un venditore dato il suo ID
-async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore>{
+//funzione che preleva un venditore dato il suo ID; esportabile su pagina principale che ascolta ws
+export async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore>{
     //apro transazione
     const transazione = database.transaction("Venditori", "readonly");
     const tabellaVenditori = transazione.objectStore("Venditori");

@@ -1,9 +1,11 @@
 import { Copia } from "./Copia";
+import { Libro } from "./Libro";
 import { Venditore } from "./Venditore";
 
 //importo dato per notificare aggiornamenti al DB
 import { databaseChannel } from "./broadcast";
 import { elencoLibri } from "./elencoLibri";
+import { prelevaLibroISBN, prelevaVenditoreID } from "./scriptGestoreCopieVenditore";
 import { ws } from "./websocket";
 
 //database
@@ -103,14 +105,9 @@ function apriDatabase(): Promise<IDBDatabase>{
     return out;
 }
 
-//comunico il venditore da rimuovere
-function inviaDatiRimozione(venditoreID: number) {
-    ws.send("V," + "1," + String(venditoreID));
-}
-
 //comunico il venditore da aggiungere
 function inviaDati(venditore: Venditore) {
-    ws.send("V," + "0," + String(venditore.toString()));
+    ws.send("V," + String(venditore.toString()));
 }
 
 //ricevo messaggio
@@ -120,24 +117,19 @@ ws.onmessage = function (event) {
     //divido azione e contenuto
     let smista:any[] = (event.data).split(',');
 
-    //controllo che l'azione sia stata eseguita sui venditori
+    //verifico se l'azione è stata eseguita sui venditori o sulle copie
     if(smista[0] === "V"){
+        //gestisco modifica venditore
+        riceviMessaggioVenditore(smista[1]);
 
-        console.log("DENTRO SMISTA");
-        //aggiungi copia
-        if (Number(smista[1]) == 0) {
-            riceviMessaggio(smista[2]);
-            console.log("PRESO MESSAGGIO AGGIUNTA");
-    
-        //rimuovi
-        } else {
-            //riceviDatiRimozione(event);
-        }
+    //azione eseguita sulle copie
+    }else if(smista[0] === "C"){
+        riceviMessaggioCopia(smista[1]);
     }
 }
 
-//gestisco aggiunta copia
-async function riceviMessaggio(parametriVenditoreStringa: string) {
+//gestisco aggiunta venditore
+async function riceviMessaggioVenditore(parametriVenditoreStringa: string) {
     try{
         //ricostruisco oggetto copia che mi hanno trasmesso
         const parametriVenditore: string[] = (parametriVenditoreStringa).split(" ");
@@ -146,10 +138,34 @@ async function riceviMessaggio(parametriVenditoreStringa: string) {
         const venditoreRicevuto: Venditore = new Venditore(Number(parametriVenditore[0]),parametriVenditore[1],parametriVenditore[2],parametriVenditore[3],Number(parametriVenditore[4]),parametriVenditore[5]);
 
         //salvo venditore ricevuta su DB
-        await registraVenditorePassato(venditoreRicevuto);
+        await controllaVenditorePassato(venditoreRicevuto);
 
     }catch(error){
         console.error("Errore nel salvataggio del venditore mediante CF trasmesso da socket");
+    }
+}
+
+//gestisco operazioni su copia
+async function riceviMessaggioCopia(parametriCopiaStringa: string) {
+    try{
+        //ricostruisco oggetto copia che mi hanno trasmesso
+        const parametriCopia: string[] = (parametriCopiaStringa).split(";");
+
+        console.log(parametriCopia);
+
+        //prelevo oggetto libro associato alla copia in base a isbn
+        const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
+        //prelevo oggetto Venditore associato alla copia in base a CF
+        const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
+        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[5]);
+
+        console.log(copiaRicevuta);
+
+        //salvo/aggiorno copia ricevuta su DB
+        await controllaCopiaPassata(copiaRicevuta);
+
+    }catch(error){
+        console.error("Errore nel recupero del libro mediante ISBN o del venditore mediante CF trasmesso da socket");
     }
 }
 
@@ -180,7 +196,7 @@ function chiudiRegistrazioneVenditore(): void{
     }
 }
 
-async function registraVenditorePassato(venditoreRicevuto: Venditore): Promise<void>{
+async function controllaVenditorePassato(venditoreRicevuto: Venditore): Promise<void>{
     const venditore: Venditore = venditoreRicevuto;
     //apro transazione verso object store dei venditori, in scrittura
     const transazione = database.transaction("Venditori", "readwrite");
@@ -209,6 +225,26 @@ async function registraVenditorePassato(venditoreRicevuto: Venditore): Promise<v
     //errore, venditore già presente
     richiestaAggiuntaVenditore.onerror = () => {
         console.log("Venditore già presente");
+    }
+}
+
+async function controllaCopiaPassata(copiaRicevuta: Copia): Promise<void>{
+    //apro transazione verso object store delle copie, in scrittura
+    const transazione = database.transaction("Copie", "readwrite");
+    //salvo reference dell'object store
+    const tabellaCopie = transazione.objectStore("Copie");
+    //richiesta di aggiunta all'object store
+    const richiestaAggiuntaCopia = tabellaCopie.put(copiaRicevuta);
+
+    //aggiunta andata a buon fine
+    richiestaAggiuntaCopia.onsuccess = () => {
+
+        //notifico aggiunta
+        databaseChannel.postMessage({store: "Copie"});
+    }
+    //errore, copia già presente
+    richiestaAggiuntaCopia.onerror = () => {
+        console.log("Copia già presente");
     }
 }
 
