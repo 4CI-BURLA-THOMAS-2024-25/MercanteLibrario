@@ -51,6 +51,7 @@ const etichettaTitoloLibro = document.getElementById("titoloLibro") as HTMLInput
 const bottoneEliminaCopie = document.getElementById("eliminaCopie") as HTMLButtonElement;
 bottoneEliminaCopie?.addEventListener("click", eliminaLogicamenteCopie);
 
+//bottone per vendere copie
 const bottoneVendiCopie = document.getElementById("vendiCopie") as HTMLButtonElement;
 bottoneVendiCopie?.addEventListener("click", vendiCopie);
 
