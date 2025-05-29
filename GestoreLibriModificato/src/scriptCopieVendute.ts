@@ -13,6 +13,10 @@ let database: IDBDatabase;
 const bottoneAnnullaVendita = document.getElementById("annullaVendita") as HTMLButtonElement;
 bottoneAnnullaVendita?.addEventListener("click", annullaVendita);
 
+//campo in cui mostro il totale ricavato
+const campoRicavoTotale = document.getElementById("ricavoTotale") as HTMLInputElement;
+
+
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -103,7 +107,10 @@ async function caricaCopieVendute(): Promise<void>{
     try{
         //prelevo copie 
         const copieVendute: Copia[] = await prelevaCopieVendute();
-        
+    
+        //calcolo ricavo totale e lo mostro
+        calcolaTotale(copieVendute);
+
         // prelevo reference del corpo della tabella per visualizzare le singole copie del venditore
         const corpoTabellaCopie = document.getElementById("corpoTabellaCopie") as HTMLTableSectionElement;
         //svuoto tabella
@@ -345,6 +352,21 @@ async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore
     
     return venditorePrelevato;
 }
+
+//funzione che calcola l'incasso totale in base alle copie vendute
+function calcolaTotale(elencoCopie: Copia[]): void{
+    //incasso totale
+    let incassoTotale: number = 0;
+    
+    //itero e sommo
+    elencoCopie.forEach((copia: Copia) => {
+        incassoTotale += copia.prezzoScontato;
+    });
+
+    //imposto totale
+    campoRicavoTotale.value = String(incassoTotale) + "euro";
+}
+
 
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {

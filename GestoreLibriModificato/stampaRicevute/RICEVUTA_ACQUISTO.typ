@@ -21,6 +21,9 @@
   }
 }
 //-------------------------------------------------------
+// Logo Marconi
+#image("logoMarconi.png")
+
 // Titolo
 = RICEVUTA ACQUISTO LIBRI di ClienteX: //${libro.titolo}
 
@@ -69,6 +72,4 @@
     *www.mercatinolibri.it*
 ]
 
-// Logo Marconi
-#image("logoMarconi.png")
 

@@ -97,15 +97,15 @@ async function prelevaElencoCompletoCopie(): Promise<Copia[]>{
 //funzione che carica tutte le copie e le mostra
 async function caricaElencoCompletoCopie(): Promise<void>{
     try{
-        //prelevo copie che hanno ID del venditore coerente con il venditore che si sta gestendo
+        //prelevo copie
         const elencoCopie: Copia[] = await prelevaElencoCompletoCopie();
-    
+
         // prelevo reference del corpo della tabella per visualizzare le singole copie del venditore
         const corpoTabellaCopie = document.getElementById("corpoTabellaCopie") as HTMLTableSectionElement;
         //svuoto tabella
         corpoTabellaCopie.innerHTML = "";
 
-        //itero e visualizzo ogni copia del venditore
+        //itero e visualizzo ogni copia
         for(let i = 0; i < elencoCopie.length; i++){
             const copiaDelVenditore: Copia = elencoCopie[i];
             //controllo che la copia esaminata non sia contrassegnata come eliminata

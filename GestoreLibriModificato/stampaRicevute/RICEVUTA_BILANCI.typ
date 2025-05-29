@@ -21,6 +21,9 @@
   }
 }
 //-------------------------------------------------------
+//Logo marconi
+#image("logoMarconi.png")
+
 //Intestazone
 = RICEVUTA LIBRI #underline[VENDUTI] di ClienteX
 
@@ -91,5 +94,4 @@
 	*www.mercatinolibri.it*
 ]
 
-//Logo marconi
-#image("logoMarconi.png")
+
