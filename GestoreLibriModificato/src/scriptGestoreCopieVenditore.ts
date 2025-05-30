@@ -6,6 +6,11 @@ import { Venditore } from "./Venditore";
 import { databaseChannel } from "./broadcast";
 import { ws } from "./websocket";
 
+// Dichiara JsBarcode come variabile globale
+declare const JsBarcode: any;
+//barcode
+let canvas = document.getElementById("canvaBarcode") as HTMLCanvasElement;
+
 //prelevo parametri passati da URL
 const parametri = new URLSearchParams(window.location.search);
 //prelevo ID del venditore
@@ -366,6 +371,11 @@ async function preparaCopiaDaRegistrare():Promise<void>{
     }
 }
 
+//funzione che inserisce padding a id copie e venditori
+function inserisciPadding(num: number, totalLength: number, padChar: string = '0'): string {
+    return num.toString().padStart(totalLength, padChar);
+}
+
 //leggo eventuale ultimo numero della copia
 async function leggiUltimaChiaveCopia(): Promise<number | null> {
     return new Promise((resolve, reject) => {
@@ -415,6 +425,11 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
         databaseChannel.postMessage({store: "Copie"});
         //invia dati
         inviaDati(copiaDaSalvare);
+
+        //preparo barcode
+        const barCode: string = newBarcode(copiaDaSalvare.codiceUnivoco, venditore.id);
+
+        barcodeToJPG(barCode, `${copiaDaSalvare.codiceUnivoco}_copiaID`);
 
         // Applica le modifiche all'URL (senza ricaricare la pagina)
         const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
@@ -700,6 +715,51 @@ async function vendiCopie(): Promise<void> {
     } else {
         window.alert("Seleziona almeno una copia da vendere.");
     }
+}
+
+function newBarcode(codiceUnivoco: number, venditoreID: number): any{
+    if(canvas === null){  
+        canvas = document.createElement("canvas")
+        canvas.id = "canvaBarcode"
+        document.body.appendChild(canvas);
+    }
+
+    JsBarcode(canvas, inserisciPadding(codiceUnivoco, 4),{
+        format: "CODE128",
+        width: 2,
+        text: inserisciPadding(venditoreID, 4),
+        height:100,
+        displayValue: true
+    });
+
+    //converte il contenuto di canvas (barcode) in un URL PNG a 64 bit
+    return canvas.toDataURL("image/jpeg")
+}
+
+function barcodeToJPG(img: string, nomeFile: string): void {
+    //creazione di un link temporaneo per eseguire il download del file
+    const link: HTMLAnchorElement = document.createElement("a");
+    link.href = img;
+    link.download = nomeFile;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    canvas.remove();
+}
+
+function readBarcodeData(event: any){
+    // Evito di bloccare la digitazione dei campi input
+    if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA" || event.target.isContentEditable) {
+        return;
+    }
+
+    event.preventDefault()
+    let key = ""
+    if(event.key){
+        key += event.key
+        console.log(key)
+    }
+
 }
 
 // al caricamento della pagina, apro database
