@@ -60,6 +60,10 @@ bottoneEliminaCopie?.addEventListener("click", eliminaLogicamenteCopie);
 const bottoneVendiCopie = document.getElementById("vendiCopie") as HTMLButtonElement;
 bottoneVendiCopie?.addEventListener("click", vendiCopie);
 
+//bottone per scaricare i barcode delle copie selezionate
+const bottoneOttieniBarcode = document.getElementById("ottieniBarcode") as HTMLButtonElement;
+bottoneOttieniBarcode?.addEventListener("click", scaricaBarcode);
+
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -718,11 +722,9 @@ async function vendiCopie(): Promise<void> {
 }
 
 function newBarcode(codiceUnivoco: number, venditoreID: number): any{
-    if(canvas === null){  
-        canvas = document.createElement("canvas")
-        canvas.id = "canvaBarcode"
-        document.body.appendChild(canvas);
-    }
+    canvas = document.createElement("canvas")
+    canvas.id = "canvaBarcode"
+    document.body.appendChild(canvas);
 
     JsBarcode(canvas, inserisciPadding(codiceUnivoco, 4),{
         format: "CODE128",
@@ -759,7 +761,67 @@ function readBarcodeData(event: any){
         key += event.key
         console.log(key)
     }
+}
 
+async function scaricaBarcode(): Promise<void>{
+    //prelevo checkbox selezionate
+    const checkboxSelezionate = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"].caselleSelezione:checked');
+
+    //controllo che sia selezionata almeno una checkbox
+    if (checkboxSelezionate.length !== 0) {
+        try {
+            const transazione = database.transaction("Copie", "readwrite");
+            const storeCopie = transazione.objectStore("Copie");
+
+            //itero sulle copie selezionate, eseguendo la stampa
+            const selezionate = Array.from(checkboxSelezionate).map(async (checkbox) => {
+                // Trova la riga della checkbox
+                const riga = checkbox.closest("tr");
+
+                //controllo che sia stata selezionata una riga
+                if (riga) {
+                    // Preleva la seconda cella (indice 0) che contiene l'ID della copia
+                    const idCopia = riga.cells[1]?.textContent?.trim();
+
+                    //controllo id copia (anche se dovrebbe sempre essere valido)
+                    if (idCopia) {
+                        return new Promise<void>((resolve, reject) => {
+                            //cerco copia da vendere
+                            const richiestaGet = storeCopie.get(Number(idCopia));
+
+                            //richiesta accettata da DB
+                            richiestaGet.onsuccess = () => {
+                                const copiaPrelevata: Copia = richiestaGet.result;
+                                //preparo barcode
+                                const barCode: string = newBarcode(copiaPrelevata.codiceUnivoco, venditore.id);
+
+                                barcodeToJPG(barCode, `${copiaPrelevata.codiceUnivoco}_copiaID`);
+                                resolve();
+                            };
+
+                            richiestaGet.onerror = () => {
+                                reject(new Error(`Errore nel recupero della copia ${idCopia}.`));
+                            };
+                        });
+                    }else{
+                        Promise.resolve(); //ignora elemento non valido
+                    }
+                }else{
+                    Promise.resolve(); //ignora elemento non valido
+                }
+            });
+
+            //risolvo quando tutte le vendite sono state effettuate
+            await Promise.all(selezionate);
+            window.alert("Download avviati!");
+
+        //stampo errore nella console
+        } catch (errore) {
+            if (errore instanceof Error) {
+                console.error(errore.message);
+            }
+        }
+    }
 }
 
 // al caricamento della pagina, apro database
