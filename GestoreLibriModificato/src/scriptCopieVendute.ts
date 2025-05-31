@@ -16,7 +16,6 @@ bottoneAnnullaVendita?.addEventListener("click", annullaVendita);
 //campo in cui mostro il totale ricavato
 const campoRicavoTotale = document.getElementById("ricavoTotale") as HTMLInputElement;
 
-
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -64,10 +63,10 @@ async function inviaDati(copia: Copia) {
         //prelevo venditore associato alla copia
         const venditoreDellaCopia: Venditore = await prelevaVenditoreID(Number(copiaGrezza.venditoreID));
         //ricostruisco istanza reale della copia
-        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato);
+        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C," + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString()));
 }
 
 
@@ -238,6 +237,8 @@ async function annullaVendita(): Promise<void> {
                                     if (copia) {
                                         //aggiorno lo stato della copia a "D"
                                         copia.stato = "D";
+                                        //aggiorno ultima modifica
+                                        copia.ultimaModifica = new Date().toLocaleString();
 
                                         //richiedo aggiornamento nello store
                                         const richiestaPut = storeCopie.put(copia);

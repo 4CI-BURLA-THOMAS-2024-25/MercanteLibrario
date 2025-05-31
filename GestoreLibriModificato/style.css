@@ -43,6 +43,10 @@ th, td {
     padding: 3px;
 }
 
+#logo{
+    width: 100%;
+}
+
 #casellaRicerca {
     width: 98%;
     height: 40px;

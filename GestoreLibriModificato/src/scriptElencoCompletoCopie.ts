@@ -88,10 +88,10 @@ async function inviaDati(copia: Copia) {
         //prelevo venditore associato alla copia
         const venditoreDellaCopia: Venditore = await prelevaVenditoreID(Number(copiaGrezza.venditoreID));
         //ricostruisco istanza reale della copia
-        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato);
+        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C," + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString()));
 }
 
 //ascolto modifiche al DB delle copie
@@ -347,6 +347,8 @@ async function vendiCopieSelezionate(): Promise<void> {
                                     if (copia) {
                                         //imposto stato della copia come "V" (venduta)
                                         copia.stato = "V";
+                                        //aggiorno ultima modifica
+                                        copia.ultimaModifica = new Date().toLocaleString();
                                         //aggiorno la copia nel database
                                         const richiestaUpdate = storeCopie.put(copia);
 
@@ -527,6 +529,8 @@ async function vendiCopiaBarcode(event: KeyboardEvent): Promise<void> {
                 if (confermaVendita) {
                     // Cambio stato della copia
                     copiaBarcode.stato = "V";
+                    //aggiorno ultima modifica
+                    copiaBarcode.ultimaModifica = new Date().toLocaleString();
     
                     // Aggiorno copia su DB
                     await aggiornaStatoCopia(copiaBarcode);

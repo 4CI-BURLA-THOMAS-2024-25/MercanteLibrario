@@ -95,6 +95,7 @@ function apriDatabase(): Promise<IDBDatabase>{
                 tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
                 tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
                 tabellaCopie.createIndex("stato", "stato", {unique: false});
+                tabellaCopie.createIndex("ultimaModifica", "ultimaModifica", {unique:false});
             }
 
             //controllo che non esista già una tabella con questo nome
@@ -118,7 +119,7 @@ function apriDatabase(): Promise<IDBDatabase>{
 
 //comunico il venditore da aggiungere
 function inviaDati(venditore: Venditore) {
-    ws.send("V," + String(venditore.toString()));
+    ws.send("V-" + String(venditore.toString()));
 }
 
 //ricevo messaggio
@@ -126,7 +127,7 @@ ws.onmessage = function (event) {
     console.log(event.data);
 
     //divido azione e contenuto
-    let smista:any[] = (event.data).split(',');
+    let smista:any[] = (event.data).split('-');
 
     //verifico se l'azione è stata eseguita sui venditori o sulle copie
     if(smista[0] === "V"){
@@ -168,7 +169,7 @@ async function riceviMessaggioCopia(parametriCopiaStringa: string) {
         const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
         //prelevo oggetto Venditore associato alla copia in base a CF
         const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
-        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[5]);
+        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[5], parametriCopia[6]);
 
         console.log(copiaRicevuta);
 

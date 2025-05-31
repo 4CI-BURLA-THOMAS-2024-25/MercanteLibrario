@@ -111,10 +111,10 @@ async function inviaDati(copia: Copia) {
         //prelevo venditore associato alla copia
         const venditoreDellaCopia: Venditore = await prelevaVenditoreID(Number(copiaGrezza.venditoreID));
         //ricostruisco istanza reale della copia
-        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato);
+        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C," + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString()));
 }
 
 //ascolto modifiche al DB delle copie
@@ -359,7 +359,7 @@ async function preparaCopiaDaRegistrare():Promise<void>{
         //verifico che sia stato scelto il libro da associare alla copia
         if(libro != null){
             //creo oggetto copia
-            const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(campoPrezzoCopertina.value), venditore, "D");
+            const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(campoPrezzoCopertina.value), venditore, "D", new Date().toLocaleString());
     
             //svuoto libro
             libro = null;
@@ -569,6 +569,8 @@ async function eliminaLogicamenteCopie(): Promise<void> {
                                         console.log("RIsultato prova eliminazione:" + copia);
                                         //imposto stato della copia come "E" (eliminata)
                                         copia.stato = "E";
+                                        //aggiorno ultima modifica
+                                        copia.ultimaModifica = new Date().toLocaleString();
                                         //aggiorno la copia nel database
                                         const richiestaUpdate = storeCopie.put(copia);
 
@@ -664,6 +666,8 @@ async function vendiCopie(): Promise<void> {
                                     if (copia) {
                                         //imposto stato della copia come "V" (venduta)
                                         copia.stato = "V";
+                                        //aggiorno ultima modifica
+                                        copia.ultimaModifica = new Date().toLocaleString();
                                         //aggiorno la copia nel database
                                         const richiestaUpdate = storeCopie.put(copia);
 
