@@ -11,5 +11,5 @@ ws.onclose = function () {
 }
 
 ws.onerror = function (error) {
-    console.log("errore nel webSocket", error);
+    console.log("errore nel webSocket", error); 
 }
