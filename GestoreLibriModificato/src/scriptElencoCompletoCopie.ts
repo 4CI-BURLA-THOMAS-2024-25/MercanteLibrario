@@ -14,11 +14,32 @@ let canvas = document.getElementById("canvaBarcode") as HTMLCanvasElement;
 
 //bottone per vendere copie
 const bottoneVendiCopie = document.getElementById("vendiCopie") as HTMLButtonElement;
-bottoneVendiCopie?.addEventListener("click", vendiCopie);
+bottoneVendiCopie?.addEventListener("click", vendiCopieSelezionate);
 
 //bottone per scaricare i barcode dellee copie selezionate
 const bottoneOttieniBarcode = document.getElementById("ottieniBarcode") as HTMLButtonElement;
 bottoneOttieniBarcode?.addEventListener("click", scaricaBarcode);
+
+//bottone che apre popup per scansionare barcode di una copia e vendere
+const bottonebarcodeVendita = document.getElementById("barcodeVendita") as HTMLButtonElement;
+bottonebarcodeVendita?.addEventListener("click", apriScansioneBarcode);
+
+//popup che mostra l'interfaccia per leggere barcode e vendere
+const popupScansionaBarcode = document.getElementById("popupScansionaBarcode");
+
+//campo in cui inserisco il barcode letto
+const campoBarcodeLetto = document.getElementById("barcodeLetto") as HTMLInputElement;
+campoBarcodeLetto?.addEventListener("keydown", (event) => vendiCopiaBarcode(event));
+
+//campo in cui mostro il prezzo di copertina della copia letto da barcode
+const campoPrezzoCopertinaBarcode = document.getElementById("prezzoCopertinaBarcode") as HTMLInputElement;
+
+//area in cui mostro il titolo del libro associato alla copia e letto da DB
+const areaTitoloLibroBarcode = document.getElementById("titoloLibroBarcode") as HTMLTextAreaElement;
+
+//bottone per chiudere il popup dei barcode
+const bottoneChiudiPopupBarcode = document.getElementById("chiudiPopupBarcode") as HTMLButtonElement;
+bottoneChiudiPopupBarcode?.addEventListener("click", chiudiScansioneBarcode);
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -84,6 +105,29 @@ databaseChannel.onmessage = async (evento) => {
         location.reload();
     }
 };
+
+function apriScansioneBarcode(): void{
+    if(popupScansionaBarcode != null){
+        //quando clicco il bottone per leggere barcode, apro popup
+        popupScansionaBarcode.style.display = "flex";
+
+        //assegno il focus al campo di lettura del barcode
+        campoBarcodeLetto.focus();
+    }
+}
+
+function chiudiScansioneBarcode(): void{
+    if(popupScansionaBarcode != null){
+        //svuoto campi
+        campoBarcodeLetto.value = "";
+        campoPrezzoCopertinaBarcode.value = "";
+        areaTitoloLibroBarcode.value = "";
+
+        //chiudo popup
+        popupScansionaBarcode.style.display = "none";
+
+    }
+}
 
 async function prelevaElencoCompletoCopie(): Promise<Copia[]>{
     return new Promise((resolve, reject) => {
@@ -264,7 +308,7 @@ async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore
 }
 
 //funzione per segnalare una copia come venduta
-async function vendiCopie(): Promise<void> {
+async function vendiCopieSelezionate(): Promise<void> {
     //prelevo checkbox selezionate
     const checkboxSelezionate = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"].caselleSelezione:checked');
 
@@ -451,6 +495,110 @@ async function scaricaBarcode(): Promise<void>{
                 console.error(errore.message);
             }
         }
+    }else{
+        window.alert("Seleziona le copie di cui vuoi scaricare il barcode");
+    }
+}
+
+async function vendiCopiaBarcode(event: KeyboardEvent): Promise<void> {
+    // Verifico che sia stato cliccato INVIO (la scansionatrice lo fa alla fine della lettura del barcode)
+    if (event.key === "Enter") {
+        try {
+            // Prelevo barcode, ovvero id della copia
+            const idCopiaBarcode: string = campoBarcodeLetto.value;
+            // Prelevo copia da DB dato il suo ID letto
+            const copiaBarcode: Copia = await prelevaCopia(Number(idCopiaBarcode));
+
+            if(copiaBarcode.stato === "V"){
+                window.alert("Copia già venduta!");
+            }else{
+                // Prelevo libro associato alla copia
+                const libroDellaCopia: Libro = await prelevaLibroISBN(copiaBarcode.libroDellaCopiaISBN);
+    
+                // Imposto contenuto campi
+                campoPrezzoCopertinaBarcode.value = String(copiaBarcode.prezzoCopertina);
+                areaTitoloLibroBarcode.value = libroDellaCopia.titolo;
+    
+                //do al browser il tempo di effettuare il repainting della pagina così da aggiornare i campi del popup
+                await new Promise(resolve => setTimeout(resolve, 50));
+    
+                // Chiedo conferma di vendita
+                const confermaVendita = window.confirm("Sei sicuro di voler vendere la copia?");
+                if (confermaVendita) {
+                    // Cambio stato della copia
+                    copiaBarcode.stato = "V";
+    
+                    // Aggiorno copia su DB
+                    await aggiornaStatoCopia(copiaBarcode);
+    
+                    //ricarico la pagina
+                    location.reload();
+                }else{
+                    chiudiScansioneBarcode();
+                }
+            }
+
+        } catch (errore) {
+            if (errore instanceof Error) {
+                console.error(errore.message);
+            }
+        } finally {
+            // Pulisco il campo barcode dopo la conferma o errore
+            campoBarcodeLetto.value = "";
+        }
+    }
+}
+
+async function prelevaCopia(idCopia: number): Promise<Copia>{
+    //preparo transazione per leggere da store delle copie
+    const transazione = database.transaction("Copie", "readwrite");
+    const tabellaCopie = transazione.objectStore("Copie");
+
+    const copiaCercata: Copia = await new Promise((resolve,reject) => {
+        //richiedo copia cercata
+        const richiestaCopia = tabellaCopie.get(idCopia);
+    
+        //accesso riuscito
+        richiestaCopia.onsuccess = () => {
+            //copia trovata
+            if(richiestaCopia.result){
+                resolve(richiestaCopia.result);
+
+            //copia non trovata
+            }else{
+                reject(window.alert("Copia non trovata"));
+            }
+        }
+    
+        ///accesso fallito
+        richiestaCopia.onerror = () => {
+            reject(new Error("Errore nella richiesta"));
+        }
+    });
+
+    return copiaCercata;
+}
+
+async function aggiornaStatoCopia(copiaDaAggiornare: Copia): Promise<void>{
+    //preparo transazione per leggere da store delle copie
+    const transazione = database.transaction("Copie", "readwrite");
+    const tabellaCopie = transazione.objectStore("Copie");
+
+    //aggiorno copia
+    const richiestaUpdate = tabellaCopie.put(copiaDaAggiornare);
+
+    //aggiornamento andato a buon fine
+    richiestaUpdate.onsuccess = () =>{
+        //notifico modifiche al DB delle copie
+        databaseChannel.postMessage({store: "Copie" });
+        //notifico modifica del totale da dare al venditore
+        databaseChannel.postMessage({store: "Venditori"});
+        //invia copia aggiornata
+        inviaDati(copiaDaAggiornare);
+    }
+
+    richiestaUpdate.onerror = () => {
+        throw new Error("Impossibile aggiornare lo stato della copia");
     }
 }
 

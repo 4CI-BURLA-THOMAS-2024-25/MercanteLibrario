@@ -39,8 +39,8 @@ const bottoneRegistraCopia = document.getElementById("registraCopia");
 bottoneRegistraCopia?.addEventListener("click", preparaCopiaDaRegistrare);
 
 //prelevo reference del bottone per chiudere il popup e vi associo funzione per chiuderlo
-const bottoneChiudiPopup = document.getElementById("chiudiPopup") as HTMLButtonElement;
-bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneCopia);
+const bottoneChiudiPopupCopie = document.getElementById("chiudiPopup") as HTMLButtonElement;
+bottoneChiudiPopupCopie?.addEventListener("click", chiudiRegistrazioneCopia);
 
 // prelevo reference del bottone per aprire finestra con i libri
 const bottoneApriLibri = document.getElementById("scegliLibro") as HTMLButtonElement;

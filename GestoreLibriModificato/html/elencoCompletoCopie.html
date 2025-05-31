@@ -15,7 +15,35 @@
             <button id="ottieniBarcode">Scarica codici a barre</button>
             
             <button id="vendiCopie">Vendi copie</button>
+
+            <button id="barcodeVendita">Scansiona barcode per la vendita</button>
         </header>
+
+        <!-- popup per leggere barcode delle copie -->
+        <div id="popupScansionaBarcode" class="popup">
+
+            <!-- contenuto del popup -->
+            <div class="contenutoPopup">
+                <h2>Scansiona barcode e vendi</h2>
+
+                <form>
+                    <!-- campo di lettura barcode -->
+                    <input type="text" id="barcodeLetto" class="testoInputPopup" required><br><br>
+                    
+                    <!-- prezzo di copertina della copia -->
+                    <label for="prezzoCopertinaBarcode" class="testoLabelPopup">Prezzo di copertina della copia:</label><br>
+                    <input name="prezzo" id="prezzoCopertinaBarcode" class="testoInputPopup" disabled required><br><br>
+
+                    <!-- libro da scegliere dalla libreria -->
+                    <label for="titoloLibroBarcode" class="testoLabelPopup">Libro:</label><br>
+                    <textarea id="titoloLibroBarcode" class="testoInputPopup" disabled required></textarea><br><br>
+
+                    <br><br>
+
+                    <button type="button" id="chiudiPopupBarcode" class="bottoniPopup">Annulla</button>
+                </form>
+            </div>
+        </div>
 
         <!-- tabella che mostra tutte le copie, tranne quelle eliminate-->
         <table id="elencoCopie">

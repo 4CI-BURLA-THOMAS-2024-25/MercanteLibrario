@@ -1,5 +1,5 @@
 cd server
-start node server.js
+start /min node server.js
 
 cd ..
 start index.html

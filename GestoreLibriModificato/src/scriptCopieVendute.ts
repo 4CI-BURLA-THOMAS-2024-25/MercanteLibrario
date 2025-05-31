@@ -364,7 +364,7 @@ function calcolaTotale(elencoCopie: Copia[]): void{
     });
 
     //imposto totale
-    campoRicavoTotale.value = String(incassoTotale) + "euro";
+    campoRicavoTotale.value = String(incassoTotale);
 }
 
 

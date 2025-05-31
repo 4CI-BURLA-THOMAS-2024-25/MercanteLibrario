@@ -150,3 +150,12 @@ nav {
     border-color: #2E2E2E;
     margin: 5px;
 }
+
+/* paragrafi dei popup */
+.popup textarea{
+    height: 8em;
+    width: 100%;
+    /* includo padding in larghezza 100% */
+    box-sizing: border-box;
+    padding: 10px;
+}
