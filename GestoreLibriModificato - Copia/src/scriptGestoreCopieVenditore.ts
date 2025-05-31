@@ -6,6 +6,11 @@ import { Venditore } from "./Venditore";
 import { databaseChannel } from "./broadcast";
 import { ws } from "./websocket";
 
+// Dichiara JsBarcode come variabile globale
+declare const JsBarcode: any;
+//barcode
+let canvas = document.getElementById("canvaBarcode") as HTMLCanvasElement;
+
 //prelevo parametri passati da URL
 const parametri = new URLSearchParams(window.location.search);
 //prelevo ID del venditore
@@ -34,8 +39,8 @@ const bottoneRegistraCopia = document.getElementById("registraCopia");
 bottoneRegistraCopia?.addEventListener("click", preparaCopiaDaRegistrare);
 
 //prelevo reference del bottone per chiudere il popup e vi associo funzione per chiuderlo
-const bottoneChiudiPopup = document.getElementById("chiudiPopup") as HTMLButtonElement;
-bottoneChiudiPopup?.addEventListener("click", chiudiRegistrazioneCopia);
+const bottoneChiudiPopupCopie = document.getElementById("chiudiPopup") as HTMLButtonElement;
+bottoneChiudiPopupCopie?.addEventListener("click", chiudiRegistrazioneCopia);
 
 // prelevo reference del bottone per aprire finestra con i libri
 const bottoneApriLibri = document.getElementById("scegliLibro") as HTMLButtonElement;
@@ -51,8 +56,13 @@ const etichettaTitoloLibro = document.getElementById("titoloLibro") as HTMLInput
 const bottoneEliminaCopie = document.getElementById("eliminaCopie") as HTMLButtonElement;
 bottoneEliminaCopie?.addEventListener("click", eliminaLogicamenteCopie);
 
+//bottone per vendere copie
 const bottoneVendiCopie = document.getElementById("vendiCopie") as HTMLButtonElement;
 bottoneVendiCopie?.addEventListener("click", vendiCopie);
+
+//bottone per scaricare i barcode delle copie selezionate
+const bottoneOttieniBarcode = document.getElementById("ottieniBarcode") as HTMLButtonElement;
+bottoneOttieniBarcode?.addEventListener("click", scaricaBarcode);
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -365,6 +375,11 @@ async function preparaCopiaDaRegistrare():Promise<void>{
     }
 }
 
+//funzione che inserisce padding a id copie e venditori
+function inserisciPadding(num: number, totalLength: number, padChar: string = '0'): string {
+    return num.toString().padStart(totalLength, padChar);
+}
+
 //leggo eventuale ultimo numero della copia
 async function leggiUltimaChiaveCopia(): Promise<number | null> {
     return new Promise((resolve, reject) => {
@@ -414,6 +429,11 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
         databaseChannel.postMessage({store: "Copie"});
         //invia dati
         inviaDati(copiaDaSalvare);
+
+        //preparo barcode
+        const barCode: string = newBarcode(copiaDaSalvare.codiceUnivoco, venditore.id);
+
+        barcodeToJPG(barCode, `${copiaDaSalvare.codiceUnivoco}_copiaID`);
 
         // Applica le modifiche all'URL (senza ricaricare la pagina)
         const nuovoURL = `${window.location.pathname}?${parametri.toString()}`;
@@ -698,6 +718,109 @@ async function vendiCopie(): Promise<void> {
 
     } else {
         window.alert("Seleziona almeno una copia da vendere.");
+    }
+}
+
+function newBarcode(codiceUnivoco: number, venditoreID: number): any{
+    canvas = document.createElement("canvas")
+    canvas.id = "canvaBarcode"
+    document.body.appendChild(canvas);
+
+    JsBarcode(canvas, inserisciPadding(codiceUnivoco, 4),{
+        format: "CODE128",
+        width: 2,
+        text: inserisciPadding(venditoreID, 4),
+        height:100,
+        displayValue: true
+    });
+
+    //converte il contenuto di canvas (barcode) in un URL PNG a 64 bit
+    return canvas.toDataURL("image/jpeg")
+}
+
+function barcodeToJPG(img: string, nomeFile: string): void {
+    //creazione di un link temporaneo per eseguire il download del file
+    const link: HTMLAnchorElement = document.createElement("a");
+    link.href = img;
+    link.download = nomeFile;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    canvas.remove();
+}
+
+function readBarcodeData(event: any){
+    // Evito di bloccare la digitazione dei campi input
+    if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA" || event.target.isContentEditable) {
+        return;
+    }
+
+    event.preventDefault()
+    let key = ""
+    if(event.key){
+        key += event.key
+        console.log(key)
+    }
+}
+
+async function scaricaBarcode(): Promise<void>{
+    //prelevo checkbox selezionate
+    const checkboxSelezionate = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"].caselleSelezione:checked');
+
+    //controllo che sia selezionata almeno una checkbox
+    if (checkboxSelezionate.length !== 0) {
+        try {
+            const transazione = database.transaction("Copie", "readwrite");
+            const storeCopie = transazione.objectStore("Copie");
+
+            //itero sulle copie selezionate, eseguendo la stampa
+            const selezionate = Array.from(checkboxSelezionate).map(async (checkbox) => {
+                // Trova la riga della checkbox
+                const riga = checkbox.closest("tr");
+
+                //controllo che sia stata selezionata una riga
+                if (riga) {
+                    // Preleva la seconda cella (indice 0) che contiene l'ID della copia
+                    const idCopia = riga.cells[1]?.textContent?.trim();
+
+                    //controllo id copia (anche se dovrebbe sempre essere valido)
+                    if (idCopia) {
+                        return new Promise<void>((resolve, reject) => {
+                            //cerco copia da vendere
+                            const richiestaGet = storeCopie.get(Number(idCopia));
+
+                            //richiesta accettata da DB
+                            richiestaGet.onsuccess = () => {
+                                const copiaPrelevata: Copia = richiestaGet.result;
+                                //preparo barcode
+                                const barCode: string = newBarcode(copiaPrelevata.codiceUnivoco, venditore.id);
+
+                                barcodeToJPG(barCode, `${copiaPrelevata.codiceUnivoco}_copiaID`);
+                                resolve();
+                            };
+
+                            richiestaGet.onerror = () => {
+                                reject(new Error(`Errore nel recupero della copia ${idCopia}.`));
+                            };
+                        });
+                    }else{
+                        Promise.resolve(); //ignora elemento non valido
+                    }
+                }else{
+                    Promise.resolve(); //ignora elemento non valido
+                }
+            });
+
+            //risolvo quando tutte le vendite sono state effettuate
+            await Promise.all(selezionate);
+            window.alert("Download avviati!");
+
+        //stampo errore nella console
+        } catch (errore) {
+            if (errore instanceof Error) {
+                console.error(errore.message);
+            }
+        }
     }
 }
 

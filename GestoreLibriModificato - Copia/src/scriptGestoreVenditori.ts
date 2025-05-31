@@ -35,6 +35,18 @@ const caselleInput = document.querySelectorAll(".testoInputPopup");
 const casellaRicerca = document.getElementById("casellaRicerca") as HTMLInputElement;
 casellaRicerca?.addEventListener("input", ricercaVenditori);
 
+//bottone per mostarre l'elenco compelto delle copie (tranne quelle eliminate)
+const bottoneElencoCompletoCopie = document.getElementById("elencoCompletoCopie");
+bottoneElencoCompletoCopie?.addEventListener("click", mostraElencoCompletoCopie);
+
+//bottone per mostrare l'elenco delle copie vendute
+const bottoneCopieVendute = document.getElementById("elencoCopieVendute");
+bottoneCopieVendute?.addEventListener("click", mostraCopieVendute);
+
+//bottone per mostrare l'elenco delle copie eliminate
+const bottoneCopieEliminate = document.getElementById("elencoCopieEliminate");
+bottoneCopieEliminate?.addEventListener("click", mostraCopieEliminate);
+
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -634,6 +646,20 @@ async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore
     return venditorePrelevato;
 }
 
+//funzione che apre la pagina con l'elenco completo delle copie (tranne quelle eliminate)
+function mostraElencoCompletoCopie(): void{
+    window.open("html/elencoCompletoCopie.html");
+}
+
+//funzione che apre la pagina con l'elenco delle copie eliminate
+function mostraCopieEliminate(): void{
+    window.open("html/copieEliminate.html");
+}
+
+//funzione che apre la pagina con l'elelenco delle copie vendute
+function mostraCopieVendute(): void{
+    window.open("html/copieVendute.html");
+}
 
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {

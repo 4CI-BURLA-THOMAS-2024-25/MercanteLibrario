@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Generatore PDF Dinamico</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px }
+        .container { display: grid; grid-gap: 15px }
+        .input-group { display: flex; flex-direction: column; gap: 5px }
+        .preview { background: #f5f5f5; padding: 15px; margin-top: 20px; white-space: pre-wrap }
+        button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer }
+        button:hover { background: #0056b3 }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Genera PDF Dinamico</h1>
+        
+        <div class="input-group">
+            <label>Titolo:</label>
+            <input type="text" id="title" value="Report 2023">
+        </div>
+
+        <div class="input-group">
+            <label>Autore:</label>
+            <input type="text" id="author" value="Mario Rossi">
+        </div>
+
+        <div class="input-group">
+            <label>Elementi della lista (separati da virgola):</label>
+            <input type="text" id="items" value="Primo elemento, Secondo elemento, Terzo elemento">
+        </div>
+
+        <div class="input-group">
+            <label>
+                <input type="checkbox" id="showFooter" checked> Mostra footer
+            </label>
+        </div>
+
+        <button onclick="generateTypst()">Genera Codice Typst</button>
+        <button onclick="compilePDF()">Compila PDF</button>
+
+        <div class="preview">
+            <h3>Anteprima Codice Typst:</h3>
+            <pre id="typstPreview"></pre>
+        </div>
+
+        <iframe id="pdfPreview" style="width: 100%; height: 500px; margin-top: 20px"></iframe>
+    </div>
+
+    <script>
+        function getFormData() {
+            return {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                items: document.getElementById('items').value.split(',').map(i => i.trim()),
+                showFooter: document.getElementById('showFooter').checked
+            };
+        }
+
+        function convertToTypst(node, data) {
+            let typstCode = "";
+            switch (node.type) {
+                case "Page":
+                    typstCode += "#set page(width: 8.5in, height: 11in)\n";
+                    typstCode += node.children.map(child => convertToTypst(child, data)).join("\n");
+                    break;
+                case "Header":
+                    typstCode += `#heading(size: ${node.fontSize})[${data.title}]\n`;
+                    break;
+                case "List":
+                    typstCode += "#list[\n" + data.items.map(item => `  - ${item}`).join("\n") + "\n]\n";
+                    break;
+                case "Footer":
+                    if (data.showFooter) {
+                        typstCode += `#text(style: "italic")[Autore: ${data.author}]\n`;
+                    }
+                    break;
+            }
+            return typstCode;
+        }
+
+        const xamlTemplate = {
+            root: {
+                type: "Page",
+                children: [
+                    { type: "Header", fontSize: 20 },
+                    { type: "List" },
+                    { type: "Footer" }
+                ]
+            }
+        };
+
+        function generateTypst() {
+            const data = getFormData();
+            const typstOutput = convertToTypst(xamlTemplate.root, data);
+            document.getElementById('typstPreview').textContent = typstOutput;
+        }
+
+        async function compilePDF() {
+            const typstCode = document.getElementById('typstPreview').textContent;
+            
+            // Salva il file temporaneo e compila (richiede backend Node.js)
+            const response = await fetch('/compile-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: typstCode })
+            });
+
+            if (response.ok) {
+                const pdfBlob = await response.blob();
+                const url = URL.createObjectURL(pdfBlob);
+                document.getElementById('pdfPreview').src = url;
+            } else {
+                alert('Errore nella generazione del PDF');
+            }
+        }
+    </script>
+</body>
+</html>

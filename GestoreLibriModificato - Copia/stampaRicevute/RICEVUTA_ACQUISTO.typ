@@ -1,16 +1,16 @@
-#set page(width: 210mm, height: 297mm) // Formato A4
+#set page(width: 210mm, height: 297mm, margin: (x: 1.2cm, y: 1.0cm),) // Formato A4
 #set text(font: "Bungee Tint", size: 14pt)
 //-------------------------------------------------------
 #set table(
-  stroke: none,
+  stroke: 0.5pt,
   gutter: 0.2em,
   fill: (x, y) =>
-    if x == 0 or y == 0 { rgb(70, 76, 77) },
+    if y == 0 { rgb(70, 76, 77) },
   inset: (right: 1.5em),
 )
 
 #show table.cell: it => {
-  if it.x == 0 or it.y == 0 {
+  if it.y == 0 {
     set text(white)
     strong(it)
   } else if it.body == [] {
@@ -21,54 +21,59 @@
   }
 }
 //-------------------------------------------------------
-// Titolo
-= RICEVUTA ACQUISTO LIBRI di ClienteX: //${libro.titolo}
+// Logo Marconi
+#align(center+top)[
+	#image("logoMarconi.png", width: 50%)
+]
 
-// Linea divisoria
-#rect(fill: rgb(196, 239, 245), width: 80%, height: 1mm)
+#text(size: 14pt)[
+  = *RICEVUTA ACQUISTO LIBRI di ClienteX:* //${libro.titolo}
+]
 
-// Box con i dettagli dell'acquisto
+
+// Box con i dettagli di acquisto
 #box(
     stroke: 1pt,
-    fill: rgb(196, 239, 245),
+    fill: rgb(220, 242, 242),
     inset: 12pt,
     radius: 4pt
 )[
-    #set text(size: 18pt)
+    #set text(size: 12pt)
 
     **DATA DI ACQUISTO:**  
-    // Scrivi la data qui manualmente o usa un comando esterno.
 
 	#table(
-	  columns: 3,
-	  [], [TITOLO], [PREZZO],
-
-	  [1], [libro1], [prezzo1],
-	  [2], [libro2], [prezzo1],
-	  [3], [libro3], [prezzo3],
+	  columns: 2,
+	  [TITOLO], [PREZZO],
+	  [STRADA CON L'ALTRO - EDIZIONE VERDE (LA)], [23€],
+	  [SISTEMI E RETI SECONDA EDIZIONE - VOLUME 2], [34€],
+	  [STORIE IN TASCA - MITO ED EPICA], [12€],
+	  [TECNICA DELL'AUTOMOBILE MANUALE DI TECNOLOGIA DEI VEICOLI A MOTORE], [20€],
+	  [PER PARLARE E SCRIVERE BENE  VOLUME BASE], [21€],
+	  [VALORE STORIA 2 DALLA MET� DEL SEICENTO ALLA FINE DELL'OTTOCENTO], [50€],
+	  [CORSO DI LOGISTICA E TRASPORTI  SPEDIZIONI], [61€],
+	  [ELETTROTECNICA ED ELETTRONICA 2 CON OPENBOOK VOLUME 2], [52€],
+	  [CHIMICA PRATICA - LIBRO MISTO CON LIBRO DIGITALE], [50€],
+	  [CODICE LETTERARIO 2020 - LIBRO MISTO CON LIBRO DIGITALE  VOLUME 3A], [14€],
+	  [VENTURI EZIO,NUOVO CORSO DI SISTEMI AUTOMATICI  PER L'ARTICOLAZIONE ELETTRONICA], [20€],
+	  [CORSO DI LOGISTICA E TRASPORTI  SPEDIZIONI- NORMATIVA E COMMERCIO INTERNAZIONALE], [34€],
+	  [CORSO DI LOGISTICA E TRASPORTI  SPEDIZIONI- NORMATIVA E COMMERCIO INTERNAZIONALE], [34€],
+	  [CORSO DI LOGISTICA E TRASPORTI  SPEDIZIONI- NORMATIVA E COMMERCIO INTERNAZIONALE], [34€],
+	  [CORSO DI LOGISTICA E TRASPORTI  SPEDIZIONI- NORMATIVA E COMMERCIO INTERNAZIONALE], [34€],
+	  [CORSO DI LOGISTICA E TRASPORTI  SPEDIZIONI- NORMATIVA E COMMERCIO INTERNAZIONALE], [34€],
+	  [CORSO DI LOGISTICA E TRASPORTI  SPEDIZIONI- NORMATIVA E COMMERCIO INTERNAZIONALE], [34€],
 	)
 
 
 ]
 
-// Linea separazione
-#rect(fill: rgb(211, 211, 211), width: 100%, height: 1mm)
-
-// Messaggio finale
-#box(
-    stroke: 1pt,
-    inset: 12pt,
-    radius: 6pt
-)[
-    *Grazie per aver utilizzato il nostro servizio!*  
-    *Ci auguriamo di rivedervi presto.*
+#v(1pt)
+#align(center+top)[
+	#image("qr.png", width: 20%)
 ]
-
+#v(0pt)
 // URL sito
 #align(center)[
     *www.mercatinolibri.it*
 ]
-
-// Logo Marconi
-#image("logoMarconi.png")
 
