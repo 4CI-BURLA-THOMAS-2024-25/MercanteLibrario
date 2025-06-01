@@ -349,6 +349,9 @@ async function vendiCopie(): Promise<void>{
             
                 //risolvo quando tutte le copie sono state contrassegnate come vendute
                 await Promise.all(vendite);
+
+                //apro ricevuta
+                window.open("../stampaRicevute/ricevutaAcquisto.html");
         
                 //aggiorno tabella
                 location.reload();

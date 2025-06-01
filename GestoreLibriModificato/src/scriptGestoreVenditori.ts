@@ -103,6 +103,20 @@ function apriDatabase(): Promise<IDBDatabase>{
             }
 
             //controllo che non esista già una tabella con questo nome
+            if(!database.objectStoreNames.contains("CopieRicevuta")){
+                //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
+                const tabellaCopie = database.createObjectStore("Copie", {
+                    keyPath: "codiceUnivoco",
+                });
+
+                tabellaCopie.createIndex("libroDellaCopiaISBN", "libroDellaCopiaISBN", {unique: false});
+                tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
+                tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
+                tabellaCopie.createIndex("stato", "stato", {unique: false});
+                tabellaCopie.createIndex("ultimaModifica", "ultimaModifica", {unique:false});
+            }
+
+            //controllo che non esista già una tabella con questo nome
             if(!database.objectStoreNames.contains("Venditori")){
                 //creo nuova tabella e specifico chiave primaria
                 const tabellaVenditori = database.createObjectStore("Venditori", {
