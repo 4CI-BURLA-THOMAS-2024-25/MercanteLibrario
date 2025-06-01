@@ -20,12 +20,6 @@
     it
   }
 }
-
-//parametri esterni per generare pdf
-#let nomeCliente = sys.inputs.nome;
-#let cognomeCliente = sys.inputs.cognome;
-
-
 //-------------------------------------------------------
 // Logo Marconi
 #align(center+top)[

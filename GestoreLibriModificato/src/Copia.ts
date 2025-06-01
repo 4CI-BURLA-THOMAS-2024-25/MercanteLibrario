@@ -7,7 +7,7 @@ export class Copia{
     readonly prezzoCopertina: number;
     readonly prezzoScontato: number;
     readonly venditoreID: number; //prendo CF del venditore
-    public stato: string; //tengo traccia di copia disponibile(D), venduta(V) o cancellata(C)
+    public stato: string; //tengo traccia di copia disponibile(D), venduta(V), nel carrello (CAR) o eliminata(E)
     public ultimaModifica: string; //traccio la data e l'ora dell'ultima modifica
 
     constructor(libroDellaCopia: Libro, codiceUnivoco: number, prezzoCopertina: number, venditore: Venditore, stato:string, ultimaModifica: string){

@@ -1,0 +1,66 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 2em;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.ricevuta {
+  background: white;
+  padding: 2em;
+  max-width: 600px;
+  margin: auto;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+  text-align: center;
+}
+
+.info {
+  margin-bottom: 1em;
+}
+
+.info p {
+  margin: 0.2em 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1em;
+}
+
+table, th, td {
+  border: 1px solid #ccc;
+}
+
+th, td {
+  padding: 0.6em;
+  text-align: left;
+}
+
+.total {
+  text-align: right;
+  font-weight: bold;
+  margin-top: 1em;
+}
+
+img {
+  width: 100%;
+}
+
+/* applicato solo in fase di stampa */
+@media print {
+  body {
+    background: white;
+    margin: 0 auto;
+    width: 70%;
+  }
+  
+  .ricevuta {
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+  }
+}

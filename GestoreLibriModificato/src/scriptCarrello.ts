@@ -9,12 +9,16 @@ import { ws } from "./websocket";
 //database
 let database: IDBDatabase;
 
-//bottone che, quando cliccato, ripristina le copie selezionate
-const bottoneAnnullaVendita = document.getElementById("annullaVendita") as HTMLButtonElement;
-bottoneAnnullaVendita?.addEventListener("click", annullaVendita);
+//bottone che, quando cliccato, rimuove le copie selezionate dal carrello
+const bottoneRimuoviDalCarrello = document.getElementById("rimuoviDalCarrello") as HTMLButtonElement;
+bottoneRimuoviDalCarrello?.addEventListener("click", rimuoviDalCarrello);
 
-//campo in cui mostro il totale ricavato
-const campoRicavoTotale = document.getElementById("ricavoTotale") as HTMLInputElement;
+//campo in cui mostro importo totale
+const campoImportoTotale = document.getElementById("importoTotale") as HTMLInputElement;
+
+//bottone per vendere tutte le copie nel carrello
+const bottoneVendiCopie = document.getElementById("vendiCopie") as HTMLButtonElement;
+bottoneVendiCopie?.addEventListener("click", vendiCopie);
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -69,21 +73,20 @@ async function inviaDati(copia: Copia) {
     ws.send("C-" + String(copiaDaInviare?.toString()));
 }
 
-
 //ascolto modifiche al DB delle copie 
 databaseChannel.onmessage = async (evento) => {
     const dati = evento.data;
 
     if (dati.store === "Copie") {
-        console.log("Aggiornamento ricevuto: ricarico copie vendute...");
+        console.log("Aggiornamento ricevuto: ricarico carrello...");
         
         //aggiorno pagina
         location.reload();
     }
 };
 
-//prelevo da DB tutte le copie vendute con stato === "V"
-async function prelevaCopieVendute(): Promise<Copia[]> {
+//prelevo da DB tutte le copie nel carrello con stato = "CAR"
+async function prelevaCopieNelCarrello(): Promise<Copia[]> {
     return new Promise((resolve, reject) => {
         const transazione = database.transaction("Copie", "readonly");
         const tabellaCopie = transazione.objectStore("Copie");
@@ -91,8 +94,8 @@ async function prelevaCopieVendute(): Promise<Copia[]> {
         const richiesta = tabellaCopie.getAll();
 
         richiesta.onsuccess = () => {
-            // filtro le copie con stato === "V"
-            const copieVendute: Copia[] = richiesta.result.filter((copia: Copia) => copia.stato === "V");
+            // filtro le copie con stato === "CAR"  
+            const copieVendute: Copia[] = richiesta.result.filter((copia: Copia) => copia.stato === "CAR");
             resolve(copieVendute);
         };
 
@@ -102,13 +105,13 @@ async function prelevaCopieVendute(): Promise<Copia[]> {
     });
 }
 
-async function caricaCopieVendute(): Promise<void>{
+async function caricaCopieNelCarrello(): Promise<void>{
     try{
         //prelevo copie 
-        const copieVendute: Copia[] = await prelevaCopieVendute();
+        const copieNelCarrello: Copia[] = await prelevaCopieNelCarrello();
     
-        //calcolo ricavo totale e lo mostro
-        calcolaTotale(copieVendute);
+        //calcolo importo totale e lo mostro
+        calcolaTotale(copieNelCarrello);
 
         // prelevo reference del corpo della tabella per visualizzare le singole copie del venditore
         const corpoTabellaCopie = document.getElementById("corpoTabellaCopie") as HTMLTableSectionElement;
@@ -116,8 +119,8 @@ async function caricaCopieVendute(): Promise<void>{
         corpoTabellaCopie.innerHTML = "";
 
         //itero e visualizzo ogni copia
-        for(let i = 0; i < copieVendute.length; i++){
-            let copia: Copia = copieVendute[i];
+        for(let i = 0; i < copieNelCarrello.length; i++){
+            let copia: Copia = copieNelCarrello[i];
 
             // Prelevo il libro associato alla copia
             const libro: Libro = await new Promise<Libro>((resolve, reject) => {
@@ -196,15 +199,15 @@ async function caricaCopieVendute(): Promise<void>{
     }
 }
 
-//funzione per il ripristino delle copie nel cestino
-async function annullaVendita(): Promise<void> {
+//funzione per la rimozione di copie dal carrello
+async function rimuoviDalCarrello(): Promise<void> {
     //prelevo checkbox selezionate
     const checkboxSelezionate = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"].caselleSelezione:checked');
 
     //controllo che sia stata selezionata almeno una casella
     if (checkboxSelezionate.length !== 0) {
         //chiedo conferma di ripristino
-        const confermaRipristino = window.confirm("Vuoi ripristinare le copie selezionate?");
+        const confermaRipristino = window.confirm("Vuoi rimuovere dal carrello le copie selezionate?");
 
         //ripristino dopo conferma dell'utente
         if (confermaRipristino) {
@@ -247,8 +250,6 @@ async function annullaVendita(): Promise<void> {
                                         richiestaPut.onsuccess = () => {
                                             //notifico modifiche al DB delle copie
                                             databaseChannel.postMessage({ store: "Copie" });
-                                            //notifico modifica del totale da dare al venditore
-                                            databaseChannel.postMessage({store: "Venditori"});
                                             //invia dati
                                             inviaDati(copia);
 
@@ -277,10 +278,10 @@ async function annullaVendita(): Promise<void> {
 
                 //risolvo quando tutti gli aggiornamenti sono stati effettuati; attendo
                 await Promise.all(ripristini);
-                window.alert("Copia/e ripristinate correttamente.");
+                window.alert("Copia/e rimossa dal carrello correttamente.");
 
                 //aggiorno tabella
-                await caricaCopieVendute();
+                location.reload();
             } catch (errore) {
                 if(errore instanceof Error){
                     console.log(errore.message);
@@ -288,8 +289,76 @@ async function annullaVendita(): Promise<void> {
             }
         }
     } else {
-        window.alert("Seleziona almeno una copia da ripristinare");
+        window.alert("Seleziona almeno una copia da rimuovere dal cestino.");
     }
+}
+
+async function vendiCopie(): Promise<void>{
+    try{
+
+        //prelevo array di copie nel carrello
+        const copieNelCarrello: Copia[] = await prelevaCopieNelCarrello();
+    
+        //apro transazione di scrittura verso lo store delle copie per l'aggiornamento
+        const transazione = database.transaction("Copie", "readwrite");
+        const tabellaCopie = transazione.objectStore("Copie");
+    
+        //itero sulle copie selezionate, eseguendo gli aggiornamenti uno alla volta
+        const vendite = Array.from(copieNelCarrello).map(async (copiaVenduta) => {
+            return new Promise<void>((resolve, reject) => {
+                //aggiorno stato
+                copiaVenduta.stato = "V";
+                //aggiorno ultima modifica
+                copiaVenduta.ultimaModifica = new Date().toLocaleString();
+    
+                //richiedo update
+                const richiestaUpdate = tabellaCopie.put(copiaVenduta);
+    
+                //aggiornamento andato a buon fine
+                richiestaUpdate.onsuccess = () => {
+                    //notifico modifiche al DB delle copie
+                    databaseChannel.postMessage({ store: "Copie" });
+                    //notifico modifiche al DB dei venditori
+                    databaseChannel.postMessage({ store: "Venditori" });
+
+                    //invia dati
+                    inviaDati(copiaVenduta);
+                    resolve();
+                }
+    
+                //errore di aggiornamento
+                richiestaUpdate.onerror = () => {
+                    reject(new Error("Impossibile vendere la copia"));
+                }
+            });
+        });
+    
+        //risolvo quando tutte le copie sono state contrassegnate come vendute
+        await Promise.all(vendite);
+
+        //aggiorno tabella
+        location.reload();
+
+    //errore
+    }catch(errore){
+        if(errore instanceof Error){
+            console.error(errore.message);
+        }
+    }
+}
+
+//funzione che calcola l'importo totale delle copie nel carrello
+function calcolaTotale(elencoCopie: Copia[]): void{
+    //importo totale
+    let importoTotale: number = 0;
+    
+    //itero e sommo
+    elencoCopie.forEach((copia: Copia) => {
+        importoTotale += copia.prezzoScontato;
+    });
+
+    //imposto totale
+    campoImportoTotale.value = String(importoTotale);
 }
 
 //recupero libro dato isbn
@@ -354,28 +423,14 @@ async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore
     return venditorePrelevato;
 }
 
-//funzione che calcola l'incasso totale in base alle copie vendute
-function calcolaTotale(elencoCopie: Copia[]): void{
-    //incasso totale
-    let incassoTotale: number = 0;
-    
-    //itero e sommo
-    elencoCopie.forEach((copia: Copia) => {
-        incassoTotale += copia.prezzoScontato;
-    });
-
-    //imposto totale
-    campoRicavoTotale.value = String(incassoTotale);
-}
-
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         database = await apriDatabase();
         console.log("Database aperto:", database.name);
 
-        //mostro le copie vendute
-        await caricaCopieVendute();
+        //mostro le copie nel carrello
+        await caricaCopieNelCarrello();
 
     } catch (erroreDB) {
         console.error(erroreDB);

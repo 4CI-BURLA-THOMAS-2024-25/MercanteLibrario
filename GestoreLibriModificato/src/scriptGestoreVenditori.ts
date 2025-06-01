@@ -37,15 +37,19 @@ casellaRicerca?.addEventListener("input", ricercaVenditori);
 
 //bottone per mostarre l'elenco compelto delle copie (tranne quelle eliminate)
 const bottoneElencoCompletoCopie = document.getElementById("elencoCompletoCopie");
-bottoneElencoCompletoCopie?.addEventListener("click", mostraElencoCompletoCopie);
+bottoneElencoCompletoCopie?.addEventListener("click", () => {window.open("html/elencoCompletoCopie.html")});
 
 //bottone per mostrare l'elenco delle copie vendute
 const bottoneCopieVendute = document.getElementById("elencoCopieVendute");
-bottoneCopieVendute?.addEventListener("click", mostraCopieVendute);
+bottoneCopieVendute?.addEventListener("click", () => {window.open("html/copieVendute.html")});
 
 //bottone per mostrare l'elenco delle copie eliminate
 const bottoneCopieEliminate = document.getElementById("elencoCopieEliminate");
-bottoneCopieEliminate?.addEventListener("click", mostraCopieEliminate);
+bottoneCopieEliminate?.addEventListener("click", () => {window.open("html/copieEliminate.html")});
+
+//bottoncino per aprire il carrello
+const bottoneApriCarrello = document.getElementById("apriCarrello") as HTMLDivElement;
+bottoneApriCarrello?.addEventListener("click", () => {window.open("html/carrello.html")});
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -645,21 +649,6 @@ async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore
     });  
     
     return venditorePrelevato;
-}
-
-//funzione che apre la pagina con l'elenco completo delle copie (tranne quelle eliminate)
-function mostraElencoCompletoCopie(): void{
-    window.open("html/elencoCompletoCopie.html");
-}
-
-//funzione che apre la pagina con l'elenco delle copie eliminate
-function mostraCopieEliminate(): void{
-    window.open("html/copieEliminate.html");
-}
-
-//funzione che apre la pagina con l'elelenco delle copie vendute
-function mostraCopieVendute(): void{
-    window.open("html/copieVendute.html");
 }
 
 // al caricamento della pagina, apro database
