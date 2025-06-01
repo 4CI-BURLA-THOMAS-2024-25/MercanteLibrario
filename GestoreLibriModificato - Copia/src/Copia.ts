@@ -7,9 +7,10 @@ export class Copia{
     readonly prezzoCopertina: number;
     readonly prezzoScontato: number;
     readonly venditoreID: number; //prendo CF del venditore
-    public stato: string; //tengo traccia di copia disponibile(D), venduta(V) o cancellata(C)
+    public stato: string; //tengo traccia di copia disponibile(D), venduta(V), nel carrello (CAR) o eliminata(E)
+    public ultimaModifica: string; //traccio la data e l'ora dell'ultima modifica
 
-    constructor(libroDellaCopia: Libro, codiceUnivoco: number, prezzoCopertina: number, venditore: Venditore, stato:string){
+    constructor(libroDellaCopia: Libro, codiceUnivoco: number, prezzoCopertina: number, venditore: Venditore, stato:string, ultimaModifica: string){
         //libro a cui è associata la copia
         this.libroDellaCopiaISBN = libroDellaCopia.isbn;
 
@@ -27,9 +28,12 @@ export class Copia{
 
         //stato della copia
         this.stato = stato;
+
+        //prelevo data e ora attuali
+        this.ultimaModifica = ultimaModifica;
     }
 
     toString(): string {
-        return `${this.libroDellaCopiaISBN};${this.codiceUnivoco};${this.prezzoCopertina};${this.prezzoScontato};${this.venditoreID};${this.stato}`;
+        return `${this.libroDellaCopiaISBN};${this.codiceUnivoco};${this.prezzoCopertina};${this.prezzoScontato};${this.venditoreID};${this.stato};${this.ultimaModifica}`;
     }
 }

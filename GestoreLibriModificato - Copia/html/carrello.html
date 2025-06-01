@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Carrello</title>
+        <link rel="icon" type="image/png" href="..\img\favicon.png">
+        <link rel="stylesheet" href="../style.css"/>
+    </head>
+
+    <body>
+        <header id="intestazionePaginaCopie">
+            <h2>Carrello</h2>
+
+            <div>
+                <label for="importoTotale">Importo totale:</label>
+                <input name="totale" id="importoTotale" style="text-align: right;" disabled>
+                <label> euro</label>
+            </div>
+            
+            <button id="rimuoviDalCarrello">Rimuovi dal carrello</button>
+
+            <button id="vendiCopie">Vendi tutte le copie</button>
+        </header>
+
+        <!-- tabella che mostra tutte le copie nel carrello-->
+        <table id="elencoCopie">
+            <!-- dimensioni delle colonne della tabella; proporzionate  alla larghezza finestra -->
+            <colgroup>
+                <col style="width: 5%;">
+                <col style="width: 15%;">
+                <col style="width: 10%;">
+                <col style="width: 50%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+            </colgroup>
+            
+            <!-- intestazione tabella -->
+            <thead>
+                <tr>
+                    <th>Seleziona</th>
+                    <th>Codice univoco</th>
+                    <th>ISBN</th>
+                    <th>Titolo</th>
+                    <th>Prezzo di copertina</th>
+                    <th>Prezzo di vendita</th>
+                </tr>
+            </thead>
+
+            <!-- corpo tabella -->  
+            <tbody id="corpoTabellaCopie"></tbody>
+        </table>
+
+        <script src="../out/scriptCarrello.js" defer></script>
+    </body>
+</html>
+

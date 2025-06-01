@@ -37,15 +37,19 @@ casellaRicerca?.addEventListener("input", ricercaVenditori);
 
 //bottone per mostarre l'elenco compelto delle copie (tranne quelle eliminate)
 const bottoneElencoCompletoCopie = document.getElementById("elencoCompletoCopie");
-bottoneElencoCompletoCopie?.addEventListener("click", mostraElencoCompletoCopie);
+bottoneElencoCompletoCopie?.addEventListener("click", () => {window.open("html/elencoCompletoCopie.html")});
 
 //bottone per mostrare l'elenco delle copie vendute
 const bottoneCopieVendute = document.getElementById("elencoCopieVendute");
-bottoneCopieVendute?.addEventListener("click", mostraCopieVendute);
+bottoneCopieVendute?.addEventListener("click", () => {window.open("html/copieVendute.html")});
 
 //bottone per mostrare l'elenco delle copie eliminate
 const bottoneCopieEliminate = document.getElementById("elencoCopieEliminate");
-bottoneCopieEliminate?.addEventListener("click", mostraCopieEliminate);
+bottoneCopieEliminate?.addEventListener("click", () => {window.open("html/copieEliminate.html")});
+
+//bottoncino per aprire il carrello
+const bottoneApriCarrello = document.getElementById("apriCarrello") as HTMLDivElement;
+bottoneApriCarrello?.addEventListener("click", () => {window.open("html/carrello.html")});
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -95,6 +99,7 @@ function apriDatabase(): Promise<IDBDatabase>{
                 tabellaCopie.createIndex("prezzoScontato", "prezzoScontato", {unique: false});
                 tabellaCopie.createIndex("venditoreID", "venditoreID", {unique: false});
                 tabellaCopie.createIndex("stato", "stato", {unique: false});
+                tabellaCopie.createIndex("ultimaModifica", "ultimaModifica", {unique:false});
             }
 
             //controllo che non esista già una tabella con questo nome
@@ -118,7 +123,7 @@ function apriDatabase(): Promise<IDBDatabase>{
 
 //comunico il venditore da aggiungere
 function inviaDati(venditore: Venditore) {
-    ws.send("V," + String(venditore.toString()));
+    ws.send("V-" + String(venditore.toString()));
 }
 
 //ricevo messaggio
@@ -126,7 +131,7 @@ ws.onmessage = function (event) {
     console.log(event.data);
 
     //divido azione e contenuto
-    let smista:any[] = (event.data).split(',');
+    let smista:any[] = (event.data).split('-');
 
     //verifico se l'azione è stata eseguita sui venditori o sulle copie
     if(smista[0] === "V"){
@@ -168,7 +173,7 @@ async function riceviMessaggioCopia(parametriCopiaStringa: string) {
         const libroPrelevato: Libro = await prelevaLibroISBN(Number(parametriCopia[0]));
         //prelevo oggetto Venditore associato alla copia in base a CF
         const venditorePrelevato: Venditore = await prelevaVenditoreID(Number(parametriCopia[4]));
-        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[5]);
+        const copiaRicevuta: Copia = new Copia(libroPrelevato, Number(parametriCopia[1]), Number(parametriCopia[2]), venditorePrelevato, parametriCopia[5], parametriCopia[6]);
 
         console.log(copiaRicevuta);
 
@@ -644,21 +649,6 @@ async function prelevaVenditoreID(venditoreIDPassato: number): Promise<Venditore
     });  
     
     return venditorePrelevato;
-}
-
-//funzione che apre la pagina con l'elenco completo delle copie (tranne quelle eliminate)
-function mostraElencoCompletoCopie(): void{
-    window.open("html/elencoCompletoCopie.html");
-}
-
-//funzione che apre la pagina con l'elenco delle copie eliminate
-function mostraCopieEliminate(): void{
-    window.open("html/copieEliminate.html");
-}
-
-//funzione che apre la pagina con l'elelenco delle copie vendute
-function mostraCopieVendute(): void{
-    window.open("html/copieVendute.html");
 }
 
 // al caricamento della pagina, apro database

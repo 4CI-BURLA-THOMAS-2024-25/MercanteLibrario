@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it">
+    <head>
+    <meta charset="UTF-8">
+    <title>Ricevuta di Acquisto</title>
+    <link rel="stylesheet" href="style.css"/>
+    </head>
+    
+    <body>
+        <div class="ricevuta">
+            <img src="logoMarconi.png">
+
+            <h1>Ricevuta di Acquisto</h1>
+
+            <div class="info">
+                <p><strong>Acquirente:</strong> <span id="nomeCliente"></span></p>
+                <p><strong>Data e ora:</strong> <span id="dataOra"></span></p>
+            </div>
+
+            <table id="libriTable">
+                <thead>
+                    <tr>
+                        <th>Titolo</th>
+                        <th>Prezzo (€)</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <!-- Righe generate dinamicamente -->
+                </tbody>
+            </table>
+
+            <p class="total">Totale: € <span id="totale"></span></p>
+        </div>
+
+        <script src="ricevutaAcquisto.js"></script>
+    </body>
+</html>

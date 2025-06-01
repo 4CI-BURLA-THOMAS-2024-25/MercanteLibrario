@@ -60,10 +60,10 @@ async function inviaDati(copia: Copia) {
         //prelevo venditore associato alla copia
         const venditoreDellaCopia: Venditore = await prelevaVenditoreID(Number(copiaGrezza.venditoreID));
         //ricostruisco istanza reale della copia
-        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato);
+        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C," + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString()));
 }
 
 //ascolto modifiche al DB delle copie eliminate
@@ -229,6 +229,8 @@ async function ripristinaCopieEliminate(): Promise<void> {
                                     if (copia) {
                                         //modifico lo stato della copia
                                         copia.stato = "D";
+                                        //aggiorno ultima modifica
+                                        copia.ultimaModifica = new Date().toLocaleString();
 
                                         //aggiorno la copia nel database
                                         const richiestaPut = storeCopie.put(copia);

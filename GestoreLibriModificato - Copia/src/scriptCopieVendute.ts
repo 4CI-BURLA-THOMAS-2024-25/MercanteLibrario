@@ -16,7 +16,6 @@ bottoneAnnullaVendita?.addEventListener("click", annullaVendita);
 //campo in cui mostro il totale ricavato
 const campoRicavoTotale = document.getElementById("ricavoTotale") as HTMLInputElement;
 
-
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -64,14 +63,14 @@ async function inviaDati(copia: Copia) {
         //prelevo venditore associato alla copia
         const venditoreDellaCopia: Venditore = await prelevaVenditoreID(Number(copiaGrezza.venditoreID));
         //ricostruisco istanza reale della copia
-        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato);
+        copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C," + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString()));
 }
 
 
-//ascolto modifiche al DB delle copie eliminate
+//ascolto modifiche al DB delle copie 
 databaseChannel.onmessage = async (evento) => {
     const dati = evento.data;
 
@@ -87,13 +86,13 @@ databaseChannel.onmessage = async (evento) => {
 async function prelevaCopieVendute(): Promise<Copia[]> {
     return new Promise((resolve, reject) => {
         const transazione = database.transaction("Copie", "readonly");
-        const tabellaCopieVendute = transazione.objectStore("Copie");
+        const tabellaCopie = transazione.objectStore("Copie");
 
-        const richiesta = tabellaCopieVendute.getAll();
+        const richiesta = tabellaCopie.getAll();
 
         richiesta.onsuccess = () => {
             // filtro le copie con stato === "V"
-            const copieVendute = richiesta.result.filter((copia: Copia) => copia.stato === "V");
+            const copieVendute: Copia[] = richiesta.result.filter((copia: Copia) => copia.stato === "V");
             resolve(copieVendute);
         };
 
@@ -238,6 +237,8 @@ async function annullaVendita(): Promise<void> {
                                     if (copia) {
                                         //aggiorno lo stato della copia a "D"
                                         copia.stato = "D";
+                                        //aggiorno ultima modifica
+                                        copia.ultimaModifica = new Date().toLocaleString();
 
                                         //richiedo aggiornamento nello store
                                         const richiestaPut = storeCopie.put(copia);
@@ -367,14 +368,13 @@ function calcolaTotale(elencoCopie: Copia[]): void{
     campoRicavoTotale.value = String(incassoTotale);
 }
 
-
 // al caricamento della pagina, apro database
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         database = await apriDatabase();
         console.log("Database aperto:", database.name);
 
-        //mostro le copie del libro
+        //mostro le copie vendute
         await caricaCopieVendute();
 
     } catch (erroreDB) {
