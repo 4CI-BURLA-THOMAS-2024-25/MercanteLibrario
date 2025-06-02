@@ -105,7 +105,7 @@ function apriDatabase(): Promise<IDBDatabase>{
             //controllo che non esista già una tabella con questo nome
             if(!database.objectStoreNames.contains("CopieRicevuta")){
                 //creo nuova tabella e specifico chiave primaria che viene incrementata in automatico
-                const tabellaCopie = database.createObjectStore("Copie", {
+                const tabellaCopie = database.createObjectStore("CopieRicevuta", {
                     keyPath: "codiceUnivoco",
                 });
 

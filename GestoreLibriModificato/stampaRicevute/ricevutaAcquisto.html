@@ -17,8 +17,8 @@
             <h1>Ricevuta di Acquisto</h1>
 
             <div class="info">
-                <p><strong>Acquirente: </strong></p> <p id="nomeCliente"></p>
-                <p><strong>Data e ora: </strong></p> <p id="dataAcquisto"></span></p>
+                <p><strong>Acquirente: </strong></p> <p id="datiCliente"></p>
+                <p><strong>Data e ora: </strong></p> <p id="dataAcquisto"></p>
             </div>
 
             <table id="libriTable">
@@ -29,14 +29,30 @@
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody id="corpoTabellaCopie">
                     <!-- Righe generate dinamicamente -->
                 </tbody>
             </table>
 
-            <p class="total">Totale: € <span id="totale"></span></p>
+            <div class="total">
+
+            </div>
+
+            <table id="pagamento">
+                <tr>
+                    <th>Totale(€)</th>
+                    <th>Contanti(€)</th>
+                    <th>Resto(€)</th>
+                </tr>
+
+                <tr>
+                    <td id="importoTotale"></td>
+                    <td id="contantiDati"></td>
+                    <td id="resto"></td>
+                </tr>
+            </table>
         </div>
 
-        <script src="../out/scriptRicevutaAcquisto.js"></script>
+        <script src="../out/scriptRicevutaAcquisto.js" defer></script>
     </body>
 </html>

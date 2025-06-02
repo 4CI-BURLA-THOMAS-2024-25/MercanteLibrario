@@ -191,6 +191,7 @@ async function caricaCopieNelCarrello(): Promise<void>{
             // inserisco riga nel corpo della tabella
             corpoTabellaCopie.appendChild(riga);
         }
+
     }catch(error){
         if(error instanceof Error){
             console.error(error.message);
@@ -312,10 +313,10 @@ async function vendiCopie(): Promise<void>{
                 window.alert("Inserire nome e cognome del cliente per procedere con la vendita!");
         
             }else{
-            
-                //apro transazione di scrittura verso lo store delle copie per l'aggiornamento
-                const transazione = database.transaction("Copie", "readwrite");
+                //apro transazione di scrittura verso lo store delle copie e delle copie da inserire nella ricevuta per l'aggiornamento
+                const transazione = database.transaction(["Copie", "CopieRicevuta"], "readwrite");
                 const tabellaCopie = transazione.objectStore("Copie");
+                const tabellaCopieRicevuta = transazione.objectStore("CopieRicevuta");
             
                 //itero sulle copie selezionate, eseguendo gli aggiornamenti uno alla volta
                 const vendite = Array.from(copieNelCarrello).map(async (copiaVenduta) => {
@@ -330,14 +331,25 @@ async function vendiCopie(): Promise<void>{
             
                         //aggiornamento andato a buon fine
                         richiestaUpdate.onsuccess = () => {
-                            //notifico modifiche al DB delle copie
-                            databaseChannel.postMessage({ store: "Copie" });
-                            //notifico modifiche al DB dei venditori
-                            databaseChannel.postMessage({ store: "Venditori" });
-        
-                            //invia dati
-                            inviaDati(copiaVenduta);
-                            resolve();
+                            //salvo copia nello store delle copie da includere nella ricevuta
+                            const richiestaRicevuta = tabellaCopieRicevuta.add(copiaVenduta);
+
+                            //aggiunta alla ricevuta andata a buon fine
+                            richiestaRicevuta.onsuccess = () => {
+                                //notifico modifiche al DB delle copie
+                                databaseChannel.postMessage({ store: "Copie" });
+                                //notifico modifiche al DB dei venditori
+                                databaseChannel.postMessage({ store: "Venditori" });
+            
+                                //invia dati
+                                inviaDati(copiaVenduta);
+                                resolve();
+                            }
+
+                            //erorre di aggiunta alla ricevuta
+                            richiestaRicevuta.onerror = () => {
+                                reject(new Error("Errore nell'aggiunta della copia alla ricevuta"));
+                            }
                         }
             
                         //errore di aggiornamento
@@ -350,8 +362,8 @@ async function vendiCopie(): Promise<void>{
                 //risolvo quando tutte le copie sono state contrassegnate come vendute
                 await Promise.all(vendite);
 
-                //apro ricevuta
-                window.open("../stampaRicevute/ricevutaAcquisto.html");
+                //apro ricevuta e passo nome e cognome del cliente
+                window.open(`../stampaRicevute/ricevutaAcquisto.html?nome=${nomeCliente}&cognome=${cognomeCliente}`);
         
                 //aggiorno tabella
                 location.reload();
