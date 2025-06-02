@@ -46,8 +46,21 @@ th, td {
   margin-top: 1em;
 }
 
-img {
-  width: 100%;
+#logo {
+  width: 87%;
+  height: auto;
+}
+
+#QRcode {
+  width: 13%;
+  height: auto;
+}
+
+#intestazione {
+  display: flex;
+  justify-content: center; /* Centra le immagini orizzontalmente */
+  align-items: center; /* Centra le immagini verticalmente */
+  gap: 10px; /* Distanza tra le immagini */
 }
 
 /* applicato solo in fase di stampa */
@@ -55,12 +68,13 @@ img {
   body {
     background: white;
     margin: 0 auto;
-    width: 70%;
+    width: 100%;
   }
   
   .ricevuta {
     box-shadow: none;
     margin: 0;
     padding: 0;
+    max-width: none;
   }
 }

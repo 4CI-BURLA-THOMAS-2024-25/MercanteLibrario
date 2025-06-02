@@ -2,7 +2,7 @@ import { Libro } from "./Libro";
 
 //prelevo parametri passati da URL
 const parametri = new URLSearchParams(window.location.search);
-//prelvo ID del venditore di cui si sta registrando la copia e alla quale si vuole associare un libro
+//prelevo ID del venditore di cui si sta registrando la copia e alla quale si vuole associare un libro
 const venditoreID:string = parametri.get("venditoreID") as string;
 //prelevo prezzo di copertina, per poi ripassarlo indietro
 const prezzoCopertina:string = parametri.get("prezzoCopertina") as string;

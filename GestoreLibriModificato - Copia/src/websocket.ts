@@ -1,5 +1,5 @@
 //connessione tra host
-export const ws = new WebSocket('ws://192.168.1.9:8082');
+export const ws = new WebSocket('ws://192.168.1.101:8082');
 
 //comunicazione
 ws.onopen = function () {

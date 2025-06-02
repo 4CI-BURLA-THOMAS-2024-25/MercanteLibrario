@@ -9,7 +9,8 @@ module.exports = {
     scriptCopieEliminate: './src/scriptCopieEliminate.ts', //script per gestire la pagina del cestino delle copie
     scriptCopieVendute: './src/scriptCopieVendute.ts', //script per gestire la pagina delle copie vendute
     scriptElencoCompletoCopie: './src/scriptElencoCompletoCopie.ts', //script per gestire la pagina che mostra tutte le copie
-    scriptCarrello: './src/scriptCarrello.ts' //script che gestisce il carrello
+    scriptCarrello: './src/scriptCarrello.ts', //script che gestisce il carrello
+    scriptRicevutaAcquisto: './src/scriptRicevutaAcquisto.ts' //script che genera la ricevuta di acquisto
   },
   output: {
     filename: '[name].js', // nome basato sul file di output
