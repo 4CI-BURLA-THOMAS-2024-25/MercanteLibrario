@@ -63,6 +63,17 @@ th, td {
   gap: 10px; /* Distanza tra le immagini */
 }
 
+td, input {
+  font-size: 15px;
+}
+
+#contenuto {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 /* applicato solo in fase di stampa */
 @media print {
   body {
@@ -75,6 +86,6 @@ th, td {
     box-shadow: none;
     margin: 0;
     padding: 0;
-    max-width: none;
+    max-width: 99%;
   }
 }

@@ -11,6 +11,12 @@ const cognome:string = parametri.get("cognome") as string;
 //database
 let database: IDBDatabase;
 
+//elenco delle copie nella ricevuta
+let copieRicevuta: Copia[];
+
+//importo totale
+let importoTotale: number;
+
 //campo in cui mostro l'importo totale
 const campoImportoTotale = document.getElementById("importoTotale") as HTMLParagraphElement;
 
@@ -19,6 +25,13 @@ const campoDataAcquisto = document.getElementById("dataAcquisto") as HTMLParagra
 
 //campo in cui segno nome e cognome del cliente
 const campoDatiCliente = document.getElementById("datiCliente") as HTMLParagraphElement;
+
+//campo in cui l'utente digita i soldi con cui il cliente paga; al click dell'invio, calcolo resto
+const campoSoldiDati = document.getElementById("contantiDati") as HTMLInputElement;
+campoSoldiDati?.addEventListener("keydown", (event) => calcolaResto(event));
+
+//campo del resto
+const campoResto = document.getElementById("resto") as HTMLTableCellElement;
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -61,12 +74,6 @@ async function prelevaCopieRicevuta(): Promise<Copia[]>{
 
 async function caricaRicevuta(): Promise<void>{
     try{
-        //prelevo copie 
-        const copieRicevuta: Copia[] = await prelevaCopieRicevuta();
-        
-        //calcolo importo totale e lo mostro
-        calcolaTotale(copieRicevuta);
-        
         // prelevo reference del corpo della tabella per visualizzare le singole copie del venditore
         const corpoTabellaCopie = document.getElementById("corpoTabellaCopie") as HTMLTableSectionElement;
         //svuoto tabella
@@ -133,17 +140,20 @@ async function caricaRicevuta(): Promise<void>{
 }
 
 //funzione che calcola l'importo totale delle copie nel carrello
-function calcolaTotale(elencoCopie: Copia[]): void{
+function calcolaTotale(): number{
     //importo totale
     let importoTotale: number = 0;
     
     //itero e sommo
-    elencoCopie.forEach((copia: Copia) => {
+    copieRicevuta.forEach((copia: Copia) => {
         importoTotale += copia.prezzoScontato;
     });
 
     //imposto totale
     campoImportoTotale.innerHTML = String(importoTotale);
+
+    //restituisco totale
+    return importoTotale;
 }
 
 async function svuotaRicevuta(): Promise<void>{
@@ -151,14 +161,34 @@ async function svuotaRicevuta(): Promise<void>{
     const transazione = database.transaction("CopieRicevuta", "readwrite");
     const tabellaCopieRicevuta = transazione.objectStore("CopieRicevuta");
 
-    const richiestaSvuota = tabellaCopieRicevuta.clear();
+    await new Promise((resolve,reject) => {
+        const richiestaSvuota = tabellaCopieRicevuta.clear();
+    
+        richiestaSvuota.onsuccess = () => {
+            resolve(null);
+        }
+    
+        richiestaSvuota.onerror = () => {
+            reject(new Error("Errore, impossibile completare la stampa!"));
+        }
+    });
+}
 
-    richiestaSvuota.onsuccess = () => {
-        //chiudo pagina
-    }
+//calcolo resto, al click di invio
+async function calcolaResto(event: KeyboardEvent): Promise<void>{
+    if (event.key === "Enter") {
+        //calcolo resto come differenza tra dato e totale
+        const resto: number = parseFloat((Number(campoSoldiDati.value) - importoTotale).toFixed(2));
 
-    richiestaSvuota.onerror = () => {
-        throw new Error("Errore, impossbile completare la stampa!");
+        //controllo che il cliente abbia dato soldi a sufficienza
+        if(resto < 0){
+            window.alert("Contanti insufficienti!");
+
+        }else{
+            campoResto.textContent = String(resto);
+
+            window.print();
+        }
     }
 }
 
@@ -168,14 +198,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         database = await apriDatabase();
         console.log("Database aperto:", database.name);
 
+        //prelevo copie
+        copieRicevuta = await prelevaCopieRicevuta();
+        
         //preparo ricevuta
         await caricaRicevuta();
 
-        //stampo ricevuta
-        window.print();
-
-        //svuoto ricevuta
-        await svuotaRicevuta();
+        //calcolo totale
+        importoTotale = calcolaTotale();
 
     } catch (errore) {
         if(errore instanceof Error){

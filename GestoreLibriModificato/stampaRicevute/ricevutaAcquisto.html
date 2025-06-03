@@ -7,50 +7,54 @@
     </head>
     
     <body>
-        <div class="ricevuta">
-            <div id="intestazione">
-                <img src="logoMarconi.png" id="logo">
-                <img src="qr.png" id="QRcode">
-            </div>
-
-
-            <h1>Ricevuta di Acquisto</h1>
-
-            <div class="info">
-                <p><strong>Acquirente: </strong></p> <p id="datiCliente"></p>
-                <p><strong>Data e ora: </strong></p> <p id="dataAcquisto"></p>
-            </div>
-
-            <table id="libriTable">
-                <thead>
+        <div id="contenuto">
+            <button id="stampa" onclick="window.print()">Stampa ricevuta</button>
+    
+            <div class="ricevuta">
+                <div id="intestazione">
+                    <img src="logoMarconi.png" id="logo">
+                    <img src="qr.png" id="QRcode">
+                </div>
+    
+    
+                <h1>Ricevuta di Acquisto</h1>
+    
+                <div class="info">
+                    <p><strong>Acquirente: </strong></p> <p id="datiCliente"></p>
+                    <p><strong>Data e ora: </strong></p> <p id="dataAcquisto"></p>
+                </div>
+    
+                <table id="libriTable">
+                    <thead>
+                        <tr>
+                            <th>Titolo</th>
+                            <th>Prezzo (€)</th>
+                        </tr>
+                    </thead>
+    
+                    <tbody id="corpoTabellaCopie">
+                        <!-- Righe generate dinamicamente -->
+                    </tbody>
+                </table>
+    
+                <div class="total">
+    
+                </div>
+    
+                <table id="pagamento">
                     <tr>
-                        <th>Titolo</th>
-                        <th>Prezzo (€)</th>
+                        <th>Totale(€)</th>
+                        <th>Contanti(€)</th>
+                        <th>Resto(€)</th>
                     </tr>
-                </thead>
-
-                <tbody id="corpoTabellaCopie">
-                    <!-- Righe generate dinamicamente -->
-                </tbody>
-            </table>
-
-            <div class="total">
-
+    
+                    <tr>
+                        <td id="importoTotale"></td>
+                        <td><input type="text" id="contantiDati" autofocus></td>
+                        <td id="resto"></td>
+                    </tr>
+                </table>
             </div>
-
-            <table id="pagamento">
-                <tr>
-                    <th>Totale(€)</th>
-                    <th>Contanti(€)</th>
-                    <th>Resto(€)</th>
-                </tr>
-
-                <tr>
-                    <td id="importoTotale"></td>
-                    <td id="contantiDati"></td>
-                    <td id="resto"></td>
-                </tr>
-            </table>
         </div>
 
         <script src="../out/scriptRicevutaAcquisto.js" defer></script>
