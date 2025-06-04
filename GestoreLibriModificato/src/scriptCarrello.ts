@@ -317,6 +317,19 @@ async function vendiCopie(): Promise<void>{
                 const transazione = database.transaction(["Copie", "CopieRicevuta"], "readwrite");
                 const tabellaCopie = transazione.objectStore("Copie");
                 const tabellaCopieRicevuta = transazione.objectStore("CopieRicevuta");
+
+                //svuoto store delle copie da includere nella ricevuta
+                await new Promise((resolve,reject) => {
+                    const richiestaSvuota = tabellaCopieRicevuta.clear();
+                
+                    richiestaSvuota.onsuccess = () => {
+                        resolve(null);
+                    }
+                
+                    richiestaSvuota.onerror = () => {
+                        reject(new Error("Errore, impossibile completare la stampa!"));
+                    }
+                });
             
                 //itero sulle copie selezionate, eseguendo gli aggiornamenti uno alla volta
                 const vendite = Array.from(copieNelCarrello).map(async (copiaVenduta) => {

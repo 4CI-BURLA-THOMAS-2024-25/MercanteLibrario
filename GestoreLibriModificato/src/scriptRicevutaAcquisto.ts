@@ -26,12 +26,17 @@ const campoDataAcquisto = document.getElementById("dataAcquisto") as HTMLParagra
 //campo in cui segno nome e cognome del cliente
 const campoDatiCliente = document.getElementById("datiCliente") as HTMLParagraphElement;
 
-//campo in cui l'utente digita i soldi con cui il cliente paga; al click dell'invio, calcolo resto
+//campo in cui l'utente digita i soldi con cui il cliente paga; al click dell'invio o al click furoi dalla casella, calcolo resto
 const campoSoldiDati = document.getElementById("contantiDati") as HTMLInputElement;
 campoSoldiDati?.addEventListener("keydown", (event) => calcolaResto(event));
+campoSoldiDati?.addEventListener("blur", () => calcolaResto(null));
 
 //campo del resto
 const campoResto = document.getElementById("resto") as HTMLTableCellElement;
+
+//bottone per stampare
+const bottoneStampa = document.getElementById("stampa") as HTMLButtonElement;
+bottoneStampa?.addEventListener("click", (event) => calcolaResto(event));
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
@@ -156,38 +161,26 @@ function calcolaTotale(): number{
     return importoTotale;
 }
 
-async function svuotaRicevuta(): Promise<void>{
-    //transazione
-    const transazione = database.transaction("CopieRicevuta", "readwrite");
-    const tabellaCopieRicevuta = transazione.objectStore("CopieRicevuta");
-
-    await new Promise((resolve,reject) => {
-        const richiestaSvuota = tabellaCopieRicevuta.clear();
-    
-        richiestaSvuota.onsuccess = () => {
-            resolve(null);
-        }
-    
-        richiestaSvuota.onerror = () => {
-            reject(new Error("Errore, impossibile completare la stampa!"));
-        }
-    });
-}
-
-//calcolo resto, al click di invio
-async function calcolaResto(event: KeyboardEvent): Promise<void>{
-    if (event.key === "Enter") {
+//calcolo resto, al click di invio o al click su stampa
+async function calcolaResto(event: KeyboardEvent | MouseEvent | null): Promise<void>{
+    if((event instanceof KeyboardEvent && event.key === "Enter") || (event instanceof MouseEvent && event.target === bottoneStampa) || (event === null)){
         //calcolo resto come differenza tra dato e totale
         const resto: number = parseFloat((Number(campoSoldiDati.value) - importoTotale).toFixed(2));
 
         //controllo che il cliente abbia dato soldi a sufficienza
         if(resto < 0){
-            window.alert("Contanti insufficienti!");
+            //se l'ascoltatore viene triggerato dalla perdita del focus della casella, evito popup fastidiosi
+            if(event !== null){
+                window.alert("Contanti insufficienti!");
+            }
 
         }else{
             campoResto.textContent = String(resto);
 
-            window.print();
+            //se l'ascoltatore viene triggerato dalla perdita del focus della casella, evito popup di stampa fastidiosi
+            if(event !== null){
+                window.print();
+            }
         }
     }
 }
