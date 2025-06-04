@@ -7,6 +7,9 @@ import { databaseChannel } from "./broadcast";
 import { elencoLibri } from "./elencoLibri";
 import { ws } from "./websocket";
 
+const cMLocalStorage = localStorage.getItem("contatoreMovimenti");
+let contatoreMovimenti  = cMLocalStorage != null ? Number(cMLocalStorage) : 0;
+
 //database
 let database: IDBDatabase;
 
@@ -135,9 +138,27 @@ function apriDatabase(): Promise<IDBDatabase>{
     return out;
 }
 
+//comunicazione
+ws.onopen = function () {
+    console.log("connessione effettuata")
+    aggiornaStato();
+}
+
+ws.onclose = function () {
+    console.log("connessione server chiusa");
+}
+
+ws.onerror = function (error) {
+    console.log("errore nel webSocket", error); 
+}
+
 //comunico il venditore da aggiungere
 function inviaDati(venditore: Venditore) {
     ws.send("V-" + String(venditore.toString()));
+}
+
+function aggiornaStato(){
+    ws.send("stato,"+contatoreMovimenti);
 }
 
 //ricevo messaggio
@@ -170,6 +191,12 @@ async function riceviMessaggioVenditore(parametriVenditoreStringa: string) {
         //salvo venditore ricevuta su DB
         await controllaVenditorePassato(venditoreRicevuto);
 
+        contatoreMovimenti = Number(localStorage.getItem("contatoreMovimenti"));
+        console.log("ciao"+contatoreMovimenti);
+        contatoreMovimenti++;
+        localStorage.setItem("contatoreMovimenti", String(contatoreMovimenti))
+        console.log("ciao"+contatoreMovimenti);
+
     }catch(error){
         console.error("Errore nel salvataggio del venditore mediante CF trasmesso da socket");
     }
@@ -193,6 +220,12 @@ async function riceviMessaggioCopia(parametriCopiaStringa: string) {
 
         //salvo/aggiorno copia ricevuta su DB
         await controllaCopiaPassata(copiaRicevuta);
+
+        contatoreMovimenti = Number(localStorage.getItem("contatoreMovimenti"));
+        console.log("ciao"+contatoreMovimenti);
+        contatoreMovimenti++;
+        localStorage.setItem("contatoreMovimenti", String(contatoreMovimenti))
+        console.log("ciao"+contatoreMovimenti);
 
     }catch(error){
         console.error("Errore nel recupero del libro mediante ISBN o del venditore mediante CF trasmesso da socket");
@@ -315,6 +348,11 @@ async function registraVenditore(): Promise<void>{
             (caselleInput[i] as HTMLInputElement).value = "";
         }
 
+         //aumenta il contatore dei movimenti
+        contatoreMovimenti = Number(localStorage.getItem("contatoreMovimenti"));
+        contatoreMovimenti++;
+        localStorage.setItem("contatoreMovimenti", String(contatoreMovimenti));
+        
         //notifico aggiunta
         databaseChannel.postMessage({store: "Venditori"});
 

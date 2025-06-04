@@ -6,6 +6,11 @@ import { Venditore } from "./Venditore";
 import { databaseChannel } from "./broadcast";
 import { ws } from "./websocket";
 
+//operatore ternario per prendere il contatore o settarlo a 0 nel caso non esistesseMore actions
+const cMLocalStorage = localStorage.getItem("contatoreMovimenti");
+let contatoreMovimenti  = cMLocalStorage != null ? Number(cMLocalStorage) : 0;
+
+
 // Dichiara JsBarcode come variabile globale
 declare const JsBarcode: any;
 //barcode
@@ -386,7 +391,7 @@ async function preparaCopiaDaRegistrare():Promise<void>{
             libro = null;
     
             //chiamo scrittura su DB
-            await registraCopia(copia);
+            await registraCopia(copia, false);
 
         }else{
             window.alert("Scegliere un libro dalla libreria da associarte alla copia che si vuole registrare");
@@ -429,7 +434,11 @@ async function leggiUltimaChiaveCopia(): Promise<number | null> {
 }
 
 //funzione per registrare una copia del libro
-async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
+async function registraCopia(copiaDaSalvare: Copia, messaggioAggiornamentoStato : boolean):Promise<void>{    //aumenta il contatore dei movimenti 
+    contatoreMovimenti = Number(localStorage.getItem("contatoreMovimenti"));
+    contatoreMovimenti++;
+    localStorage.setItem("contatoreMovimenti", String(contatoreMovimenti))
+
     //apro transazione
     const transazione = database.transaction("Copie", "readwrite");
     const tabellaCopie = transazione.objectStore("Copie");
@@ -448,8 +457,11 @@ async function registraCopia(copiaDaSalvare: Copia):Promise<void>{
 
         //notifico aggiunta nuova copia
         databaseChannel.postMessage({store: "Copie"});
-        //invia dati
-        inviaDati(copiaDaSalvare);
+
+        //invia dati se non è un messaggio di aggiornamento statoMore actions
+        if(!messaggioAggiornamentoStato){
+            inviaDati(copiaDaSalvare);
+        }
 
         //preparo barcode
         const barCode: string = newBarcode(copiaDaSalvare.codiceUnivoco, venditore.id);
@@ -597,6 +609,11 @@ async function eliminaLogicamenteCopie(): Promise<void> {
 
                                         //aggiornamento andato a buon fine
                                         richiestaUpdate.onsuccess = () => {
+                                            //aumenta il contatore dei movimenti More actions
+                                            contatoreMovimenti = Number(localStorage.getItem("contatoreMovimenti"));
+                                            contatoreMovimenti++;
+                                            localStorage.setItem("contatoreMovimenti", String(contatoreMovimenti))
+
                                             //notifico modifiche al DB delle copie
                                             databaseChannel.postMessage({ store: "Copie" });
                                             //invia copia aggiornata
