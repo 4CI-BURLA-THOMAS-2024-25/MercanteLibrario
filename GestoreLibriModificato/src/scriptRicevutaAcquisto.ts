@@ -158,20 +158,28 @@ function calcolaTotale(): number{
 
 //calcolo resto, al click di invio o al click su stampa
 async function calcolaResto(event: KeyboardEvent | MouseEvent | null): Promise<void>{
-    if((event instanceof KeyboardEvent && event.key === "Enter") || (event instanceof MouseEvent && event.target === bottoneStampa) || (event === null)){
-        //calcolo resto come differenza tra dato e totale
-        const resto: number = parseFloat((Number(campoSoldiDati.value) - importoTotale).toFixed(2));
-        //controllo che il cliente abbia dato soldi a sufficienza
-        if(resto < 0){
-        //se l'ascoltatore viene triggerato dalla perdita del focus della casella, evito popup fastidiosi
-            if(event !== null){
-                window.alert("Contanti insufficienti!");
-            }
-        }else{
-            campoResto.textContent = String(resto);
-            //se l'ascoltatore viene triggerato dalla perdita del focus della casella, evito popup di stampa fastidiosi
-            if(event !== null){
-                window.print();
+    //controllo che siano stati inseriti i dati del cliente, quando clicco invio nel campo dei contanti o quando clicco stampa
+    if(campoDatiCliente.value === "" && event !== null){
+        window.alert("Inserire nome e cognome del cliente!");
+    }else{
+        if((event instanceof KeyboardEvent && event.key === "Enter") || (event instanceof MouseEvent && event.target === bottoneStampa) || (event === null)){
+            //calcolo resto come differenza tra dato e totale
+            const resto: number = parseFloat((Number(campoSoldiDati.value) - importoTotale).toFixed(2));
+    
+            //controllo che il cliente abbia dato soldi a sufficienza
+            if(resto < 0){
+                //se l'ascoltatore viene triggerato dalla perdita del focus della casella, evito popup fastidiosi
+                if(event !== null){
+                    window.alert("Contanti insufficienti!");
+                }
+    
+            }else{
+                campoResto.textContent = String(resto);
+    
+                //se l'ascoltatore viene triggerato dalla perdita del focus della casella, evito popup di stampa fastidiosi
+                if(event !== null){
+                    window.print();
+                }
             }
         }
     }
