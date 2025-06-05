@@ -44,8 +44,7 @@ bottoneChiudiPopupBarcode?.addEventListener("click", chiudiScansioneBarcode);
 //bottoncino per aprire il carrello
 const bottoneApriCarrello = document.getElementById("apriCarrello") as HTMLDivElement;
 bottoneApriCarrello?.addEventListener("click", () => {
-    window.close();
-    window.open("carrello.html")
+    window.open("carrello.html");
 });
 
 // funzione per aprire il database
@@ -109,7 +108,7 @@ databaseChannel.onmessage = async (evento) => {
         console.log("Aggiornamento ricevuto: ricarico copie...");
         
         //aggiorno pagina
-        location.reload();
+        await caricaElencoCompletoCopie();
     }
 };
 
@@ -130,8 +129,7 @@ function chiudiScansioneBarcode(): void{
         campoPrezzoCopertinaBarcode.value = "";
         areaTitoloLibroBarcode.value = "";
 
-        //ricarico pagina e aggiorno tabella
-        location.reload();
+        popupScansionaBarcode.style.display = "none";
     }
 }
 
@@ -547,6 +545,9 @@ async function aggiungiCopieAlCarrelloBarcode(event: KeyboardEvent): Promise<voi
 
                 // Aggiorno copia su DB
                 await aggiornaStatoCopia(copiaBarcode);
+
+                //rileggo elenco completo da DB
+                await caricaElencoCompletoCopie();
             }
 
         } catch (errore) {

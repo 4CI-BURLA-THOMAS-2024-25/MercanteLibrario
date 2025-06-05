@@ -78,7 +78,7 @@ databaseChannel.onmessage = async (evento) => {
         console.log("Aggiornamento ricevuto: ricarico copie vendute...");
         
         //aggiorno pagina
-        location.reload();
+        await caricaCopieVendute();
     }
 };
 

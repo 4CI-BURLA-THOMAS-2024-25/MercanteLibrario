@@ -282,7 +282,7 @@ async function rimuoviDalCarrello(): Promise<void> {
                 window.alert("Copia/e rimossa dal carrello correttamente.");
 
                 //aggiorno tabella
-                location.reload();
+                await caricaCopieNelCarrello();
             } catch (errore) {
                 if(errore instanceof Error){
                     console.log(errore.message);

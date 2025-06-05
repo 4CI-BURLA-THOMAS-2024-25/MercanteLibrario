@@ -20,7 +20,7 @@ const campoImportoTotale = document.getElementById("importoTotale") as HTMLParag
 const campoDataAcquisto = document.getElementById("dataAcquisto") as HTMLParagraphElement;
 
 //campo in cui segno nome e cognome del cliente
-const campoDatiCliente = document.getElementById("nomeCliente") as HTMLParagraphElement;
+const campoDatiCliente = document.getElementById("nomeCliente") as HTMLInputElement;
 
 //campo in cui l'utente digita i soldi con cui il cliente paga; al click dell'invio o al click furoi dalla casella, calcolo resto
 const campoSoldiDati = document.getElementById("contantiDati") as HTMLInputElement;
@@ -158,8 +158,8 @@ function calcolaTotale(): number{
 
 //calcolo resto, al click di invio o al click su stampa
 async function calcolaResto(event: KeyboardEvent | MouseEvent | null): Promise<void>{
-    //controllo che siano stati inseriti i dati del cliente
-    if(campoDatiCliente.innerHTML === ""){
+    //controllo che siano stati inseriti i dati del cliente, quando clicco invio nel campo dei contanti o quando clicco stampa
+    if(campoDatiCliente.value === "" && event !== null){
         window.alert("Inserire nome e cognome del cliente!");
     }else{
         if((event instanceof KeyboardEvent && event.key === "Enter") || (event instanceof MouseEvent && event.target === bottoneStampa) || (event === null)){

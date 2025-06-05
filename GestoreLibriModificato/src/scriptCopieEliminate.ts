@@ -74,7 +74,7 @@ databaseChannel.onmessage = async (evento) => {
         console.log("Aggiornamento ricevuto: ricarico copie eliminate...");
         
         //aggiorno pagina
-        location.reload();
+        await caricaCopieCestino();
     }
 };
 

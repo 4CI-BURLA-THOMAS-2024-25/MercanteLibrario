@@ -240,7 +240,7 @@ databaseChannel.onmessage = async (evento) => {
         console.log("Aggiornamento ricevuto: ricarico venditori...");
         
         //aggiorno pagina
-        location.reload();
+        await mostraVenditori(await prelevaVenditori());
     }
 };
 
@@ -280,7 +280,8 @@ async function controllaVenditorePassato(venditoreRicevuto: Venditore): Promise<
         databaseChannel.postMessage({store: "Venditori"});
 
         //aggiorno lista venditori, ricarico
-        location.reload();
+        await mostraVenditori(await prelevaVenditori());
+
     }
     //errore, venditore già presente
     richiestaAggiuntaVenditore.onerror = () => {
@@ -297,13 +298,13 @@ async function controllaCopiaPassata(copiaRicevuta: Copia): Promise<void>{
     const richiestaAggiuntaCopia = tabellaCopie.put(copiaRicevuta);
 
     //aggiunta andata a buon fine
-    richiestaAggiuntaCopia.onsuccess = () => {
+    richiestaAggiuntaCopia.onsuccess = async () => {
 
         //notifico aggiunta
         databaseChannel.postMessage({store: "Copie"});
 
         //aggiorno lista venditori(prezzo), ricarico
-        location.reload();
+        await mostraVenditori(await prelevaVenditori());
     }
     //errore, copia già presente
     richiestaAggiuntaCopia.onerror = () => {
@@ -360,7 +361,7 @@ async function registraVenditore(): Promise<void>{
         inviaDati(venditore);
 
         //aggiorno lista venditori, rileggendo da DB
-        mostraVenditori(await prelevaVenditori());
+        await mostraVenditori(await prelevaVenditori());
 
         //chiudo popup di inserimento
         chiudiRegistrazioneVenditore();
