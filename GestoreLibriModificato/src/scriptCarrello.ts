@@ -293,103 +293,96 @@ async function rimuoviDalCarrello(): Promise<void> {
         window.alert("Seleziona almeno una copia da rimuovere dal cestino.");
     }
 }
-
-async function vendiCopie(): Promise<void>{
-    try{
-        //prelevo array di copie nel carrello
+async function vendiCopie(): Promise<void> {
+    try {
+        // Prelevo array di copie nel carrello
         const copieNelCarrello: Copia[] = await prelevaCopieNelCarrello();
 
-        //controllo carrello
-        if(copieNelCarrello.length === 0){
+        // Controllo carrello
+        if (copieNelCarrello.length === 0) {
             window.alert("Il carrello è vuoto");
-
-        //carrello popolato
-        }else{
-            //chiedo nome e cognome del cliente per proseguire
-            const nomeCliente:string | null = window.prompt("Inserire il nome del cliente");
-            const cognomeCliente:string | null = window.prompt("Inserire il cognome del cliente");
-        
-            if(nomeCliente === null || nomeCliente.trim() === "" || cognomeCliente === null || cognomeCliente.trim() === ""){
-                window.alert("Inserire nome e cognome del cliente per procedere con la vendita!");
-        
-            }else{
-                //apro transazione di scrittura verso lo store delle copie e delle copie da inserire nella ricevuta per l'aggiornamento
+        } else {
+            
+                // Apro transazione di scrittura verso lo store delle copie e delle copie da inserire nella ricevuta per l'aggiornamento
                 const transazione = database.transaction(["Copie", "CopieRicevuta"], "readwrite");
                 const tabellaCopie = transazione.objectStore("Copie");
                 const tabellaCopieRicevuta = transazione.objectStore("CopieRicevuta");
 
-                //svuoto store delle copie da includere nella ricevuta
-                await new Promise((resolve,reject) => {
+                // Svuoto store delle copie da includere nella ricevuta
+                await new Promise((resolve, reject) => {
                     const richiestaSvuota = tabellaCopieRicevuta.clear();
-                
+
                     richiestaSvuota.onsuccess = () => {
                         resolve(null);
-                    }
-                
+                    };
+
                     richiestaSvuota.onerror = () => {
                         reject(new Error("Errore, impossibile completare la stampa!"));
-                    }
+                    };
                 });
-            
-                //itero sulle copie selezionate, eseguendo gli aggiornamenti uno alla volta
+
+                // Itero sulle copie selezionate, eseguendo gli aggiornamenti uno alla volta
                 const vendite = Array.from(copieNelCarrello).map(async (copiaVenduta) => {
                     return new Promise<void>((resolve, reject) => {
-                        //aggiorno stato
+                        // Aggiorno stato
                         copiaVenduta.stato = "V";
-                        //aggiorno ultima modifica
+                        // Aggiorno ultima modifica
                         copiaVenduta.ultimaModifica = new Date().toLocaleString();
-            
-                        //richiedo update
+
+                        // Richiedo update
                         const richiestaUpdate = tabellaCopie.put(copiaVenduta);
-            
-                        //aggiornamento andato a buon fine
+
+                        // Aggiornamento andato a buon fine
                         richiestaUpdate.onsuccess = () => {
-                            //salvo copia nello store delle copie da includere nella ricevuta
+                            // Salvo copia nello store delle copie da includere nella ricevuta
                             const richiestaRicevuta = tabellaCopieRicevuta.add(copiaVenduta);
 
-                            //aggiunta alla ricevuta andata a buon fine
+                            // Aggiunta alla ricevuta andata a buon fine
                             richiestaRicevuta.onsuccess = () => {
-                                //notifico modifiche al DB delle copie
+                                // Notifico modifiche al DB delle copie
                                 databaseChannel.postMessage({ store: "Copie" });
-                                //notifico modifiche al DB dei venditori
+                                // Notifico modifiche al DB dei venditori
                                 databaseChannel.postMessage({ store: "Venditori" });
-            
-                                //invia dati
+
+                                // Invia dati
                                 inviaDati(copiaVenduta);
                                 resolve();
-                            }
+                            };
 
-                            //erorre di aggiunta alla ricevuta
+                            // Errore di aggiunta alla ricevuta
                             richiestaRicevuta.onerror = () => {
                                 reject(new Error("Errore nell'aggiunta della copia alla ricevuta"));
-                            }
-                        }
-            
-                        //errore di aggiornamento
+                            };
+                        };
+
+                        // Errore di aggiornamento
                         richiestaUpdate.onerror = () => {
                             reject(new Error("Impossibile vendere la copia"));
-                        }
+                        };
                     });
                 });
-            
-                //risolvo quando tutte le copie sono state contrassegnate come vendute
+
+                // Risolvo quando tutte le copie sono state contrassegnate come vendute
                 await Promise.all(vendite);
 
-                //apro ricevuta e passo nome e cognome del cliente
-                window.open(`../stampaRicevute/ricevutaAcquisto.html?nome=${nomeCliente}&cognome=${cognomeCliente}`);
-        
-                //aggiorno tabella
-                location.reload();
-            }
+                // Apro la ricevuta in un nuovo tab
+                window.open(`../stampaRicevute/ricevutaAcquisto.html`, "_blank");
+
+                // Ritardo il reload per evitare che la finestra venga chiusa prima del completamento
+                setTimeout(() => {
+                    location.reload();
+                }, 2000); // 2 secondi di ritardo
+            
         }
 
-    //errore
-    }catch(errore){
-        if(errore instanceof Error){
+    } catch (errore) {
+        if (errore instanceof Error) {
             console.error(errore.message);
         }
     }
 }
+
+
 
 //funzione che calcola l'importo totale delle copie nel carrello
 function calcolaTotale(elencoCopie: Copia[]): void{

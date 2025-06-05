@@ -3,10 +3,6 @@ import { Libro } from "./Libro";
 
 //prelevo parametri passati da URL
 const parametri = new URLSearchParams(window.location.search);
-//prelevo nome cliente
-const nome:string = parametri.get("nome") as string;
-//prelevo cognome cliente
-const cognome:string = parametri.get("cognome") as string;
 
 //database
 let database: IDBDatabase;
@@ -24,7 +20,7 @@ const campoImportoTotale = document.getElementById("importoTotale") as HTMLParag
 const campoDataAcquisto = document.getElementById("dataAcquisto") as HTMLParagraphElement;
 
 //campo in cui segno nome e cognome del cliente
-const campoDatiCliente = document.getElementById("datiCliente") as HTMLParagraphElement;
+const campoDatiCliente = document.getElementById("nomeCliente") as HTMLParagraphElement;
 
 //campo in cui l'utente digita i soldi con cui il cliente paga; al click dell'invio o al click furoi dalla casella, calcolo resto
 const campoSoldiDati = document.getElementById("contantiDati") as HTMLInputElement;
@@ -133,8 +129,7 @@ async function caricaRicevuta(): Promise<void>{
         //segno data e ora della transazione
         campoDataAcquisto.innerHTML = new Date().toLocaleString();
 
-        //imposto nome e cognome del cliente
-        campoDatiCliente.innerHTML = `${nome} ${cognome}`;
+
 
     }catch(error){
         if(error instanceof Error){
