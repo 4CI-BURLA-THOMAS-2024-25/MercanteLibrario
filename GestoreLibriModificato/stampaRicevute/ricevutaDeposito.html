@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Ricevuta di Deposito</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="..\img\favicon.png">
+</head>
+<body>
+  <div class="ricevuta">
+    <div id="intestazione">
+      <img src="logoMarconi.png" id="logo" alt="Logo">
+      <img src="qr.png" id="QRcode" alt="QR Code">
+    </div>
+
+    <h1>Ricevuta di Deposito</h1>
+
+    <div class="info">
+      <p><strong>Venditore:</strong> <span id="nomeVenditore"></span></p>
+      <p><strong>Data:</strong> <span id="dataDeposito"></span></p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Titolo</th>
+          <th>Prezzo</th>
+        </tr>
+      </thead>
+      <tbody id="corpoTabellaCopie"></tbody>
+    </table>
+
+    <p class="total">Totale: <span id="importoTotale">0</span> €</p>
+
+    <button id="stampa">Stampa</button>
+  </div>
+
+  <script src="ricevutaDeposito.ts" type="module"></script>
+</body>
+</html>
