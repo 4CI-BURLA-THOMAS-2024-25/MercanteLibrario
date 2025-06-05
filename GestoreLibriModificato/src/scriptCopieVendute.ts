@@ -192,7 +192,6 @@ async function caricaCopieVendute(): Promise<void>{
         if(error instanceof Error){
             console.error(error.message);
         }
-        
     }
 }
 
