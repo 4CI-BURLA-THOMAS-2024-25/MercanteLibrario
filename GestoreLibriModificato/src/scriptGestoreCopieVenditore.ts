@@ -290,12 +290,14 @@ async function caricaCopieVenditore(): Promise<void>{
 
                 //copia nel carrello
                 if(copiaDelVenditore.stato === "CAR"){
-                    const iconaCarrello = document.createElement("img");
-                    iconaCarrello.src = "../img/carrello.png";
-                    iconaCarrello.setAttribute("class", "nelCarrello");
+                    // Creazione dell'elemento span e aggiunta della classe e del contenuto
+                    const iconSpan = document.createElement('span');
+                    iconSpan.classList.add('material-symbols-outlined');
+                    iconSpan.textContent = 'shopping_cart'; // Testo che identifica l'icona
+                    iconSpan.style.fontSize = "40px";
 
                     //aggiungo immagine alla sua cella
-                    cellaSelezione.appendChild(iconaCarrello);
+                    cellaSelezione.appendChild(iconSpan);
                     //aggiungo cella alla riga
                     riga.appendChild(cellaSelezione);
 
