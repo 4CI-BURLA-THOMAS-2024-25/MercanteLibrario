@@ -1,7 +1,6 @@
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=shopping_cart');
-
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=shopping_cart");
 
 /* Palette colori */
 :root {
@@ -41,7 +40,7 @@ body {
 #logo {
     display: block;
     margin: 32px auto 16px auto;
-    max-width: 180px;
+    max-width: 700px;
     filter: drop-shadow(0 2px 8px #0001);
 }
 
@@ -85,13 +84,28 @@ header {
 nav {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 14px;
-    padding: 14px 0 10px 0;
+    padding: 14px 0 5px 0;
     background: var(--secondary-bg);
     border-radius: 14px;
     margin: 0 0 24px 0;
     box-shadow: var(--shadow);
     border: 1px solid var(--border);
+}
+
+nav button{
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    
+}
+
+nav .nav-buttons {
+    display: flex;
+    flex-grow: 1;  /* Fa sì che questo div occupi tutto lo spazio rimanente */
+    justify-content: center;
+    gap: 14px;
 }
 
 .cellaMenu, nav button {
@@ -404,4 +418,23 @@ td:has(.caselleSelezione) {
     #logo { max-width: 90px; }
     #apriCarrello { width: 44px; height: 44px; }
     #carrelloIcon { width: 22px; height: 22px; }
+}
+
+.material-symbols-outlined {
+  color: white;  
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+
+}
+nav .logo-libraio{
+    margin-right: auto;
+    margin-left: 30px;
+
+}
+nav .logo-libraio img{
+    width: auto;
+    height: 50px;
 }
