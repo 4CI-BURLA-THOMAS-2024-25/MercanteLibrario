@@ -1,9 +1,10 @@
 import { Copia } from "./Copia";
 import { Libro } from "./Libro";
+import { elencoLibri } from "./elencoLibri";  // Importa elencoLibri
 
 // parametri da URL
 const parametri = new URLSearchParams(window.location.search);
-const idVenditore = parametri.get("id");
+const idVenditore = parametri.get("venditoreID");
 
 // database
 let database: IDBDatabase;
@@ -40,26 +41,31 @@ function prelevaCopie(): Promise<Copia[]> {
     const tx = database.transaction("Copie", "readonly");
     const store = tx.objectStore("Copie");
     const richiesta = store.getAll();
+    
     richiesta.onsuccess = () => {
       const tutte = richiesta.result;
+      console.log("Tutte le copie nel database:", tutte);  // Aggiungi log
       const filtrate = tutte.filter(c => c.venditoreID === Number(idVenditore));
+      console.log("Copie filtrate per venditoreID:", filtrate);  // Aggiungi log
       resolve(filtrate);
     };
-    richiesta.onerror = () => reject(richiesta.error);
+    
+    richiesta.onerror = () => {
+      console.error("Errore nel recupero delle copie:", richiesta.error);
+      reject(richiesta.error);
+    };
   });
 }
 
-// recupera libro
+// recupera libro da elencoLibri
 function prelevaLibro(isbn: string): Promise<Libro> {
   return new Promise((resolve, reject) => {
-    const tx = database.transaction("Libri", "readonly");
-    const store = tx.objectStore("Libri");
-    const richiesta = store.get(isbn);
-    richiesta.onsuccess = () => {
-      if (richiesta.result) resolve(richiesta.result);
-      else reject(new Error("Libro non trovato"));
-    };
-    richiesta.onerror = () => reject(richiesta.error);
+    const libro = elencoLibri.find(l => l.isbn === Number(isbn));
+    if (libro) {
+      resolve(libro);
+    } else {
+      reject(new Error("Libro non trovato"));
+    }
   });
 }
 
@@ -71,11 +77,10 @@ async function caricaPagina(
   campoTotale: HTMLElement
 ) {
   try {
-    database = await apriDatabase();
 
     const nomeVenditore = await prelevaNomeVenditore();
     campoNomeVenditore.textContent = nomeVenditore;
-
+    campoData.textContent = new Date().toLocaleString();
     copie = await prelevaCopie();
 
     corpoTabella.innerHTML = "";
@@ -99,15 +104,15 @@ async function caricaPagina(
     }
 
     campoTotale.textContent = importoTotale.toFixed(2);
-    campoData.textContent = new Date().toLocaleString();
-
+    
   } catch (e) {
     console.error("Errore nel caricamento:", e);
   }
 }
 
 // inizializzazione DOM
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  database = await apriDatabase();
   const campoNomeVenditore = document.getElementById("nomeVenditore");
   const campoData = document.getElementById("dataDeposito");
   const corpoTabella = document.getElementById("corpoTabellaCopie");
@@ -136,4 +141,3 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Uno o più elementi DOM non trovati.");
   }
 });
-

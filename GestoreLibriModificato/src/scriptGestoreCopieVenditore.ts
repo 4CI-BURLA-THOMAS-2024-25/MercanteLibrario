@@ -74,7 +74,7 @@ const bottoneApriCarrello = document.getElementById("apriCarrello") as HTMLDivEl
 bottoneApriCarrello?.addEventListener("click", () => {window.open("carrello.html")});
 
 const bottoneDeposito = document.getElementById("vaiAllaRicevuta");
-bottoneDeposito?.addEventListener("click", () => {window.open("../stampaRicevute/ricevutaDeposito.html")});
+bottoneDeposito?.addEventListener("click", () => {window.open(`../stampaRicevute/ricevutaDeposito.html?venditoreID=${venditore.id}`)});
 
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
