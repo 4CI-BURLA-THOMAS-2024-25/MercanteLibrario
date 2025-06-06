@@ -73,6 +73,9 @@ bottoneOttieniBarcode?.addEventListener("click", scaricaBarcode);
 const bottoneApriCarrello = document.getElementById("apriCarrello") as HTMLDivElement;
 bottoneApriCarrello?.addEventListener("click", () => {window.open("carrello.html")});
 
+const bottoneDeposito = document.getElementById("vaiAllaRicevuta");
+bottoneDeposito?.addEventListener("click", () => {window.open("../stampaRicevute/ricevutaDeposito.html")});
+
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {

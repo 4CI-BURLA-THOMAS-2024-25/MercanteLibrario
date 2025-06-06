@@ -7,17 +7,8 @@ const idVenditore = parametri.get("id");
 
 // database
 let database: IDBDatabase;
-
-// copie da mostrare
 let copie: Copia[] = [];
 let importoTotale = 0;
-
-// riferimenti elementi DOM
-const campoNomeVenditore = document.getElementById("nomeVenditore")!;
-const campoData = document.getElementById("dataDeposito")!;
-const corpoTabella = document.getElementById("corpoTabellaCopie")!;
-const campoTotale = document.getElementById("importoTotale")!;
-const bottoneStampa = document.getElementById("stampa")!;
 
 // apertura database
 function apriDatabase(): Promise<IDBDatabase> {
@@ -35,7 +26,8 @@ function prelevaNomeVenditore(): Promise<string> {
     const store = tx.objectStore("Venditori");
     const richiesta = store.get(Number(idVenditore));
     richiesta.onsuccess = () => {
-      if (richiesta.result) resolve(richiesta.result.nome + " " + richiesta.result.cognome);
+      if (richiesta.result)
+        resolve(richiesta.result.nome + " " + richiesta.result.cognome);
       else reject(new Error("Venditore non trovato"));
     };
     richiesta.onerror = () => reject(richiesta.error);
@@ -72,7 +64,12 @@ function prelevaLibro(isbn: string): Promise<Libro> {
 }
 
 // carica dati nella pagina
-async function caricaPagina() {
+async function caricaPagina(
+  campoNomeVenditore: HTMLElement,
+  campoData: HTMLElement,
+  corpoTabella: HTMLElement,
+  campoTotale: HTMLElement
+) {
   try {
     database = await apriDatabase();
 
@@ -82,6 +79,7 @@ async function caricaPagina() {
     copie = await prelevaCopie();
 
     corpoTabella.innerHTML = "";
+    importoTotale = 0;
 
     for (const copia of copie) {
       const libro = await prelevaLibro(String(copia.libroDellaCopiaISBN));
@@ -108,6 +106,34 @@ async function caricaPagina() {
   }
 }
 
-bottoneStampa.addEventListener("click", () => window.print());
+// inizializzazione DOM
+document.addEventListener("DOMContentLoaded", () => {
+  const campoNomeVenditore = document.getElementById("nomeVenditore");
+  const campoData = document.getElementById("dataDeposito");
+  const corpoTabella = document.getElementById("corpoTabellaCopie");
+  const campoTotale = document.getElementById("importoTotale");
+  const bottoneStampa = document.getElementById("stampa");
 
-document.addEventListener("DOMContentLoaded", caricaPagina);
+  if (
+    campoNomeVenditore &&
+    campoData &&
+    corpoTabella &&
+    campoTotale &&
+    bottoneStampa
+  ) {
+    bottoneStampa.addEventListener("click", () => {
+      console.log("Stampa avviata");
+      window.print();
+    });
+
+    caricaPagina(
+      campoNomeVenditore,
+      campoData,
+      corpoTabella,
+      campoTotale
+    );
+  } else {
+    console.error("Uno o più elementi DOM non trovati.");
+  }
+});
+
