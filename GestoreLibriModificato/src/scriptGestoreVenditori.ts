@@ -290,6 +290,11 @@ async function controllaVenditorePassato(venditoreRicevuto: Venditore): Promise<
 }
 
 async function controllaCopiaPassata(copiaRicevuta: Copia): Promise<void>{
+    //se ricevo una copia aggiunta al carrello, la segno come venduta
+    if(copiaRicevuta.stato === "CAR"){
+        copiaRicevuta.stato = "V";
+    }
+    
     //apro transazione verso object store delle copie, in scrittura
     const transazione = database.transaction("Copie", "readwrite");
     //salvo reference dell'object store
