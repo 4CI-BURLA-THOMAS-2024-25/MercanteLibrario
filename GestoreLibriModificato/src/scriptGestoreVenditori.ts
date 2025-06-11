@@ -10,6 +10,9 @@ import { ws } from "./websocket";
 const cMLocalStorage = localStorage.getItem("contatoreMovimenti");
 let contatoreMovimenti  = cMLocalStorage != null ? Number(cMLocalStorage) : 0;
 
+//password tentata nel login
+let passTentata = String(localStorage.getItem("passwordTentata"))
+
 //database
 let database: IDBDatabase;
 
@@ -154,11 +157,13 @@ ws.onerror = function (error) {
 
 //comunico il venditore da aggiungere
 function inviaDati(venditore: Venditore) {
-    ws.send("V-" + String(venditore.toString()));
+    ws.send("V-" + String(venditore.toString())+"-"+passTentata);
 }
 
 function aggiornaStato(){
-    ws.send("stato,"+contatoreMovimenti);
+    ws.send("stato,"+contatoreMovimenti+"-"+passTentata);
+	console.log("stato,"+contatoreMovimenti+"-"+passTentata);
+	console.log(passTentata);
 }
 
 //ricevo messaggio

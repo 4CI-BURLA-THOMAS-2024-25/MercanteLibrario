@@ -7,11 +7,7 @@ module.exports = {
     scriptGestoreCopieVenditore: './src/scriptGestoreCopieVenditore.ts', //script pagina per gestire le copie di ciascun venditore
     scriptSelezionaLibro: './src/scriptSelezionaLibro.ts', //script pagina per scegliere libro da associare alla copia in registrazione
     scriptCopieEliminate: './src/scriptCopieEliminate.ts', //script per gestire la pagina del cestino delle copie
-    scriptCopieVendute: './src/scriptCopieVendute.ts', //script per gestire la pagina delle copie vendute
-    scriptElencoCompletoCopie: './src/scriptElencoCompletoCopie.ts', //script per gestire la pagina che mostra tutte le copie
-    scriptCarrello: './src/scriptCarrello.ts', //script che gestisce il carrello
-    scriptRicevutaAcquisto: './src/scriptRicevutaAcquisto.ts', //script che genera la ricevuta di acquisto
-    scriptRicevutaDeposito: './src/scriptRicevutaDeposito.ts'
+    scriptCopieVendute: './src/scriptCopieVendute.ts' //script per gestire la pagina delle copie vendute
   },
   output: {
     filename: '[name].js', // nome basato sul file di output

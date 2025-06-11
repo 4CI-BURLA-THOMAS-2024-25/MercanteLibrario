@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: rgb(236, 236, 236);
+    }
+    .login-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .login-container h2 {
+      text-align: center;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <h2>Login al Gestionale</h2>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="login()">Accedi</button>
+    <p id="error-message" style="color: red; text-align: center; display: none;">Password errata.</p>
+  </div>
+
+  <script>
+    const ws = new WebSocket('wss://appsdev.marconivr.it:8081');
+    
+    ws.onopen = function() {
+      console.log("Connesso al server WebSocket");
+    };
+    
+    ws.onmessage = function(event) {
+      console.log("Messaggio dal server:", event.data);
+    };
+
+    function login() {
+      const password = document.getElementById('password').value;
+      const errorMessage = document.getElementById('error-message');
+
+      if (!password) {
+        alert("Inserisci la password");
+        return;
+      }
+
+      // Invia il messaggio al server WebSocket nel formato "passLogin-password"
+      ws.send("passLogin-" + password);  // Concateno 'passLogin' e la password con un separatore
+
+      // Gestisci la risposta dal server
+      ws.onmessage = function(event) {
+        if (event.data == "0") {
+          // Login riuscito
+          console.log("Login riuscito");
+          location.href = 'index.html';
+          localStorage.setItem("passwordTentata", password);
+        } else {
+          // Password errata
+          alert("Password errata");
+          console.log("Server ha risposto con: " + event.data);
+        }
+      };
+    }
+  </script>
+
+</body>
+</html>

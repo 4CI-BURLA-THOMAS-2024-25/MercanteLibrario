@@ -1,2 +1,3 @@
 //connessione tra host
-export const ws = new WebSocket('ws://localHost:8081');
+ export const ws = new WebSocket('wss://appsdev.marconivr.it/libraio/serverNode')
+//export const ws = new WebSocket('wss://appsdev.marconivr.it:8081')

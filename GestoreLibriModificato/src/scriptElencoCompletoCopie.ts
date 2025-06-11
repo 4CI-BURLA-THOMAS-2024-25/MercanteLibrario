@@ -12,6 +12,9 @@ declare const JsBarcode: any;
 //barcode
 let canvas = document.getElementById("canvaBarcode") as HTMLCanvasElement;
 
+//password tentata nel login
+let passTentata = String(localStorage.getItem("passwordTentata"))
+
 //bottone per aggiungere copie al carrello
 const bottoneAggiungiAlCarrello = document.getElementById("aggiungiAlCarrello") as HTMLButtonElement;
 bottoneAggiungiAlCarrello?.addEventListener("click", aggiungiCopieAlCarrello);
@@ -97,7 +100,7 @@ async function inviaDati(copia: Copia) {
         copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C-" + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString())+"-"+passTentata);
 }
 
 //ascolto modifiche al DB delle copie

@@ -9,6 +9,9 @@ import { ws } from "./websocket";
 //database
 let database: IDBDatabase;
 
+//password tentata nel login
+let passTentata = String(localStorage.getItem("passwordTentata"))
+
 //bottone che, quando cliccato, rimuove le copie selezionate dal carrello
 const bottoneRimuoviDalCarrello = document.getElementById("rimuoviDalCarrello") as HTMLButtonElement;
 bottoneRimuoviDalCarrello?.addEventListener("click", rimuoviDalCarrello);
@@ -70,7 +73,7 @@ async function inviaDati(copia: Copia) {
         copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C-" + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString())+"-"+passTentata);
 }
 
 //ascolto modifiche al DB delle copie 

@@ -13,6 +13,9 @@ let database: IDBDatabase;
 const bottoneEliminaCopie = document.getElementById("ripristinaCopie") as HTMLButtonElement;
 bottoneEliminaCopie?.addEventListener("click", ripristinaCopieEliminate);
 
+//password tentata nel login
+let passTentata = String(localStorage.getItem("passwordTentata"))
+
 // funzione per aprire il database
 function apriDatabase(): Promise<IDBDatabase>{
     let out: Promise<IDBDatabase> = new Promise((resolve, reject) => {
@@ -63,7 +66,7 @@ async function inviaDati(copia: Copia) {
         copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C-" + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString())+"-"+passTentata);
 }
 
 //ascolto modifiche al DB delle copie eliminate

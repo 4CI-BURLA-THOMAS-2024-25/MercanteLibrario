@@ -10,6 +10,9 @@ import { ws } from "./websocket";
 const cMLocalStorage = localStorage.getItem("contatoreMovimenti");
 let contatoreMovimenti  = cMLocalStorage != null ? Number(cMLocalStorage) : 0;
 
+//password tentata nel login
+let passTentata = String(localStorage.getItem("passwordTentata"))
+
 
 // Dichiara JsBarcode come variabile globale
 declare const JsBarcode: any;
@@ -126,7 +129,7 @@ async function inviaDati(copia: Copia) {
         copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C-" + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString())+"-"+passTentata);
 }
 
 //ascolto modifiche al DB delle copie

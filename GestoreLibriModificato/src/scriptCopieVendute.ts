@@ -9,6 +9,9 @@ import { ws } from "./websocket";
 //database
 let database: IDBDatabase;
 
+//password tentata nel login
+let passTentata = String(localStorage.getItem("passwordTentata"))
+
 //bottone che, quando cliccato, ripristina le copie selezionate
 const bottoneAnnullaVendita = document.getElementById("annullaVendita") as HTMLButtonElement;
 bottoneAnnullaVendita?.addEventListener("click", annullaVendita);
@@ -66,7 +69,7 @@ async function inviaDati(copia: Copia) {
         copiaDaInviare = new Copia(libroDellaCopia, Number(copiaGrezza.codiceUnivoco), Number(copiaGrezza.prezzoCopertina), venditoreDellaCopia, copiaGrezza.stato, copiaGrezza.ultimaModifica);
     }
 
-    ws.send("C-" + String(copiaDaInviare?.toString()));
+    ws.send("C-" + String(copiaDaInviare?.toString())+"-"+passTentata);
 }
 
 
