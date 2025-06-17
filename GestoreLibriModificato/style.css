@@ -211,20 +211,6 @@ th {
     border-bottom: 2px solid var(--border);
 }
 
-tbody tr {
-    background: var(--table-row);
-    color: var(--text-main);
-    transition: background 0.2s;
-}
-
-tbody tr:nth-child(even) {
-    background: var(--table-row-alt);
-}
-
-tbody tr:hover {
-    background: #e0e7ef;
-}
-
 td {
     border-bottom: 1px solid var(--border);
     word-break: break-word;
@@ -377,7 +363,7 @@ td:has(.caselleSelezione) {
 
 /* Stato speciale righe */
 .venduta {
-    background: linear-gradient(90deg, #ef444422 0%, #e0e7ef 100%);
+    background: red
 }
 
 .nelCarrello {
@@ -421,7 +407,7 @@ td:has(.caselleSelezione) {
 }
 
 .material-symbols-outlined {
-  color: white;  
+  color: orange;  
   font-variation-settings:
   'FILL' 0,
   'wght' 400,

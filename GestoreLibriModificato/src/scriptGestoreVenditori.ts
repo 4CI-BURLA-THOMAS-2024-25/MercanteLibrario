@@ -161,8 +161,8 @@ function inviaDati(venditore: Venditore) {
 }
 
 function aggiornaStato(){
-    ws.send("stato,"+contatoreMovimenti+"-"+passTentata);
-	console.log("stato,"+contatoreMovimenti+"-"+passTentata);
+    ws.send("stato-"+contatoreMovimenti+"-"+passTentata);
+	console.log("stato-"+contatoreMovimenti+"-"+passTentata);
 	console.log(passTentata);
 }
 
@@ -177,10 +177,12 @@ ws.onmessage = function (event) {
     if(smista[0] === "V"){
         //gestisco modifica venditore
         riceviMessaggioVenditore(smista[1]);
+        console.log("riceviMessaggioVenditore(smista[1]);");
 
     //azione eseguita sulle copie
     }else if(smista[0] === "C"){
         riceviMessaggioCopia(smista[1]);
+        console.log("riceviMessaggioCopia(smista[1]);");
     }
 }
 
@@ -200,7 +202,7 @@ async function riceviMessaggioVenditore(parametriVenditoreStringa: string) {
         console.log("ciao"+contatoreMovimenti);
         contatoreMovimenti++;
         localStorage.setItem("contatoreMovimenti", String(contatoreMovimenti))
-        console.log("ciao"+contatoreMovimenti);
+        console.log("TEST: funzione: riceviMessaggioVenditore");
 
     }catch(error){
         console.error("Errore nel salvataggio del venditore mediante CF trasmesso da socket");
@@ -326,15 +328,18 @@ async function registraVenditore(): Promise<void>{
     //array in cui salvo l'input dell'utente e che uso per creare nuovo oggetto venditore
     let datiVenditore: any[] = new Array(5);
 
-    //leggo tutte le caselle
+    //leggo tutte le caselle del form che sono state prese dal DOM
     for(let i = 0; i < caselleInput.length; i++){
         datiVenditore[i] = (caselleInput[i] as HTMLInputElement).value;
     }
+
+    //Il controllo dei parametri avviene già a livello dell'HTML, grazie ai type dei campi input
 
     //leggo id dell'ultimo venditore
     const ultimoIDVenditore = await leggiUltimoIDVenditore();
     let venditoreID; 
     //verifico che vi siano venditori nello store
+    //(se è il primo venditore ad essere registrato, imposta l'ID a "1", altrimenti imposta all'ID del venditore precedente +1)
     if(ultimoIDVenditore !== null){
         venditoreID = ultimoIDVenditore + 1;
     //store vuoto

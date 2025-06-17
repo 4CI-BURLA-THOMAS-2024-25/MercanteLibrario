@@ -377,6 +377,9 @@ function calcolaSommaPrezzoVenditore(copieDelVenditore: Copia[]): number {
 
 //funzione per preparare la registrazione di una copia del venditore in questione
 async function preparaCopiaDaRegistrare():Promise<void>{
+
+    console.log("TEST: E' entrato in preparaCopieDaRegistrare()!!!");
+
     const codiceUltimaCopia = await leggiUltimaChiaveCopia();
 
     let codiceCopiaAttuale; 
@@ -389,8 +392,14 @@ async function preparaCopiaDaRegistrare():Promise<void>{
     }
 
     //verifico che sia stata indicata la  percentuale di sconto
-    if(!(campoPrezzoCopertina.value === "")){
+    if(campoPrezzoCopertina.value !== "" &&
+            parseFloat(campoPrezzoCopertina.value)>0 &&
+            campoPrezzoCopertina.value.indexOf(".") > 0 && //Ensures it exists a "." in the price, and that it isn't in position 0, so it can do the next check securely
+            (campoPrezzoCopertina.value.length - (campoPrezzoCopertina.value.indexOf(".") + 1) ) <= 2){ //Ensures that the decimal part is no more than 2 digits
         //verifico che sia stato scelto il libro da associare alla copia
+
+        console.log("TEST: E' passato dall'IF!!!");
+
         if(libro != null){
             //creo oggetto copia
             const copia: Copia = new Copia(libro, codiceCopiaAttuale, parseFloat(campoPrezzoCopertina.value), venditore, "D", new Date().toLocaleString());
@@ -405,7 +414,7 @@ async function preparaCopiaDaRegistrare():Promise<void>{
             window.alert("Scegliere un libro dalla libreria da associarte alla copia che si vuole registrare");
         }
     }else{
-        window.alert("Inserire il prezzo di copertina per procedere con la registrazione");
+        window.alert("Inserire il prezzo di copertina corretto per procedere con la registrazione");
     }
 }
 
